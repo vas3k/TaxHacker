@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Setting {
+  code        String  @unique
+  name        String
+  description String?
+  value       String?
+
+  @@map("settings")
+}
+
+model Category {
+  code         String        @id
+  name         String
+  color        String        @default("#000000")
+  llm_prompt   String?
+  transactions Transaction[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@map("categories")
+}
+
+model Project {
+  code         String        @id
+  name         String
+  color        String        @default("#000000")
+  llm_prompt   String?
+  transactions Transaction[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@map("projects")
+}
+
+model Field {
+  id         String  @id @default(uuid())
+  code       String  @unique
+  name       String
+  type       String
+  llm_prompt String?
+  options    Json?
+  isRequired Boolean @default(false) @map("is_required")
+  isExtra    Boolean @default(true) @map("is_extra")
+
+  @@map("fields")
+}
+
+model File {
+  id         String   @id @default(uuid())
+  filename   String
+  path       String
+  mimetype   String
+  metadata   Json?
+  isReviewed Boolean  @default(false) @map("is_reviewed")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("files")
+}
+
+model Transaction {
+  id                    String    @id @default(uuid())
+  name                  String?
+  description           String?
+  merchant              String?
+  total                 Int?
+  currencyCode          String?   @map("currency_code")
+  convertedTotal        Int?      @map("converted_total")
+  convertedCurrencyCode String?   @map("converted_currency_code")
+  type                  String?   @default("expense")
+  note                  String?
+  files                 Json      @default("[]")
+  extra                 Json?
+  category              Category? @relation(fields: [categoryCode], references: [code])
+  categoryCode          String?   @map("category_id")
+  project               Project?  @relation(fields: [projectCode], references: [code])
+  projectCode           String?   @map("project_id")
+  issuedAt              DateTime? @map("issued_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  text                  String?
+
+  @@index([projectCode])
+  @@index([categoryCode])
+  @@index([issuedAt])
+  @@index([name])
+  @@index([merchant])
+  @@index([total])
+  @@map("transactions")
+}
+
+model Currency {
+  code String @id
+  name String
+
+  @@map("currencies")
+}

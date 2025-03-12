@@ -1,0 +1,59 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - UPLOAD_PATH=/app/uploads
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/db.sqlite
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.taxhacker.entrypoints=https"
+      - "traefik.http.routers.taxhacker.tls.certresolver=cloudflare"
+      - "traefik.http.routers.taxhacker.rule=Host(`tax.vas3k.cloud`)"
+      - "traefik.http.services.taxhacker.loadBalancer.server.port=3000"
+      - "traefik.docker.network=traefik"
+    logging:
+      driver: "local"
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+  snekapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - UPLOAD_PATH=/app/uploads
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/db.sqlite
+    volumes:
+      - ./snek_uploads:/app/uploads
+      - ./snek_data:/app/data
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.snektax.entrypoints=https"
+      - "traefik.http.routers.snektax.tls.certresolver=cloudflare"
+      - "traefik.http.routers.snektax.rule=Host(`snektax.vas3k.cloud`)"
+      - "traefik.http.services.snektax.loadBalancer.server.port=3000"
+      - "traefik.docker.network=traefik"
+    logging:
+      driver: "local"
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+networks:
+  traefik:
+    external: true
+

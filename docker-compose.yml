@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - UPLOAD_PATH=/app/uploads
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/db.sqlite
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    restart: unless-stopped
+    logging:
+      driver: "local"
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+volumes:
+  app_data:
