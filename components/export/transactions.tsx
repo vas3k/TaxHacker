@@ -118,7 +118,7 @@ export function ExportTransactionsDialog({
           <div className="grid grid-cols-2 gap-2">
             {fields.map((field) => (
               <div key={field.code} className="inline-flex gap-2">
-                <label className="flex gap-1">
+                <label className="flex items-center gap-1">
                   <input
                     type="checkbox"
                     name={field.code}

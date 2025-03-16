@@ -18,7 +18,7 @@ export async function saveSettingsAction(prevState: any, formData: FormData) {
   }
 
   for (const key in validatedForm.data) {
-    await updateSettings(key, validatedForm.data[key as keyof typeof validatedForm.data] || "")
+    await updateSettings(key, validatedForm.data[key as keyof typeof validatedForm.data])
   }
 
   revalidatePath("/settings")

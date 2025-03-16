@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardTitle } from "@/components/ui/card"
-import { getSettings } from "@/data/settings"
-import { Banknote, ChartBarStacked, FolderOpenDot, Key, TextCursorInput } from "lucide-react"
+import { getSettings, updateSettings } from "@/data/settings"
+import { Banknote, ChartBarStacked, FolderOpenDot, Key, TextCursorInput, X } from "lucide-react"
+import { revalidatePath } from "next/cache"
 import Link from "next/link"
 
 export async function WelcomeWidget() {
@@ -11,7 +12,20 @@ export async function WelcomeWidget() {
     <Card className="flex flex-col md:flex-row items-start gap-10 p-10 w-full">
       <img src="/logo/1024.png" alt="Logo" className="w-64 h-64" />
       <div className="flex flex-col">
-        <CardTitle className="text-2xl font-bold">Hey, I'm TaxHacker 👋</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span className="text-2xl font-bold">Hey, I'm TaxHacker 👋</span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={async () => {
+              "use server"
+              await updateSettings("is_welcome_message_hidden", "true")
+              revalidatePath("/")
+            }}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardTitle>
         <CardDescription className="mt-5">
           <p className="mb-3">
             I'm a little accountant app that tries to help you deal with endless receipts, checks and invoices with (you

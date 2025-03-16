@@ -8,4 +8,5 @@ export const settingsFormSchema = z.object({
   default_project: z.string().optional(),
   openai_api_key: z.string().optional(),
   prompt_analyse_new_file: z.string().optional(),
+  is_welcome_message_hidden: z.boolean().optional(),
 })
