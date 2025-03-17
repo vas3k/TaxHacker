@@ -3,7 +3,7 @@ import { format } from "date-fns"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
-const filters = ["search", "dateFrom", "dateTo", "categoryCode", "projectCode"]
+const filters = ["search", "dateFrom", "dateTo", "ordering", "categoryCode", "projectCode"]
 
 export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   const router = useRouter()
@@ -50,6 +50,12 @@ export function filtersToSearchParams(filters: TransactionFilters): URLSearchPar
     searchParams.set("dateTo", format(new Date(filters.dateTo), "yyyy-MM-dd"))
   } else {
     searchParams.delete("dateTo")
+  }
+
+  if (filters.ordering) {
+    searchParams.set("ordering", filters.ordering)
+  } else {
+    searchParams.delete("ordering")
   }
 
   if (filters.categoryCode && filters.categoryCode !== "-") {
