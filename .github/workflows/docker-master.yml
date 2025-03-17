@@ -1,9 +1,9 @@
-name: Build and Publish Version Tagged Docker Image
+name: Build and Publish Latest Docker Image
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - master
 
 jobs:
   build-and-push:
@@ -33,8 +33,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
