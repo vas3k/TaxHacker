@@ -3,14 +3,33 @@ import { format } from "date-fns"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
+const filters = ["search", "dateFrom", "dateTo", "categoryCode", "projectCode"]
+
+export function useTransactionFilters(defaultFilters?: TransactionFilters) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [filters, setFilters] = useState<TransactionFilters>({
+    ...defaultFilters,
+    ...searchParamsToFilters(searchParams),
+  })
+
+  useEffect(() => {
+    const newSearchParams = filtersToSearchParams(filters)
+    router.push(`?${newSearchParams.toString()}`)
+  }, [filters])
+
+  useEffect(() => {
+    setFilters(searchParamsToFilters(searchParams))
+  }, [searchParams])
+
+  return [filters, setFilters] as const
+}
+
 export function searchParamsToFilters(searchParams: URLSearchParams) {
-  return {
-    search: searchParams.get("search") || "",
-    dateFrom: searchParams.get("dateFrom") || "",
-    dateTo: searchParams.get("dateTo") || "",
-    categoryCode: searchParams.get("categoryCode") || "",
-    projectCode: searchParams.get("projectCode") || "",
-  }
+  return filters.reduce((acc, filter) => {
+    acc[filter] = searchParams.get(filter) || ""
+    return acc
+  }, {} as Record<string, string>)
 }
 
 export function filtersToSearchParams(filters: TransactionFilters): URLSearchParams {
@@ -48,22 +67,6 @@ export function filtersToSearchParams(filters: TransactionFilters): URLSearchPar
   return searchParams
 }
 
-export function useTransactionFilters(defaultFilters?: TransactionFilters) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [filters, setFilters] = useState<TransactionFilters>({
-    ...defaultFilters,
-    ...searchParamsToFilters(searchParams),
-  })
-
-  useEffect(() => {
-    const newSearchParams = filtersToSearchParams(filters)
-    router.push(`?${newSearchParams.toString()}`)
-  }, [filters])
-
-  useEffect(() => {
-    setFilters(searchParamsToFilters(searchParams))
-  }, [searchParams])
-
-  return [filters, setFilters] as const
+export function isFiltered(filters: TransactionFilters) {
+  return Object.values(filters).some((value) => value !== "" && value !== "-")
 }

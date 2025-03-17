@@ -53,10 +53,12 @@ export default function TransactionEditForm({
   })
 
   const handleDelete = async () => {
-    startTransition(async () => {
-      await deleteAction(transaction.id)
-      router.back()
-    })
+    if (confirm("Are you sure? This will delete the transaction with all the files permanently")) {
+      startTransition(async () => {
+        await deleteAction(transaction.id)
+        router.back()
+      })
+    }
   }
 
   useEffect(() => {
@@ -146,9 +148,9 @@ export default function TransactionEditForm({
         />
       ))}
 
-      <div className="flex justify-end space-x-4 pt-6">
+      <div className="flex justify-between space-x-4 pt-6">
         <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
-          {isDeleting ? "⏳ Deleting..." : "Delete Transaction"}
+          {isDeleting ? "⏳ Deleting..." : "Delete "}
         </Button>
 
         <Button type="submit" disabled={isSaving}>
@@ -158,7 +160,7 @@ export default function TransactionEditForm({
               Saving...
             </>
           ) : (
-            "Save"
+            "Save Transaction"
           )}
         </Button>
 
