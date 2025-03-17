@@ -61,7 +61,12 @@ export function ProjectsWidget({
                 <div className="text-sm font-medium text-muted-foreground">Profit</div>
                 <div className="text-2xl font-bold">
                   {Object.entries(statsPerProject[project.code]?.profitPerCurrency).map(([currency, total]) => (
-                    <div key={currency} className="flex flex-col gap-2 items-center text-2xl font-bold text-green-500">
+                    <div
+                      key={currency}
+                      className={`flex flex-col gap-2 items-center text-2xl font-bold ${
+                        total >= 0 ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
                       {formatCurrency(total, currency)}
                     </div>
                   ))}

@@ -66,6 +66,18 @@ export function DateRangePicker({
   const [rangeName, setRangeName] = useState<string>(defaultDate?.from ? "custom" : defaultRange)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(defaultDate)
 
+  const getDisplayText = () => {
+    if (rangeName === "custom") {
+      if (dateRange?.from) {
+        return dateRange.to
+          ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
+          : format(dateRange.from, "LLL dd, y")
+      }
+      return "Select dates"
+    }
+    return predefinedRanges.find((range) => range.code === rangeName)?.label || "Select dates"
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -78,19 +90,7 @@ export function DateRangePicker({
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {rangeName === "custom" ? (
-            dateRange?.from ? (
-              dateRange.to ? (
-                `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
-              ) : (
-                format(dateRange.from, "LLL dd, y")
-              )
-            ) : (
-              <span>???</span>
-            )
-          ) : (
-            predefinedRanges.find((range) => range.code === rangeName)?.label
-          )}
+          {getDisplayText()}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="flex flex-row gap-3 w-auto p-0" align="end">
