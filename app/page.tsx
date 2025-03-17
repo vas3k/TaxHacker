@@ -5,9 +5,9 @@ import { WelcomeWidget } from "@/components/dashboard/welcome-widget"
 import { Separator } from "@/components/ui/separator"
 import { getUnsortedFiles } from "@/data/files"
 import { getSettings } from "@/data/settings"
-import { StatsFilters } from "@/data/stats"
+import { TransactionFilters } from "@/data/transactions"
 
-export default async function Home({ searchParams }: { searchParams: Promise<StatsFilters> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<TransactionFilters> }) {
   const filters = await searchParams
   const unsortedFiles = await getUnsortedFiles()
   const settings = await getSettings()

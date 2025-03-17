@@ -1,5 +1,6 @@
 "use client"
 
+import { BulkActionsMenu } from "@/components/transactions/bulk-actions"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -236,6 +237,9 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
           </TableRow>
         </TableFooter>
       </Table>
+      {selectedIds.length > 0 && (
+        <BulkActionsMenu selectedIds={selectedIds} onActionComplete={() => setSelectedIds([])} />
+      )}
     </div>
   )
 }

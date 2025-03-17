@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
-import { TransactionFilters } from "@/data/transactions"
+import { useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { Category, Field, Project } from "@prisma/client"
 import { formatDate } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -23,20 +23,18 @@ import { FormSelectProject } from "../forms/select-project"
 const deselectedFields = ["files", "text"]
 
 export function ExportTransactionsDialog({
-  filters,
   fields,
   categories,
   projects,
   children,
 }: {
-  filters: TransactionFilters
   fields: Field[]
   categories: Category[]
   projects: Project[]
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const [exportFilters, setExportFilters] = useState<TransactionFilters>(filters)
+  const [exportFilters, setExportFilters] = useTransactionFilters()
   const [exportFields, setExportFields] = useState<string[]>(
     fields.map((field) => (deselectedFields.includes(field.code) ? "" : field.code))
   )
@@ -62,10 +60,10 @@ export function ExportTransactionsDialog({
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4">
-            {filters.search && (
+            {exportFilters.search && (
               <div className="flex flex-row items-center gap-2">
                 <span className="text-sm font-medium">Search query:</span>
-                <span className="text-sm">{filters.search}</span>
+                <span className="text-sm">{exportFilters.search}</span>
               </div>
             )}
 
@@ -74,8 +72,8 @@ export function ExportTransactionsDialog({
 
               <DateRangePicker
                 defaultDate={{
-                  from: filters?.dateFrom ? new Date(filters.dateFrom) : undefined,
-                  to: filters?.dateTo ? new Date(filters.dateTo) : undefined,
+                  from: exportFilters?.dateFrom ? new Date(exportFilters.dateFrom) : undefined,
+                  to: exportFilters?.dateTo ? new Date(exportFilters.dateTo) : undefined,
                 }}
                 defaultRange="all-time"
                 onChange={(date) => {

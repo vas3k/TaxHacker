@@ -1,5 +1,6 @@
 import { Currency } from "@prisma/client"
 import { SelectProps } from "@radix-ui/react-select"
+import { useMemo } from "react"
 import { FormSelect } from "./simple"
 
 export const FormSelectCurrency = ({
@@ -9,13 +10,9 @@ export const FormSelectCurrency = ({
   placeholder,
   ...props
 }: { title: string; currencies: Currency[]; emptyValue?: string; placeholder?: string } & SelectProps) => {
-  return (
-    <FormSelect
-      title={title}
-      items={currencies.map((currency) => ({ code: currency.code, name: `${currency.code} - ${currency.name}` }))}
-      emptyValue={emptyValue}
-      placeholder={placeholder}
-      {...props}
-    />
+  const items = useMemo(
+    () => currencies.map((currency) => ({ code: currency.code, name: `${currency.code} - ${currency.name}` })),
+    [currencies]
   )
+  return <FormSelect title={title} items={items} emptyValue={emptyValue} placeholder={placeholder} {...props} />
 }

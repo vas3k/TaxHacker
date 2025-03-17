@@ -4,22 +4,11 @@ import { DateRangePicker } from "@/components/forms/date-range-picker"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TransactionFilters } from "@/data/transactions"
+import { useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { Category, Project } from "@prisma/client"
-import { format } from "date-fns"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
 
 export function TransactionSearchAndFilters({ categories, projects }: { categories: Category[]; projects: Project[] }) {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-
-  const [filters, setFilters] = useState<TransactionFilters>({
-    search: searchParams.get("search") || "",
-    dateFrom: searchParams.get("dateFrom") || "",
-    dateTo: searchParams.get("dateTo") || "",
-    categoryCode: searchParams.get("categoryCode") || "",
-    projectCode: searchParams.get("projectCode") || "",
-  })
+  const [filters, setFilters] = useTransactionFilters()
 
   const handleFilterChange = (name: keyof TransactionFilters, value: any) => {
     setFilters((prev) => ({
@@ -27,45 +16,6 @@ export function TransactionSearchAndFilters({ categories, projects }: { categori
       [name]: value,
     }))
   }
-
-  const applyFilters = () => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (filters.search) {
-      params.set("search", filters.search)
-    } else {
-      params.delete("search")
-    }
-
-    if (filters.dateFrom) {
-      params.set("dateFrom", format(new Date(filters.dateFrom), "yyyy-MM-dd"))
-    } else {
-      params.delete("dateFrom")
-    }
-
-    if (filters.dateTo) {
-      params.set("dateTo", format(new Date(filters.dateTo), "yyyy-MM-dd"))
-    } else {
-      params.delete("dateTo")
-    }
-
-    if (filters.categoryCode && filters.categoryCode !== "-") {
-      params.set("categoryCode", filters.categoryCode)
-    } else {
-      params.delete("categoryCode")
-    }
-
-    if (filters.projectCode && filters.projectCode !== "-") {
-      params.set("projectCode", filters.projectCode)
-    } else {
-      params.delete("projectCode")
-    }
-
-    router.push(`/transactions?${params.toString()}`)
-  }
-
-  useEffect(() => {
-    applyFilters()
-  }, [filters])
 
   return (
     <div className="flex flex-col gap-4">

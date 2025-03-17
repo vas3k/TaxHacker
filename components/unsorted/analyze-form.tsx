@@ -3,6 +3,7 @@
 import { analyzeTransaction, retrieveAllAttachmentsForAI } from "@/app/ai/analyze"
 import { useNotification } from "@/app/context"
 import { deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/unsorted/actions"
+import { FormConvertCurrency } from "@/components/forms/convert-currency"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
@@ -11,8 +12,7 @@ import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@prisma/client"
 import { Brain, Loader2 } from "lucide-react"
-import { startTransition, useActionState, useState } from "react"
-import { FormConvertCurrency } from "../forms/convert-currency"
+import { startTransition, useActionState, useMemo, useState } from "react"
 
 export default function AnalyzeForm({
   file,
@@ -37,26 +37,30 @@ export default function AnalyzeForm({
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
 
-  const extraFields = fields.filter((field) => field.isExtra)
-  const [formData, setFormData] = useState({
-    name: file.filename,
-    merchant: "",
-    description: "",
-    type: settings.default_type,
-    total: 0.0,
-    currencyCode: settings.default_currency,
-    convertedTotal: 0.0,
-    convertedCurrencyCode: settings.default_currency,
-    categoryCode: settings.default_category,
-    projectCode: settings.default_project,
-    issuedAt: "",
-    note: "",
-    text: "",
-    ...extraFields.reduce((acc, field) => {
-      acc[field.code] = ""
-      return acc
-    }, {} as Record<string, string>),
-  })
+  const extraFields = useMemo(() => fields.filter((field) => field.isExtra), [fields])
+  const initialFormState = useMemo(
+    () => ({
+      name: file.filename,
+      merchant: "",
+      description: "",
+      type: settings.default_type,
+      total: 0.0,
+      currencyCode: settings.default_currency,
+      convertedTotal: 0.0,
+      convertedCurrencyCode: settings.default_currency,
+      categoryCode: settings.default_category,
+      projectCode: settings.default_project,
+      issuedAt: "",
+      note: "",
+      text: "",
+      ...extraFields.reduce((acc, field) => {
+        acc[field.code] = ""
+        return acc
+      }, {} as Record<string, string>),
+    }),
+    [file.filename, settings, extraFields]
+  )
+  const [formData, setFormData] = useState(initialFormState)
 
   async function saveAsTransaction(formData: FormData) {
     setSaveError("")
@@ -138,6 +142,7 @@ export default function AnalyzeForm({
           name="name"
           value={formData.name}
           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+          required={true}
         />
 
         <FormInput
@@ -161,9 +166,13 @@ export default function AnalyzeForm({
             name="total"
             type="number"
             step="0.01"
-            value={formData.total.toFixed(2)}
-            onChange={(e) => setFormData((prev) => ({ ...prev, total: parseFloat(e.target.value) }))}
+            value={formData.total || ""}
+            onChange={(e) => {
+              const newValue = parseFloat(e.target.value || "0")
+              !isNaN(newValue) && setFormData((prev) => ({ ...prev, total: newValue }))
+            }}
             className="w-32"
+            required={true}
           />
 
           <FormSelectCurrency

@@ -2,11 +2,7 @@ import { prisma } from "@/lib/db"
 import { calcTotalPerCurrency } from "@/lib/stats"
 import { Prisma } from "@prisma/client"
 import { cache } from "react"
-
-export type StatsFilters = {
-  dateFrom?: string
-  dateTo?: string
-}
+import { TransactionFilters } from "./transactions"
 
 export type DashboardStats = {
   totalIncomePerCurrency: Record<string, number>
@@ -15,7 +11,7 @@ export type DashboardStats = {
   invoicesProcessed: number
 }
 
-export const getDashboardStats = cache(async (filters: StatsFilters = {}): Promise<DashboardStats> => {
+export const getDashboardStats = cache(async (filters: TransactionFilters = {}): Promise<DashboardStats> => {
   const where: Prisma.TransactionWhereInput = {}
 
   if (filters.dateFrom || filters.dateTo) {
@@ -51,7 +47,7 @@ export type ProjectStats = {
   invoicesProcessed: number
 }
 
-export const getProjectStats = cache(async (projectId: string, filters: StatsFilters = {}) => {
+export const getProjectStats = cache(async (projectId: string, filters: TransactionFilters = {}) => {
   const where: Prisma.TransactionWhereInput = {
     projectCode: projectId,
   }

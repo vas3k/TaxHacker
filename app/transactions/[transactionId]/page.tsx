@@ -26,9 +26,9 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
   const projects = await getProjects()
 
   return (
-    <>
-      <Card className="flex flex-col md:flex-row flex-wrap justify-center items-start gap-10 p-5 bg-accent max-w-6xl">
-        <div className="flex-1">
+    <div className="flex flex-wrap flex-row items-start justify-center gap-4 max-w-6xl">
+      <Card className="w-full flex-1 flex flex-col flex-wrap justify-center items-start gap-10 p-5 bg-accent">
+        <div className="w-full">
           <TransactionEditForm
             transaction={transaction}
             categories={categories}
@@ -37,26 +37,29 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
             fields={fields}
             projects={projects}
           />
-        </div>
 
-        <div className="max-w-[320px] space-y-4">
-          <TransactionFiles transaction={transaction} files={files} />
+          {transaction.text && (
+            <details className="mt-10">
+              <summary className="cursor-pointer text-sm font-medium">Recognized Text</summary>
+              <Card className="flex items-stretch p-2 max-w-6xl">
+                <div className="flex-1">
+                  <FormTextarea
+                    title=""
+                    name="text"
+                    defaultValue={transaction.text || ""}
+                    hideIfEmpty={true}
+                    className="w-full h-[400px]"
+                  />
+                </div>
+              </Card>
+            </details>
+          )}
         </div>
       </Card>
 
-      {transaction.text && (
-        <Card className="flex items-stretch p-5 mt-10 max-w-6xl">
-          <div className="flex-1">
-            <FormTextarea
-              title="Recognized Text"
-              name="text"
-              defaultValue={transaction.text || ""}
-              hideIfEmpty={true}
-              className="w-full h-[400px]"
-            />
-          </div>
-        </Card>
-      )}
-    </>
+      <div className="w-1/3 max-w-[380px] space-y-4">
+        <TransactionFiles transaction={transaction} files={files} />
+      </div>
+    </div>
   )
 }

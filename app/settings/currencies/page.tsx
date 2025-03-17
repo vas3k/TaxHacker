@@ -16,7 +16,7 @@ export default async function CurrenciesSettingsPage() {
       <CrudTable
         items={currenciesWithActions}
         columns={[
-          { key: "code", label: "Code" },
+          { key: "code", label: "Code", editable: true },
           { key: "name", label: "Name", editable: true },
         ]}
         onDelete={async (code) => {

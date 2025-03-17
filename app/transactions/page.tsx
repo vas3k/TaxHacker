@@ -28,7 +28,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       <header className="flex flex-wrap items-center justify-between gap-2 mb-8">
         <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
         <div className="flex gap-2">
-          <ExportTransactionsDialog filters={filters} fields={fields} categories={categories} projects={projects}>
+          <ExportTransactionsDialog fields={fields} categories={categories} projects={projects}>
             <Button variant="outline">
               <Download />
               <span className="hidden md:block">Export</span>

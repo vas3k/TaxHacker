@@ -1,6 +1,7 @@
 import { addCategoryAction, deleteCategoryAction, editCategoryAction } from "@/app/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
 import { getCategories } from "@/data/categories"
+import { randomHexColor } from "@/lib/utils"
 
 export default async function CategoriesSettingsPage() {
   const categories = await getCategories()
@@ -18,7 +19,7 @@ export default async function CategoriesSettingsPage() {
         columns={[
           { key: "name", label: "Name", editable: true },
           { key: "llm_prompt", label: "LLM Prompt", editable: true },
-          { key: "color", label: "Color", editable: true },
+          { key: "color", label: "Color", defaultValue: randomHexColor(), editable: true },
         ]}
         onDelete={async (code) => {
           "use server"

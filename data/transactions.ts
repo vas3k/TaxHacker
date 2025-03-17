@@ -120,6 +120,12 @@ export const deleteTransaction = async (id: string): Promise<Transaction | undef
   }
 }
 
+export const bulkDeleteTransactions = async (ids: string[]) => {
+  return await prisma.transaction.deleteMany({
+    where: { id: { in: ids } },
+  })
+}
+
 const splitTransactionDataExtraFields = async (
   data: TransactionData
 ): Promise<{ standard: TransactionData; extra: Prisma.InputJsonValue }> => {

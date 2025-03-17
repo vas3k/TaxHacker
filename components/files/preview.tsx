@@ -22,6 +22,7 @@ export function FilePreview({ file }: { file: File }) {
             alt={file.filename}
             width={300}
             height={400}
+            loading="lazy"
             className={`${
               isEnlarged
                 ? "fixed inset-0 z-50 m-auto w-screen h-screen object-contain cursor-zoom-out"

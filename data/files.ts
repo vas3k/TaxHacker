@@ -40,6 +40,9 @@ export const getFilesByTransactionId = cache(async (id: string) => {
           in: transaction.files as string[],
         },
       },
+      orderBy: {
+        createdAt: "asc",
+      },
     })
   }
   return []

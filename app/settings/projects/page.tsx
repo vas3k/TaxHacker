@@ -1,6 +1,7 @@
 import { addProjectAction, deleteProjectAction, editProjectAction } from "@/app/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
 import { getProjects } from "@/data/projects"
+import { randomHexColor } from "@/lib/utils"
 
 export default async function ProjectsSettingsPage() {
   const projects = await getProjects()
@@ -18,7 +19,7 @@ export default async function ProjectsSettingsPage() {
         columns={[
           { key: "name", label: "Name", editable: true },
           { key: "llm_prompt", label: "LLM Prompt", editable: true },
-          { key: "color", label: "Color", editable: true },
+          { key: "color", label: "Color", defaultValue: randomHexColor(), editable: true },
         ]}
         onDelete={async (code) => {
           "use server"

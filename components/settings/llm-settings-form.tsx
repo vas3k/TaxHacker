@@ -13,6 +13,13 @@ export default function LLMSettingsForm({ settings }: { settings: Record<string,
     <form action={saveAction} className="space-y-4">
       <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={settings.openai_api_key} />
 
+      <small className="text-muted-foreground">
+        Get your API key from{" "}
+        <a href="https://platform.openai.com/settings/organization/api-keys" target="_blank" className="underline">
+          OpenAI Platform Console
+        </a>
+      </small>
+
       <FormTextarea
         title="Prompt for Analyze Transaction"
         name="prompt_analyse_new_file"

@@ -2,6 +2,7 @@
 
 import { createFile, deleteFile } from "@/data/files"
 import {
+  bulkDeleteTransactions,
   createTransaction,
   deleteTransaction,
   getTransactionById,
@@ -90,13 +91,13 @@ export async function deleteTransactionFileAction(
   return { success: true }
 }
 
-export async function uploadTransactionFileAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
+export async function uploadTransactionFilesAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
   try {
     const transactionId = formData.get("transactionId") as string
-    const file = formData.get("file") as File
+    const files = formData.getAll("files") as File[]
 
-    if (!file || !transactionId) {
-      return { success: false, error: "No file or transaction ID provided" }
+    if (!files || !transactionId) {
+      return { success: false, error: "No files or transaction ID provided" }
     }
 
     const transaction = await getTransactionById(transactionId)
@@ -109,29 +110,36 @@ export async function uploadTransactionFileAction(formData: FormData): Promise<{
       await mkdir(FILE_UPLOAD_PATH, { recursive: true })
     }
 
-    // Save file to filesystem
-    const { fileUuid, filePath } = await getTransactionFileUploadPath(file.name, transaction)
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    await writeFile(filePath, buffer)
+    const fileRecords = await Promise.all(
+      files.map(async (file) => {
+        const { fileUuid, filePath } = await getTransactionFileUploadPath(file.name, transaction)
+        const arrayBuffer = await file.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        await writeFile(filePath, buffer)
 
-    // Create file record in database
-    const fileRecord = await createFile({
-      id: fileUuid,
-      filename: file.name,
-      path: filePath,
-      mimetype: file.type,
-      isReviewed: true,
-      metadata: {
-        size: file.size,
-        lastModified: file.lastModified,
-      },
-    })
+        // Create file record in database
+        const fileRecord = await createFile({
+          id: fileUuid,
+          filename: file.name,
+          path: filePath,
+          mimetype: file.type,
+          isReviewed: true,
+          metadata: {
+            size: file.size,
+            lastModified: file.lastModified,
+          },
+        })
+
+        return fileRecord
+      })
+    )
 
     // Update invoice with the new file ID
     await updateTransactionFiles(
       transactionId,
-      transaction.files ? [...(transaction.files as string[]), fileRecord.id] : [fileRecord.id]
+      transaction.files
+        ? [...(transaction.files as string[]), ...fileRecords.map((file) => file.id)]
+        : fileRecords.map((file) => file.id)
     )
 
     revalidatePath(`/transactions/${transactionId}`)
@@ -139,5 +147,16 @@ export async function uploadTransactionFileAction(formData: FormData): Promise<{
   } catch (error) {
     console.error("Upload error:", error)
     return { success: false, error: `File upload failed: ${error}` }
+  }
+}
+
+export async function bulkDeleteTransactionsAction(transactionIds: string[]) {
+  try {
+    await bulkDeleteTransactions(transactionIds)
+    revalidatePath("/transactions")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to delete transactions:", error)
+    return { success: false, error: "Failed to delete transactions" }
   }
 }

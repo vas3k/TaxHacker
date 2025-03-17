@@ -31,11 +31,11 @@ A built-in system of powerful filters allows you to then export transactions wit
 
 > \[!NOTE]
 >
-> TaxHacker is a single-user app. SaaS version will probably appear in the future if anyone is interested. Stay tuned for updates.
+> TaxHacker is a single-user app. SaaS or Electron version will probably be developed in the future if anyone is interested.
 
 > \[!IMPORTANT]
 >
-> This project is still at a very early stage. **Star Us** to receive new release notifications from GitHub ⭐️
+> This project is still at a very early stage. Use it at your own risk! **Star Us** to receive notifications about new bugfixes and features from GitHub ⭐️
 
 ## ✨ Features
 
@@ -45,10 +45,11 @@ A built-in system of powerful filters allows you to then export transactions wit
 
 Take a photo on upload or a PDF and TaxHacker will automatically recognise, categorise and store transaction information.
 
-- Extracts key information like date, amount, and vendor
-- Categorizes transactions based on content
-- Stores everything in a structured format for easy filtering and retrieval
-- Organizes documents for tax season
+- Upload multiple documents and store in “unsorted” until you get the time to sort them out with AI
+- Use LLM to extract key information like date, amount, and vendor
+- Categorize transactions based on content
+- Store everything in a structured format for easy filtering and retrieval
+- Organize your documents by a tax season
 
 TaxHacker recognizes a wide variety of documents including store receipts, restaurant bills, invoices, bank checks, letters, even handwritten receipts.
 
@@ -58,8 +59,8 @@ TaxHacker recognizes a wide variety of documents including store receipts, resta
 
 TaxHacker automatically converts foreign currencies and even knows the historical exchange rates on the invoice date.
 
-- Automatic detection of different currencies
-- Real-time currency conversion to your base currency
+- Automatically detect currency in your documents
+- Convert it to your base currency
 - Historical exchange rate lookup for past transactions
 - Support for over 170 world currencies and 14 popular cryptocurrencies (BTC, ETC, LTC, DOT, etc)!
 
@@ -110,7 +111,7 @@ TaxHacker can be self-hosted on your own infrastructure for complete control ove
 
 Deploy your own instance of TaxHacker with Vercel in just a few clicks:
 
-1. Prepare your OpenAI API Key for the AI features
+1. Prepare your [OpenAI API Key](https://platform.openai.com/settings/organization/api-keys) for the AI features
 2. Click the deploy button below
 3. Configure your environment variables in the Vercel dashboard
 4. (Optional) Connect your custom domain
@@ -124,11 +125,10 @@ Deploy your own instance of TaxHacker with Vercel in just a few clicks:
 For server deployment, we provide a [Docker image](./Dockerfile) and [Docker Compose](./docker-compose.yml) files that makes setting up TaxHacker simple:
 
 ```bash
-# Clone the repository
-git clone https://github.com/vas3k/TaxHacker.git
-cd TaxHacker
+# Download docker-compose.yml file
+curl -O https://raw.githubusercontent.com/vas3k/TaxHacker/main/docker-compose.yml
 
-# Or use docker-compose (recommended)
+# Run it
 docker compose up
 ```
 

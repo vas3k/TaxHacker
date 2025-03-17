@@ -55,18 +55,13 @@ export default function TransactionEditForm({
   const handleDelete = async () => {
     startTransition(async () => {
       await deleteAction(transaction.id)
+      router.back()
     })
   }
 
   useEffect(() => {
-    if (deleteState?.success) {
-      router.push("/transactions")
-    }
-  }, [deleteState, router])
-
-  useEffect(() => {
     if (saveState?.success) {
-      router.push("/transactions")
+      router.back()
     }
   }, [saveState, router])
 
@@ -152,7 +147,7 @@ export default function TransactionEditForm({
       ))}
 
       <div className="flex justify-end space-x-4 pt-6">
-        <Button type="button" onClick={handleDelete} variant="outline" disabled={isDeleting}>
+        <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
           {isDeleting ? "⏳ Deleting..." : "Delete Transaction"}
         </Button>
 

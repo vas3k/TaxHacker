@@ -1,12 +1,13 @@
 import { getProjects } from "@/data/projects"
-import { getDashboardStats, getProjectStats, StatsFilters } from "@/data/stats"
+import { getDashboardStats, getProjectStats } from "@/data/stats"
+import { TransactionFilters } from "@/data/transactions"
 import { formatCurrency } from "@/lib/utils"
 import { ArrowDown, ArrowUp, BicepsFlexed } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { FiltersWidget } from "./filters-widget"
 import { ProjectsWidget } from "./projects-widget"
 
-export async function StatsWidget({ filters }: { filters: StatsFilters }) {
+export async function StatsWidget({ filters }: { filters: TransactionFilters }) {
   const projects = await getProjects()
   const stats = await getDashboardStats(filters)
   const statsPerProject = Object.fromEntries(
@@ -45,7 +46,12 @@ export async function StatsWidget({ filters }: { filters: StatsFilters }) {
           </CardHeader>
           <CardContent>
             {Object.entries(stats.totalExpensesPerCurrency).map(([currency, total]) => (
-              <div key={currency} className="flex gap-2 items-center font-bold text-red-500 text-base first:text-2xl">
+              <div
+                key={currency}
+                className={`flex gap-2 items-center font-bold text-base first:text-2xl ${
+                  total >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
                 {formatCurrency(total, currency)}
               </div>
             ))}
@@ -59,7 +65,12 @@ export async function StatsWidget({ filters }: { filters: StatsFilters }) {
           </CardHeader>
           <CardContent>
             {Object.entries(stats.profitPerCurrency).map(([currency, total]) => (
-              <div key={currency} className="flex gap-2 items-center font-bold text-green-500 text-base first:text-2xl">
+              <div
+                key={currency}
+                className={`flex gap-2 items-center font-bold text-base first:text-2xl ${
+                  total >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
                 {formatCurrency(total, currency)}
               </div>
             ))}

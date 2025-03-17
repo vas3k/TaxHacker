@@ -12,6 +12,7 @@ interface CrudProps<T> {
     key: keyof T
     label: string
     type?: "text" | "number" | "checkbox"
+    defaultValue?: string
     editable?: boolean
   }[]
   onDelete: (id: string) => Promise<void>
@@ -134,7 +135,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
                   {column.editable && (
                     <Input
                       type={column.type || "text"}
-                      value={newItem[column.key] || ""}
+                      value={newItem[column.key] || column.defaultValue || ""}
                       onChange={(e) =>
                         setNewItem({
                           ...newItem,
