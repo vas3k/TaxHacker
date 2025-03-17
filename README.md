@@ -35,7 +35,7 @@ A built-in system of powerful filters allows you to then export transactions wit
 
 > \[!IMPORTANT]
 >
-> **Star Us** to receive all release notifications from GitHub without any delay! ⭐️
+> This project is still at a very early stage. **Star Us** to receive new release notifications from GitHub ⭐️
 
 ## ✨ Features
 
@@ -124,12 +124,6 @@ Deploy your own instance of TaxHacker with Vercel in just a few clicks:
 For server deployment, we provide a [Docker image](./Dockerfile) and [Docker Compose](./docker-compose.yml) files that makes setting up TaxHacker simple:
 
 ```bash
-docker run --name taxhacker ghcr.io/vas3k/taxhacker:latest
-```
-
-You can also use docker-compose to start everything together:
-
-```bash
 # Clone the repository
 git clone https://github.com/vas3k/TaxHacker.git
 cd TaxHacker
@@ -141,6 +135,22 @@ docker compose up
 New docker image is automatically built and published on every new release. You can use specific version tags (e.g. `v1.0.0`) or `latest` for the most recent version.
 
 For more advanced setups, you can adapt Docker Compose configuration to your own needs. The default configuration uses the pre-built image from GHCR, but you can still build locally using the provided [Dockerfile](./Dockerfile) if needed.
+
+```yaml
+services:
+  app:
+    image: ghcr.io/vas3k/taxhacker:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - UPLOAD_PATH=/app/uploads
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/db.sqlite
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    restart: unless-stopped
+```
 
 ### Environment Variables
 

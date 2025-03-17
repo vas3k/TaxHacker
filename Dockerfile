@@ -51,7 +51,7 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Create directory for SQLite database and set permissions
-RUN mkdir -p /app/data && chown -R node:node /app/data
+RUN mkdir -p /app/data
 
 EXPOSE 3000
 

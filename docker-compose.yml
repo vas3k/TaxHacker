@@ -16,6 +16,3 @@ services:
       options:
         max-size: "100M"
         max-file: "3"
-
-volumes:
-  app_data:
