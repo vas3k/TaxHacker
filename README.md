@@ -124,15 +124,23 @@ Deploy your own instance of TaxHacker with Vercel in just a few clicks:
 For server deployment, we provide a [Docker image](./Dockerfile) and [Docker Compose](./docker-compose.yml) files that makes setting up TaxHacker simple:
 
 ```bash
+docker run --name taxhacker ghcr.io/vas3k/taxhacker:latest
+```
+
+You can also use docker-compose to start everything together:
+
+```bash
 # Clone the repository
 git clone https://github.com/vas3k/TaxHacker.git
 cd TaxHacker
 
-# Run docker compose 
+# Or use docker-compose (recommended)
 docker compose up
 ```
 
-For more advanced setups, you can adapt Docker Compose configuration to your own needs.
+New docker image is automatically built and published on every new release. You can use specific version tags (e.g. `v1.0.0`) or `latest` for the most recent version.
+
+For more advanced setups, you can adapt Docker Compose configuration to your own needs. The default configuration uses the pre-built image from GHCR, but you can still build locally using the provided [Dockerfile](./Dockerfile) if needed.
 
 ### Environment Variables
 
