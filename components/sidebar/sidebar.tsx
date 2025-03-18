@@ -42,7 +42,7 @@ export function AppSidebar({
 
   return (
     <>
-      <Sidebar collapsible="icon">
+      <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
           <Link href="/" className="flex items-center gap-2 p-2">
             <Avatar className="h-12 w-12 rounded-lg">
