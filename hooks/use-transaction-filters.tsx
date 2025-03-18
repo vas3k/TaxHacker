@@ -3,7 +3,7 @@ import { format } from "date-fns"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
-const filters = ["search", "dateFrom", "dateTo", "ordering", "categoryCode", "projectCode"]
+const filterKeys = ["search", "dateFrom", "dateTo", "ordering", "categoryCode", "projectCode"]
 
 export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   const router = useRouter()
@@ -14,7 +14,7 @@ export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   })
 
   useEffect(() => {
-    const newSearchParams = filtersToSearchParams(filters)
+    const newSearchParams = filtersToSearchParams(filters, searchParams)
     router.push(`?${newSearchParams.toString()}`)
   }, [filters])
 
@@ -26,14 +26,26 @@ export function useTransactionFilters(defaultFilters?: TransactionFilters) {
 }
 
 export function searchParamsToFilters(searchParams: URLSearchParams) {
-  return filters.reduce((acc, filter) => {
+  return filterKeys.reduce((acc, filter) => {
     acc[filter] = searchParams.get(filter) || ""
     return acc
-  }, {} as Record<string, string>)
+  }, {} as Record<string, string>) as TransactionFilters
 }
 
-export function filtersToSearchParams(filters: TransactionFilters): URLSearchParams {
+export function filtersToSearchParams(
+  filters: TransactionFilters,
+  currentSearchParams?: URLSearchParams
+): URLSearchParams {
+  // Copy of all non-filter parameters back to the URL
   const searchParams = new URLSearchParams()
+  if (currentSearchParams) {
+    currentSearchParams.forEach((value, key) => {
+      if (!filterKeys.includes(key)) {
+        searchParams.set(key, value)
+      }
+    })
+  }
+
   if (filters.search) {
     searchParams.set("search", filters.search)
   } else {
