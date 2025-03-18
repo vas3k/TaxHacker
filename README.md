@@ -185,10 +185,10 @@ npm install
 cp .env.example .env
 # Edit .env with your configuration
 
-# Generate Prisma client
-npx prisma generate
+# Initialize the database
+npx prisma migrate dev && npx prisma generate
 
-# Seed the database (optional)
+# Seed the database with default data (optional)
 npm run seed
 
 # Start the development server with Turbopack
