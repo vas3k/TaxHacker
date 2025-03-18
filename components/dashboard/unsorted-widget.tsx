@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { File } from "@prisma/client"
-import { FilePlus, PartyPopper } from "lucide-react"
+import { Cake, FilePlus } from "lucide-react"
 import Link from "next/link"
 
 export default function DashboardUnsortedWidget({ files }: { files: File[] }) {
@@ -33,9 +33,8 @@ export default function DashboardUnsortedWidget({ files }: { files: File[] }) {
             </Link>
           ))}
           {files.length == 0 && (
-            <div className="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground h-full min-h-[100px]">
-              <PartyPopper className="w-5 h-5" />
-              <span>Everything is clear! Congrats!</span>
+            <div className="flex flex-col items-center justify-center gap-2 text-sm h-full min-h-[100px] opacity-30">
+              <Cake className="w-8 h-8" />
             </div>
           )}
         </div>
