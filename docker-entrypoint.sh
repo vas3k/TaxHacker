@@ -5,11 +5,9 @@ set -e
 echo "Running database migrations..."
 npx prisma migrate deploy
 
-# Run database seeding if SEED_DATABASE is set to true
-if [ "$SEED_DATABASE" = "true" ]; then
-    echo "Seeding database..."
-    npm run seed
-fi
+# Initialize database
+echo "Checking and seeding database if needed..."
+npm run seed
 
 # Start the application
 echo "Starting the application..."

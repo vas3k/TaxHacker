@@ -1,5 +1,15 @@
 import { PrismaClient } from "@prisma/client"
-const prisma = new PrismaClient()
+
+const DATABASE_URL = process.env.DATABASE_URL || "file:./db.sqlite"
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: DATABASE_URL,
+    },
+  },
+})
+
+const forceSeed = process.argv.includes("--force")
 
 const settings = [
   {
@@ -410,13 +420,19 @@ const fields = [
   },
 ]
 
+async function isDatabaseEmpty() {
+  const fieldsCount = await prisma.field.count()
+  return fieldsCount === 0
+}
+
 async function main() {
-  // Clean up existing data
-  // await prisma.category.deleteMany({})
-  // await prisma.currency.deleteMany({})
-  // await prisma.field.deleteMany({})
-  // await prisma.setting.deleteMany({})
-  // await prisma.project.deleteMany({})
+  const isEmpty = await isDatabaseEmpty()
+  if (!isEmpty && !forceSeed) {
+    console.log("Database is already seeded. Use 'npm run seed -- --force' to force reseeding.")
+    return
+  }
+
+  console.log("Starting database seeding...")
 
   // Seed projects
   for (const project of projects) {

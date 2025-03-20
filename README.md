@@ -125,10 +125,8 @@ Deploy your own instance of TaxHacker with Vercel in just a few clicks:
 For server deployment, we provide a [Docker image](./Dockerfile) and [Docker Compose](./docker-compose.yml) files that makes setting up TaxHacker simple:
 
 ```bash
-# Download docker-compose.yml file
 curl -O https://raw.githubusercontent.com/vas3k/TaxHacker/main/docker-compose.yml
 
-# Run it
 docker compose up
 ```
 
@@ -191,13 +189,13 @@ npx prisma migrate dev && npx prisma generate
 # Seed the database with default data (optional)
 npm run seed
 
-# Start the development server with Turbopack
+# Start the development server
 npm run dev
 ```
 
 Visit `http://localhost:3000` to see your local instance of TaxHacker.
 
-For a production build:
+For a production build, instead of `npm run dev` use the following commands:
 
 ```bash
 # Build the application

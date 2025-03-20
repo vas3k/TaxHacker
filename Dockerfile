@@ -25,6 +25,11 @@ RUN npm run build
 # Production stage
 FROM node:23-slim
 
+# Default environment variables
+ENV UPLOAD_PATH=/app/uploads
+ENV NODE_ENV=production
+ENV DATABASE_URL=file:/app/data/db.sqlite
+
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
     ghostscript \
@@ -36,7 +41,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Create upload directory and set permissions
-RUN mkdir -p /app/upload && chown -R node:node /app/upload
+RUN mkdir -p /app/upload
 
 # Copy built assets from builder
 COPY --from=builder /app/node_modules ./node_modules
