@@ -1,5 +1,6 @@
 "use client"
 
+import { FormError } from "@/components/forms/error"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Download, Loader2 } from "lucide-react"
@@ -51,7 +52,7 @@ export default function BackupSettingsPage() {
             )}
           </Button>
         </form>
-        {restoreState?.error && <p className="text-red-500">{restoreState.error}</p>}
+        {restoreState?.error && <FormError>{restoreState.error}</FormError>}
       </Card>
     </div>
   )

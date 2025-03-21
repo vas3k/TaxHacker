@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useState } from "react"
+import { FormError } from "../forms/error"
 
 export default function TransactionEditForm({
   transaction,
@@ -164,8 +165,8 @@ export default function TransactionEditForm({
           )}
         </Button>
 
-        {deleteState?.error && <span className="text-red-500">⚠️ {deleteState.error}</span>}
-        {saveState?.error && <span className="text-red-500">⚠️ {saveState.error}</span>}
+        {deleteState?.error && <FormError>⚠️ {deleteState.error}</FormError>}
+        {saveState?.error && <FormError>⚠️ {saveState.error}</FormError>}
       </div>
     </form>
   )

@@ -43,7 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SidebarProvider>
               <MobileMenu settings={settings} unsortedFilesCount={unsortedFilesCount} />
               <AppSidebar settings={settings} unsortedFilesCount={unsortedFilesCount} />
-              <SidebarInset className="w-screen mt-[60px] md:mt-0">{children}</SidebarInset>
+              <SidebarInset className="w-full h-full mt-[60px] md:mt-0 overflow-auto">{children}</SidebarInset>
             </SidebarProvider>
             <Toaster />
           </ScreenDropArea>

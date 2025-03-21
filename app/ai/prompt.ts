@@ -35,15 +35,5 @@ export function buildLLMPrompt(
   prompt = prompt.replace("{categories.code}", categories.map((category) => `${category.code}`).join(", "))
   prompt = prompt.replace("{projects.code}", projects.map((project) => `${project.code}`).join(", "))
 
-  prompt = prompt.replace(
-    "{json_structure}",
-    "{ " +
-      fields
-        .filter((field) => field.llm_prompt)
-        .map((field) => `${field.code}: ${field.type}`)
-        .join(", ") +
-      " }"
-  )
-
   return prompt
 }

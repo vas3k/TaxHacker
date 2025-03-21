@@ -11,6 +11,12 @@ export const getProjects = cache(async () => {
   })
 })
 
+export const getProjectByCode = cache(async (code: string) => {
+  return await prisma.project.findUnique({
+    where: { code },
+  })
+})
+
 export const createProject = async (project: Prisma.ProjectCreateInput) => {
   if (!project.code) {
     project.code = codeFromName(project.name as string)

@@ -6,6 +6,7 @@ export const FILE_ACCEPTED_MIMETYPES = "image/*,.pdf,.doc,.docx,.xls,.xlsx"
 export const FILE_UPLOAD_PATH = path.resolve(process.env.UPLOAD_PATH || "./uploads")
 export const FILE_UNSORTED_UPLOAD_PATH = path.join(FILE_UPLOAD_PATH, "unsorted")
 export const FILE_PREVIEWS_PATH = path.join(FILE_UPLOAD_PATH, "previews")
+export const FILE_IMPORT_CSV_UPLOAD_PATH = path.join(FILE_UPLOAD_PATH, "csv")
 
 export async function getUnsortedFileUploadPath(filename: string) {
   const fileUuid = randomUUID()

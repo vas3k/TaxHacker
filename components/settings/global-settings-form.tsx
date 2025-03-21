@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Category, Currency } from "@prisma/client"
 import { CircleCheckBig } from "lucide-react"
 import { useActionState } from "react"
+import { FormError } from "../forms/error"
 
 export default function GlobalSettingsForm({
   settings,
@@ -53,7 +54,7 @@ export default function GlobalSettingsForm({
         )}
       </div>
 
-      {saveState?.error && <p className="text-red-500">{saveState.error}</p>}
+      {saveState?.error && <FormError>{saveState.error}</FormError>}
     </form>
   )
 }

@@ -1,11 +1,12 @@
 import { Category, Field, File, Project } from "@prisma/client"
 import OpenAI from "openai"
-import { ChatCompletion } from "openai/resources/index.mjs"
 import { buildLLMPrompt } from "./prompt"
+import { fieldsToJsonSchema } from "./schema"
 
-const MAX_PAGES_TO_ANALYZE = 3
+const MAX_PAGES_TO_ANALYZE = 4
 
 type AnalyzeAttachment = {
+  filename: string
   contentType: string
   base64: string
 }
@@ -32,7 +33,11 @@ export const retrieveFileContentForAI = async (file: File, page: number): Promis
   const buffer = await blob.arrayBuffer()
   const base64 = Buffer.from(buffer).toString("base64")
 
-  return { contentType: response.headers.get("Content-Type") || file.mimetype, base64: base64 }
+  return {
+    filename: file.filename,
+    contentType: response.headers.get("Content-Type") || file.mimetype,
+    base64: base64,
+  }
 }
 
 export async function analyzeTransaction(
@@ -49,33 +54,41 @@ export async function analyzeTransaction(
   })
 
   const prompt = buildLLMPrompt(promptTemplate, fields, categories, projects)
+  const schema = fieldsToJsonSchema(fields)
 
   console.log("PROMPT:", prompt)
+  console.log("SCHEMA:", schema)
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
+    const response = await openai.responses.create({
+      model: "gpt-4o-mini-2024-07-18",
+      input: [
         {
           role: "user",
-          content: [
-            { type: "text", text: prompt || "" },
-            ...attachments.slice(0, MAX_PAGES_TO_ANALYZE).map((attachment) => ({
-              type: "image_url" as const,
-              image_url: {
-                url: `data:${attachment.contentType};base64,${attachment.base64}`,
-              },
-            })),
-          ],
+          content: prompt,
+        },
+        {
+          role: "user",
+          content: attachments.map((attachment) => ({
+            type: "input_image",
+            image_url: `data:${attachment.contentType};base64,${attachment.base64}`,
+          })),
         },
       ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "transaction",
+          schema: schema,
+          strict: true,
+        },
+      },
     })
 
-    console.log("ChatGPT response:", response.choices[0].message)
+    console.log("ChatGPT response:", response.output_text)
 
-    const cleanedJson = extractAndParseJSON(response)
-
-    return { success: true, data: cleanedJson }
+    const result = JSON.parse(response.output_text)
+    return { success: true, data: result }
   } catch (error) {
     console.error("AI Analysis error:", error)
     return {
@@ -83,57 +96,4 @@ export async function analyzeTransaction(
       error: error instanceof Error ? error.message : "Failed to analyze invoice",
     }
   }
-}
-
-function extractAndParseJSON(response: ChatCompletion) {
-  try {
-    const content = response.choices?.[0]?.message?.content
-
-    if (!content) {
-      throw new Error("No response content from AI")
-    }
-
-    // Check for JSON in code blocks (handles ```json, ``` json, or just ```)
-    let jsonText = content.trim()
-    const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/
-    const jsonMatch = content.match(codeBlockRegex)
-
-    if (jsonMatch && jsonMatch[1]) {
-      jsonText = jsonMatch[1].trim()
-    }
-
-    // Try to parse the JSON
-    try {
-      return JSON.parse(jsonText)
-    } catch (parseError) {
-      // JSON might have unescaped characters, try to fix them
-      const fixedJsonText = escapeJsonString(jsonText)
-      return JSON.parse(fixedJsonText)
-    }
-  } catch (error) {
-    console.error("Error processing AI response:", error)
-    throw new Error(`Failed to extract valid JSON: ${error instanceof Error ? error.message : "Unknown error"}`)
-  }
-}
-
-function escapeJsonString(jsonStr: string) {
-  // This is a black magic to fix some AI-generated JSONs
-  if (jsonStr.trim().startsWith("{") && jsonStr.trim().endsWith("}")) {
-    return jsonStr.replace(/"([^"]*?)":(\s*)"(.*?)"/g, (match, key, space, value) => {
-      const escapedValue = value
-        .replace(/\\/g, "\\\\") // backslash
-        .replace(/"/g, '\\"') // double quotes
-        .replace(/\n/g, "\\n") // newline
-        .replace(/\r/g, "\\r") // carriage return
-        .replace(/\t/g, "\\t") // tab
-        .replace(/\f/g, "\\f") // form feed
-        .replace(/[\x00-\x1F\x7F-\x9F]/g, (c: string) => {
-          return "\\u" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4)
-        })
-
-      return `"${key}":${space}"${escapedValue}"`
-    })
-  }
-
-  return jsonStr
 }

@@ -32,7 +32,7 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
           </CardHeader>
           <CardContent>
             {Object.entries(stats.totalIncomePerCurrency).map(([currency, total]) => (
-              <div key={currency} className="flex gap-2 items-center font-bold text-base first:text-2xl">
+              <div key={currency} className="flex gap-2 items-center font-bold text-base first:text-2xl text-green-500">
                 {formatCurrency(total, currency)}
               </div>
             ))}
@@ -46,12 +46,7 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
           </CardHeader>
           <CardContent>
             {Object.entries(stats.totalExpensesPerCurrency).map(([currency, total]) => (
-              <div
-                key={currency}
-                className={`flex gap-2 items-center font-bold text-base first:text-2xl ${
-                  total >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
+              <div key={currency} className="flex gap-2 items-center font-bold text-base first:text-2xl text-red-500">
                 {formatCurrency(total, currency)}
               </div>
             ))}

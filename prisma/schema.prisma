@@ -42,10 +42,9 @@ model Project {
 }
 
 model Field {
-  id         String  @id @default(uuid())
-  code       String  @unique
+  code       String  @id
   name       String
-  type       String
+  type       String  @default("string")
   llm_prompt String?
   options    Json?
   isRequired Boolean @default(false) @map("is_required")

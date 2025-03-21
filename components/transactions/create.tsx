@@ -9,9 +9,11 @@ import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Project } from "@prisma/client"
 import { format } from "date-fns"
-import { Loader2 } from "lucide-react"
+import { Import, Loader2 } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useActionState, useEffect, useState } from "react"
+import { FormError } from "../forms/error"
 
 export default function TransactionCreateForm({
   categories,
@@ -110,7 +112,13 @@ export default function TransactionCreateForm({
 
       <FormTextarea title="Note" name="note" defaultValue={formData.note} />
 
-      <div className="flex justify-end space-x-4 pt-6">
+      <div className="flex justify-between space-x-4 pt-6">
+        <Button type="button" variant="outline" className="aspect-square">
+          <Link href="/import/csv">
+            <Import className="h-4 w-4" />
+          </Link>
+        </Button>
+
         <Button type="submit" disabled={isCreating}>
           {isCreating ? (
             <>
@@ -122,7 +130,7 @@ export default function TransactionCreateForm({
           )}
         </Button>
 
-        {createState?.error && <span className="text-red-500">⚠️ {createState.error}</span>}
+        {createState?.error && <FormError>⚠️ {createState.error}</FormError>}
       </div>
     </form>
   )

@@ -17,7 +17,7 @@ export default async function FieldsSettingsPage() {
         items={fieldsWithActions}
         columns={[
           { key: "name", label: "Name", editable: true },
-          { key: "type", label: "Type", editable: true },
+          { key: "type", label: "Type", defaultValue: "string", editable: true },
           { key: "llm_prompt", label: "LLM Prompt", editable: true },
         ]}
         onDelete={async (code) => {

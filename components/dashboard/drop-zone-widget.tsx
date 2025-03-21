@@ -6,6 +6,7 @@ import { FILE_ACCEPTED_MIMETYPES } from "@/lib/files"
 import { Camera, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useState } from "react"
+import { FormError } from "../forms/error"
 
 export default function DashboardDropZoneWidget() {
   const router = useRouter()
@@ -65,7 +66,7 @@ export default function DashboardDropZoneWidget() {
                 upload receipts, invoices and any other documents for me to scan
               </p>
             )}
-            {uploadError && <p className="text-red-500">{uploadError}</p>}
+            {uploadError && <FormError>{uploadError}</FormError>}
           </div>
         </div>
       </label>

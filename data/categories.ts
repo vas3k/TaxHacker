@@ -11,6 +11,12 @@ export const getCategories = cache(async () => {
   })
 })
 
+export const getCategoryByCode = cache(async (code: string) => {
+  return await prisma.category.findUnique({
+    where: { code },
+  })
+})
+
 export const createCategory = async (category: Prisma.CategoryCreateInput) => {
   if (!category.code) {
     category.code = codeFromName(category.name as string)

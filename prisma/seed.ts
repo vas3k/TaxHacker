@@ -51,8 +51,7 @@ const settings = [
   {
     code: "prompt_analyse_new_file",
     name: "Prompt for Analyze Transaction",
-    description:
-      "Allowed variables: {fields}, {categories}, {categories.code}, {projects}, {projects.code}, {json_structure}",
+    description: "Allowed variables: {fields}, {categories}, {categories.code}, {projects}, {projects.code}",
     value: `You are an accountant and invoice analysis assistant. 
 Extract the following information from the given invoice: 
 
@@ -66,11 +65,7 @@ And projects are:
 
 {projects}
 
-If you can't find something leave it blank. Return only valid JSON with these fields:
-
-{json_structure}
-
-Return only one object. Do not include any other text in your response!`,
+If you can't find something leave it blank. Return only one object. Do not include any other text in your response!`,
   },
   {
     code: "is_welcome_message_hidden",
@@ -309,7 +304,7 @@ const fields = [
   {
     code: "name",
     name: "Name",
-    type: "text",
+    type: "string",
     llm_prompt: "human readable name, summarize what is the invoice about",
     isRequired: true,
     isExtra: false,
@@ -317,7 +312,7 @@ const fields = [
   {
     code: "description",
     name: "Description",
-    type: "text",
+    type: "string",
     llm_prompt: "description of the transaction",
     isRequired: false,
     isExtra: false,
@@ -325,7 +320,7 @@ const fields = [
   {
     code: "merchant",
     name: "Merchant",
-    type: "text",
+    type: "string",
     llm_prompt: "merchant name",
     isRequired: false,
     isExtra: false,
@@ -333,7 +328,7 @@ const fields = [
   {
     code: "type",
     name: "Type",
-    type: "text",
+    type: "string",
     llm_prompt: "",
     isRequired: false,
     isExtra: false,
@@ -349,7 +344,7 @@ const fields = [
   {
     code: "currencyCode",
     name: "Currency",
-    type: "text",
+    type: "string",
     llm_prompt: "currency code, ISO 4217 three letter code like USD, EUR, including crypto codes like BTC, ETH, etc",
     isRequired: false,
     isExtra: false,
@@ -365,7 +360,7 @@ const fields = [
   {
     code: "convertedCurrencyCode",
     name: "Converted Currency Code",
-    type: "text",
+    type: "string",
     llm_prompt: "",
     isRequired: false,
     isExtra: false,
@@ -373,7 +368,7 @@ const fields = [
   {
     code: "note",
     name: "Note",
-    type: "text",
+    type: "string",
     llm_prompt: "",
     isRequired: false,
     isExtra: false,
@@ -381,7 +376,7 @@ const fields = [
   {
     code: "categoryCode",
     name: "Category",
-    type: "text",
+    type: "string",
     llm_prompt: "category code, one of: {categories.code}",
     isRequired: false,
     isExtra: false,
@@ -389,7 +384,7 @@ const fields = [
   {
     code: "projectCode",
     name: "Project",
-    type: "select",
+    type: "string",
     llm_prompt: "project code, one of: {projects.code}",
     isRequired: false,
     isExtra: false,
@@ -397,7 +392,7 @@ const fields = [
   {
     code: "issuedAt",
     name: "Issued At",
-    type: "date",
+    type: "string",
     llm_prompt: "issued at date (YYYY-MM-DD format)",
     isRequired: false,
     isExtra: false,
@@ -405,7 +400,7 @@ const fields = [
   {
     code: "text",
     name: "Extracted Text",
-    type: "text",
+    type: "string",
     llm_prompt: "extract all recognised text from the invoice",
     isRequired: false,
     isExtra: false,

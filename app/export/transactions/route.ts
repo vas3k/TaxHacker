@@ -1,4 +1,4 @@
-import { ExportFields, ExportFilters } from "@/data/export"
+import { ExportFields, ExportFilters, exportImportFieldsMapping } from "@/data/export_and_import"
 import { getFields } from "@/data/fields"
 import { getFilesByTransactionId } from "@/data/files"
 import { getTransactions } from "@/data/transactions"
@@ -18,11 +18,10 @@ export async function GET(request: Request) {
   const transactions = await getTransactions(filters)
   const existingFields = await getFields()
 
+  // Generate CSV file with all transactions
   try {
     const fieldKeys = fields.filter((field) => existingFields.some((f) => f.code === field))
-    const writeHeaders = fieldKeys.map((field) => existingFields.find((f) => f.code === field)?.name)
 
-    // Generate CSV file with all transactions
     let csvContent = ""
     const csvStream = format({ headers: fieldKeys, writeBOM: true, writeHeaders: false })
 
@@ -30,15 +29,25 @@ export async function GET(request: Request) {
       csvContent += chunk
     })
 
-    csvStream.write(writeHeaders)
-    transactions.forEach((transaction) => {
-      const row = fieldKeys.reduce((acc, key) => {
-        acc[key] = transaction[key as keyof typeof transaction] ?? ""
-        return acc
-      }, {} as Record<string, any>)
+    // Custom CSV headers
+    const headers = fieldKeys.map((field) => existingFields.find((f) => f.code === field)?.name ?? "UNKNOWN")
+    csvStream.write(headers)
+
+    // CSV rows
+    for (const transaction of transactions) {
+      const row: Record<string, any> = {}
+      for (const key of fieldKeys) {
+        const value = transaction[key as keyof typeof transaction] ?? ""
+        const exportFieldSettings = exportImportFieldsMapping[key]
+        if (exportFieldSettings && exportFieldSettings.export) {
+          row[key] = await exportFieldSettings.export(value)
+        } else {
+          row[key] = value
+        }
+      }
 
       csvStream.write(row)
-    })
+    }
     csvStream.end()
 
     // Wait for CSV generation to complete

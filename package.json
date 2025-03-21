@@ -8,10 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "postinstall": "prisma generate && prisma migrate deploy && npm run seed"
   },
   "dependencies": {
     "@fast-csv/format": "^5.0.2",
+    "@fast-csv/parse": "^5.0.2",
     "@hookform/resolvers": "^4.1.2",
     "@prisma/client": "^6.4.1",
     "@radix-ui/react-avatar": "^1.1.3",

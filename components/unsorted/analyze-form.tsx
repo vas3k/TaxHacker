@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@prisma/client"
 import { Brain, Loader2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
+import { FormError } from "../forms/error"
 
 export default function AnalyzeForm({
   file,
@@ -133,7 +134,7 @@ export default function AnalyzeForm({
         )}
       </Button>
 
-      {analyzeError && <div className="mb-6 p-4 text-red-500 bg-red-50 rounded-md">⚠️ {analyzeError}</div>}
+      {analyzeError && <FormError>⚠️ {analyzeError}</FormError>}
 
       <form className="space-y-4" action={saveAsTransaction}>
         <input type="hidden" name="fileId" value={file.id} />
@@ -288,8 +289,8 @@ export default function AnalyzeForm({
             )}
           </Button>
 
-          {deleteState?.error && <span className="text-red-500">⚠️ {deleteState.error}</span>}
-          {saveError && <span className="text-red-500">⚠️ {saveError}</span>}
+          {deleteState?.error && <FormError>⚠️ {deleteState.error}</FormError>}
+          {saveError && <FormError>⚠️ {saveError}</FormError>}
         </div>
       </form>
     </>
