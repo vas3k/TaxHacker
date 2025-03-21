@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "7331:7331"
     environment:
       - UPLOAD_PATH=/app/uploads
       - NODE_ENV=production

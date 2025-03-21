@@ -1,6 +1,7 @@
 FROM node:23-slim AS base
 
 # Default environment variables
+ENV PORT=7331
 ENV UPLOAD_PATH=/app/uploads
 ENV NODE_ENV=production
 ENV DATABASE_URL=file:/app/data/db.sqlite
@@ -57,7 +58,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Create directory for SQLite database and set permissions
 RUN mkdir -p /app/data
 
-EXPOSE 3000
+EXPOSE 7331
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "start"]

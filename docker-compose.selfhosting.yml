@@ -18,7 +18,7 @@ services:
       - "traefik.http.routers.taxhacker.entrypoints=https"
       - "traefik.http.routers.taxhacker.tls.certresolver=cloudflare"
       - "traefik.http.routers.taxhacker.rule=Host(`tax.vas3k.cloud`)"
-      - "traefik.http.services.taxhacker.loadBalancer.server.port=3000"
+      - "traefik.http.services.taxhacker.loadBalancer.server.port=7331"
       - "traefik.docker.network=traefik"
     logging:
       driver: "local"
@@ -45,7 +45,7 @@ services:
       - "traefik.http.routers.snektax.entrypoints=https"
       - "traefik.http.routers.snektax.tls.certresolver=cloudflare"
       - "traefik.http.routers.snektax.rule=Host(`snektax.vas3k.cloud`)"
-      - "traefik.http.services.snektax.loadBalancer.server.port=3000"
+      - "traefik.http.services.snektax.loadBalancer.server.port=7331"
       - "traefik.docker.network=traefik"
     logging:
       driver: "local"
@@ -56,4 +56,3 @@ services:
 networks:
   traefik:
     external: true
-

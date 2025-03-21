@@ -105,24 +105,7 @@ Once all documents have been uploaded and analyzed, you can view, filter and exp
 
 ## 🛳 Deploying or Self-hosting
 
-TaxHacker can be self-hosted on your own infrastructure for complete control over your data and application environment. If you don't have your own server, you can use Vercel to quickly deploy the app just for yourself.
-
-### `A` Deploying with Vercel
-
-Deploy your own instance of TaxHacker with Vercel in just a few clicks:
-
-1. Prepare your [OpenAI API Key](https://platform.openai.com/settings/organization/api-keys) for the AI features
-2. Click the deploy button below
-3. Configure your environment variables in the Vercel dashboard
-4. (Optional) Connect your custom domain
-
-<br/>
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvas3k%2FTaxHacker&project-name=TaxHacker&repository-name=TaxHacker)
-
-### `B` Deploying with Docker
-
-For server deployment, we provide a [Docker image](./Dockerfile) and [Docker Compose](./docker-compose.yml) files that makes setting up TaxHacker simple:
+TaxHacker can be self-hosted on your own infrastructure for complete control over your data and application environment. We provide a [Docker image](./Dockerfile) and [Docker Compose](./docker-compose.yml) files that makes setting up TaxHacker simple:
 
 ```bash
 curl -O https://raw.githubusercontent.com/vas3k/TaxHacker/main/docker-compose.yml
@@ -139,7 +122,7 @@ services:
   app:
     image: ghcr.io/vas3k/taxhacker:latest
     ports:
-      - "3000:3000"
+      - "7331:7331"
     environment:
       - UPLOAD_PATH=/app/uploads
       - NODE_ENV=production
@@ -193,7 +176,7 @@ npm run seed
 npm run dev
 ```
 
-Visit `http://localhost:3000` to see your local instance of TaxHacker.
+Visit `http://localhost:7331` to see your local instance of TaxHacker.
 
 For a production build, instead of `npm run dev` use the following commands:
 

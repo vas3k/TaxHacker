@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 7331 --turbopack",
     "build": "prisma generate && next build",
     "start": "prisma migrate deploy && npm run seed && next start",
     "lint": "next lint",
