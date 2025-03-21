@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "prisma migrate deploy && next start",
     "lint": "next lint",
-    "seed": "ts-node prisma/seed.ts",
-    "postinstall": "prisma migrate deploy && npm run seed"
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@fast-csv/format": "^5.0.2",
