@@ -71,6 +71,7 @@ export async function analyzeTransaction(
           role: "user",
           content: attachments.map((attachment) => ({
             type: "input_image",
+            detail: "auto",
             image_url: `data:${attachment.contentType};base64,${attachment.base64}`,
           })),
         },
