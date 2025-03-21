@@ -1,5 +1,12 @@
+FROM node:23-slim AS base
+
+# Default environment variables
+ENV UPLOAD_PATH=/app/uploads
+ENV NODE_ENV=production
+ENV DATABASE_URL=file:/app/data/db.sqlite
+
 # Build stage
-FROM node:23-slim AS builder
+FROM base AS builder
 
 # Install dependencies required for Prisma
 RUN apt-get update && apt-get install -y openssl
@@ -20,12 +27,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:23-slim
-
-# Default environment variables
-ENV UPLOAD_PATH=/app/uploads
-ENV NODE_ENV=production
-ENV DATABASE_URL=file:/app/data/db.sqlite
+FROM base
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
