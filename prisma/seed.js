@@ -423,7 +423,7 @@ async function isDatabaseEmpty() {
 async function main() {
   const isEmpty = await isDatabaseEmpty()
   if (!isEmpty && !forceSeed) {
-    console.log("Database is already seeded. Use 'npm run seed -- --force' to force reseeding.")
+    console.log("Database is already seeded. Use 'npm run seed:force' to force reseeding (can override existing data).")
     return
   }
 

@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
-    "start": "prisma migrate deploy && next start",
+    "start": "prisma migrate deploy && npm run seed && next start",
     "lint": "next lint",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "node prisma/seed.js",
+    "seed:force": "node prisma/seed.js --force"
   },
   "dependencies": {
     "@fast-csv/format": "^5.0.2",
@@ -36,6 +37,7 @@
     "next-themes": "^0.4.4",
     "openai": "^4.85.4",
     "pdf2pic": "^3.1.4",
+    "prisma": "^6.5.0",
     "react": "^19.0.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.0.0",
@@ -45,8 +47,7 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.24.2",
-    "prisma": "^6.5.0"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -57,7 +58,6 @@
     "eslint-config-next": "15.1.7",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5"
   },
   "overrides": {
