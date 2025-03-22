@@ -3,7 +3,7 @@
 import { FormError } from "@/components/forms/error"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Download, Loader2 } from "lucide-react"
+import { Download } from "lucide-react"
 import Link from "next/link"
 import { useActionState } from "react"
 import { restoreBackupAction } from "./actions"
@@ -16,29 +16,25 @@ export default function BackupSettingsPage() {
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold">Download backup</h1>
         <div className="flex flex-row gap-4">
-          <Link href="/settings/backups/database">
+          <Link href="/settings/backups/data">
             <Button>
-              <Download /> Download database.sqlite
-            </Button>
-          </Link>
-          <Link href="/settings/backups/files">
-            <Button>
-              <Download /> Download files archive
+              <Download /> Download data directory
             </Button>
           </Link>
         </div>
-        <div className="text-sm text-muted-foreground">
-          You can use any SQLite client to view the database.sqlite file contents
+        <div className="text-sm text-muted-foreground max-w-xl">
+          The archive consists of all uploaded files and the SQLite database. You can view the contents of the database
+          using any SQLite viewer.
         </div>
       </div>
 
-      <Card className="flex flex-col gap-4 mt-24 p-5 bg-red-100 max-w-xl">
-        <h2 className="text-xl font-semibold">Restore database from backup</h2>
-        <div className="text-sm text-muted-foreground">
-          Warning: This will overwrite your current database and destroy all the data! Don't forget to download backup
-          first.
+      <Card className="flex flex-col gap-4 mt-16 p-5 bg-red-100 max-w-xl">
+        <h2 className="text-xl font-semibold">How to restore from a backup</h2>
+        <div className="text-md">
+          This feature doesn't work automatically yet. Use your docker deployment with backup archive to manually put
+          database.sqlite and uploaded files into the paths specified in DATABASE_URL and UPLOAD_PATH
         </div>
-        <form action={restoreBackup}>
+        {/* <form action={restoreBackup}>
           <label>
             <input type="file" name="file" />
           </label>
@@ -51,7 +47,7 @@ export default function BackupSettingsPage() {
               "Restore"
             )}
           </Button>
-        </form>
+        </form> */}
         {restoreState?.error && <FormError>{restoreState.error}</FormError>}
       </Card>
     </div>

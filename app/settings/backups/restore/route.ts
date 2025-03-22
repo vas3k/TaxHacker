@@ -1,5 +1,3 @@
-import { DATABASE_FILE } from "@/lib/db"
-import fs from "fs"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -14,7 +12,8 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer()
     const fileData = Buffer.from(fileBuffer)
 
-    fs.writeFileSync(DATABASE_FILE, fileData)
+    // TODO: Implement restore
+    // fs.writeFileSync(DATABASE_FILE, fileData)
 
     return new NextResponse("File restored", { status: 200 })
   } catch (error) {
