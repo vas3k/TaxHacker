@@ -20,7 +20,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Tra
         <DashboardUnsortedWidget files={unsortedFiles} />
       </div>
 
-      {!settings.is_welcome_message_hidden && <WelcomeWidget />}
+      {settings.is_welcome_message_hidden !== "true" && <WelcomeWidget />}
 
       <Separator />
 
