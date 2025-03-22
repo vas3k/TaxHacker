@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Field } from "@prisma/client"
-import { Upload } from "lucide-react"
+import { Loader2, Play, Upload } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useState } from "react"
 import { parseCSVAction, saveTransactionsAction } from "../../app/import/csv/actions"
@@ -12,8 +12,8 @@ const MAX_PREVIEW_ROWS = 100
 
 export function ImportCSVTable({ fields }: { fields: Field[] }) {
   const router = useRouter()
-  const [parseState, parseAction] = useActionState(parseCSVAction, null)
-  const [saveState, saveAction] = useActionState(saveTransactionsAction, null)
+  const [parseState, parseAction, isParsing] = useActionState(parseCSVAction, null)
+  const [saveState, saveAction, isSaving] = useActionState(saveTransactionsAction, null)
 
   const [csvSettings, setCSVSettings] = useState({
     skipHeader: true,
@@ -100,7 +100,7 @@ export function ImportCSVTable({ fields }: { fields: Field[] }) {
             <div>
               <input type="file" accept=".csv" className="hidden" id="csv-file" onChange={handleFileChange} />
               <Button type="button" onClick={() => document.getElementById("csv-file")?.click()}>
-                <Upload className="mr-2" /> Import from CSV
+                {isParsing ? "Parsing..." : <Upload className="mr-2" />} Import from CSV
               </Button>
             </div>
           </div>
@@ -115,11 +115,21 @@ export function ImportCSVTable({ fields }: { fields: Field[] }) {
               <span className="text-3xl font-bold tracking-tight">Import {csvData.length} items from CSV</span>
             </h2>
             <div className="flex gap-2">
-              <Button onClick={handleSave} disabled={saveState?.success}>
-                Import Transactions
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="animate-spin" /> Importing...
+                  </>
+                ) : (
+                  <>
+                    <Play /> Import {csvData.length} transactions
+                  </>
+                )}
               </Button>
             </div>
           </header>
+
+          {saveState?.error && <FormError>{saveState.error}</FormError>}
 
           <div className="flex items-center gap-4 mb-4">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -180,8 +190,6 @@ export function ImportCSVTable({ fields }: { fields: Field[] }) {
           {csvData.length > MAX_PREVIEW_ROWS && (
             <p className="text-muted-foreground mt-4">and {csvData.length - MAX_PREVIEW_ROWS} more entries...</p>
           )}
-
-          {saveState?.error && <FormError>{saveState.error}</FormError>}
         </div>
       )}
     </>

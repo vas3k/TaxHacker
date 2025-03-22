@@ -4,11 +4,10 @@ services:
     ports:
       - "7331:7331"
     environment:
-      - UPLOAD_PATH=/app/uploads
       - NODE_ENV=production
+      - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=file:/app/data/db.sqlite
     volumes:
-      - ./uploads:/app/uploads
       - ./data:/app/data
     restart: unless-stopped
     logging:

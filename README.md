@@ -21,11 +21,11 @@ I'm a small self-hosted accountant app that can help you deal with invoices, rec
 
 ## 👋🏻 Getting Started
 
-TaxHacker is a self-hosted accounting app for freelancers and small businesses who want to save time and automate tracking expences and income with power of GenAI. It can recognise uploaded photos or PDF files and automatically extract important transaction data: name, total amount, date, category, VAT amount, etc, and save it in a table in a structured way.
+TaxHacker is a self-hosted accounting app for freelancers and small businesses who want to save time and automate expences and income tracking with power of GenAI. It can recognise uploaded photos, receipts or PDFs and extract important data (e.g. name, total amount, date, merchant, VAT) and save it as structured transactions to a table. You can also create your own custom fields to extract with your LLM prompts.
 
-Automatic currency conversion on a day of transaction is also supported (even for crypto). TaxHacker can save you time filling endless Excel spreadsheets with expences and income.
+It supports automatic currency conversion on a day of transaction. Even for crypto!
 
-A built-in system of powerful filters allows you to then export transactions with their files in the specified period of time for tax filing or other reporting.
+Built-in system of filters, support for multiple projects, import-export of transactions for a certain time (along with attached files) and custom categories, allows you to simplify reporting and tax filing.
 
 ![Dashboard](docs/screenshots/title.png)
 
@@ -45,9 +45,9 @@ A built-in system of powerful filters allows you to then export transactions wit
 
 Take a photo on upload or a PDF and TaxHacker will automatically recognise, categorise and store transaction information.
 
-- Upload multiple documents and store in “unsorted” until you get the time to sort them out with AI
+- Upload multiple documents and store in “unsorted” until you get the time to sort them out by hand or with an AI
 - Use LLM to extract key information like date, amount, and vendor
-- Categorize transactions based on content
+- Automatically categorize transactions based on its content
 - Store everything in a structured format for easy filtering and retrieval
 - Organize your documents by a tax season
 
@@ -115,7 +115,9 @@ docker compose up
 
 New docker image is automatically built and published on every new release. You can use specific version tags (e.g. `v1.0.0`) or `latest` for the most recent version.
 
-For more advanced setups, you can adapt Docker Compose configuration to your own needs. The default configuration uses the pre-built image from GHCR, but you can still build locally using the provided [Dockerfile](./Dockerfile) if needed.
+For more advanced setups, you can adapt Docker Compose configuration to your own needs. The default configuration uses the pre-built image from GHCR, but you can still build locally using the provided [Dockerfile](./Dockerfile) if needed. 
+
+For example:
 
 ```yaml
 services:
@@ -124,11 +126,10 @@ services:
     ports:
       - "7331:7331"
     environment:
-      - UPLOAD_PATH=/app/uploads
       - NODE_ENV=production
+      - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=file:/app/data/db.sqlite
     volumes:
-      - ./uploads:/app/uploads
       - ./data:/app/data
     restart: unless-stopped
 ```
@@ -148,7 +149,7 @@ Configure TaxHacker to suit your needs with these environment variables:
 We use:
 
 - Next.js version 15+ or later
-- [Prisma](https://www.prisma.io/) for database ORM and migrations
+- [Prisma](https://www.prisma.io/) for database models and migrations
 - SQLite as a database
 - Ghostscript and graphicsmagick libs for PDF files (can be installed on macOS via `brew install gs graphicsmagick`)
 
@@ -167,7 +168,7 @@ cp .env.example .env
 # Edit .env with your configuration
 
 # Initialize the database
-npx prisma migrate dev && npx prisma generate
+npx prisma generate && npx prisma migrate dev
 
 # Seed the database with default data (optional)
 npm run seed

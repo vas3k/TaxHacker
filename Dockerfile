@@ -2,7 +2,7 @@ FROM node:23-slim AS base
 
 # Default environment variables
 ENV PORT=7331
-ENV UPLOAD_PATH=/app/uploads
+ENV UPLOAD_PATH=/app/data/uploads
 ENV NODE_ENV=production
 ENV DATABASE_URL=file:/app/data/db.sqlite
 
