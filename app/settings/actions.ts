@@ -1,12 +1,12 @@
 "use server"
 
-import { createCategory, deleteCategory, updateCategory } from "@/data/categories"
-import { createCurrency, deleteCurrency, updateCurrency } from "@/data/currencies"
-import { createField, deleteField, updateField } from "@/data/fields"
-import { createProject, deleteProject, updateProject } from "@/data/projects"
-import { updateSettings } from "@/data/settings"
 import { settingsFormSchema } from "@/forms/settings"
 import { codeFromName } from "@/lib/utils"
+import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
+import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
+import { createField, deleteField, updateField } from "@/models/fields"
+import { createProject, deleteProject, updateProject } from "@/models/projects"
+import { updateSettings } from "@/models/settings"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 

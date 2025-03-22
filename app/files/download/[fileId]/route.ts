@@ -1,4 +1,4 @@
-import { getFileById } from "@/data/files"
+import { getFileById } from "@/models/files"
 import fs from "fs/promises"
 import { NextResponse } from "next/server"
 
@@ -16,12 +16,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     if (!file) {
       return new NextResponse("File not found", { status: 404 })
     }
-
     // Check if file exists
     try {
       await fs.access(file.path)
     } catch {
-      return new NextResponse("File not found on disk", { status: 404 })
+      return new NextResponse(`File not found on disk: ${file.path}`, { status: 404 })
     }
 
     // Read file

@@ -1,8 +1,8 @@
 "use client"
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useSidebar } from "@/components/ui/sidebar"
 import Link from "next/link"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { useSidebar } from "../ui/sidebar"
 
 export default function MobileMenu({
   settings,

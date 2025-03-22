@@ -1,6 +1,6 @@
 import LLMSettingsForm from "@/components/settings/llm-settings-form"
-import { getFields } from "@/data/fields"
-import { getSettings } from "@/data/settings"
+import { getFields } from "@/models/fields"
+import { getSettings } from "@/models/settings"
 
 export default async function LlmSettingsPage() {
   const settings = await getSettings()

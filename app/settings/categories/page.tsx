@@ -1,7 +1,7 @@
 import { addCategoryAction, deleteCategoryAction, editCategoryAction } from "@/app/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
-import { getCategories } from "@/data/categories"
 import { randomHexColor } from "@/lib/utils"
+import { getCategories } from "@/models/categories"
 
 export default async function CategoriesSettingsPage() {
   const categories = await getCategories()

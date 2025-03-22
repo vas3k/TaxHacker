@@ -1,4 +1,4 @@
-import { TransactionFilters } from "@/data/transactions"
+import { TransactionFilters } from "@/models/transactions"
 import { format } from "date-fns"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"

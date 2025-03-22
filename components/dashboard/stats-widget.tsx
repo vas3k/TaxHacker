@@ -1,11 +1,11 @@
-import { getProjects } from "@/data/projects"
-import { getDashboardStats, getProjectStats } from "@/data/stats"
-import { TransactionFilters } from "@/data/transactions"
+import { FiltersWidget } from "@/components/dashboard/filters-widget"
+import { ProjectsWidget } from "@/components/dashboard/projects-widget"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
+import { getProjects } from "@/models/projects"
+import { getDashboardStats, getProjectStats } from "@/models/stats"
+import { TransactionFilters } from "@/models/transactions"
 import { ArrowDown, ArrowUp, BicepsFlexed } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { FiltersWidget } from "./filters-widget"
-import { ProjectsWidget } from "./projects-widget"
 
 export async function StatsWidget({ filters }: { filters: TransactionFilters }) {
   const projects = await getProjects()

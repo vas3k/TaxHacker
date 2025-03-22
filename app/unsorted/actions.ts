@@ -1,9 +1,9 @@
 "use server"
 
-import { deleteFile, getFileById, updateFile } from "@/data/files"
-import { createTransaction, updateTransactionFiles } from "@/data/transactions"
 import { transactionFormSchema } from "@/forms/transactions"
 import { getTransactionFileUploadPath } from "@/lib/files"
+import { deleteFile, getFileById, updateFile } from "@/models/files"
+import { createTransaction, updateTransactionFiles } from "@/models/transactions"
 import { mkdir, rename } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"

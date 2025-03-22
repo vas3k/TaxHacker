@@ -1,6 +1,8 @@
 "use server"
 
-import { createFile, deleteFile } from "@/data/files"
+import { transactionFormSchema } from "@/forms/transactions"
+import { FILE_UPLOAD_PATH, getTransactionFileUploadPath } from "@/lib/files"
+import { createFile, deleteFile } from "@/models/files"
 import {
   bulkDeleteTransactions,
   createTransaction,
@@ -8,9 +10,7 @@ import {
   getTransactionById,
   updateTransaction,
   updateTransactionFiles,
-} from "@/data/transactions"
-import { transactionFormSchema } from "@/forms/transactions"
-import { FILE_UPLOAD_PATH, getTransactionFileUploadPath } from "@/lib/files"
+} from "@/models/transactions"
 import { existsSync } from "fs"
 import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"

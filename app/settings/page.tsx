@@ -1,7 +1,7 @@
 import GlobalSettingsForm from "@/components/settings/global-settings-form"
-import { getCategories } from "@/data/categories"
-import { getCurrencies } from "@/data/currencies"
-import { getSettings } from "@/data/settings"
+import { getCategories } from "@/models/categories"
+import { getCurrencies } from "@/models/currencies"
+import { getSettings } from "@/models/settings"
 
 export default async function SettingsPage() {
   const settings = await getSettings()

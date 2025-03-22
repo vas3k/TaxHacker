@@ -1,6 +1,7 @@
 "use client"
 
 import { deleteTransactionAction, saveTransactionAction } from "@/app/transactions/actions"
+import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
@@ -12,7 +13,6 @@ import { format } from "date-fns"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useState } from "react"
-import { FormError } from "../forms/error"
 
 export default function TransactionEditForm({
   transaction,

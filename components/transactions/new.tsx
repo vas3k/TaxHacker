@@ -6,10 +6,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { getCategories } from "@/data/categories"
-import { getCurrencies } from "@/data/currencies"
-import { getProjects } from "@/data/projects"
-import { getSettings } from "@/data/settings"
+import { getCategories } from "@/models/categories"
+import { getCurrencies } from "@/models/currencies"
+import { getProjects } from "@/models/projects"
+import { getSettings } from "@/models/settings"
 import TransactionCreateForm from "./create"
 
 export async function NewTransactionDialog({ children }: { children: React.ReactNode }) {

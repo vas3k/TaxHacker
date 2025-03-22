@@ -1,9 +1,9 @@
 "use client"
 
+import { SidebarMenuItem } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 import { ComponentProps } from "react"
-import { SidebarMenuItem } from "../ui/sidebar"
 
 export function SidebarMenuItemWithHighlight({
   href,

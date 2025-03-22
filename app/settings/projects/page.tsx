@@ -1,7 +1,7 @@
 import { addProjectAction, deleteProjectAction, editProjectAction } from "@/app/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
-import { getProjects } from "@/data/projects"
 import { randomHexColor } from "@/lib/utils"
+import { getProjects } from "@/models/projects"
 
 export default async function ProjectsSettingsPage() {
   const projects = await getProjects()

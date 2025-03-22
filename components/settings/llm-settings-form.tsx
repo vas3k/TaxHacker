@@ -2,14 +2,14 @@
 
 import { fieldsToJsonSchema } from "@/app/ai/schema"
 import { saveSettingsAction } from "@/app/settings/actions"
+import { FormError } from "@/components/forms/error"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
+import { Card, CardTitle } from "@/components/ui/card"
 import { Field } from "@prisma/client"
 import { CircleCheckBig, Edit } from "lucide-react"
 import Link from "next/link"
 import { useActionState } from "react"
-import { FormError } from "../forms/error"
-import { Card, CardTitle } from "../ui/card"
 
 export default function LLMSettingsForm({ settings, fields }: { settings: Record<string, string>; fields: Field[] }) {
   const [saveState, saveAction, pending] = useActionState(saveSettingsAction, null)

@@ -1,6 +1,6 @@
 import { addCurrencyAction, deleteCurrencyAction, editCurrencyAction } from "@/app/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
-import { getCurrencies } from "@/data/currencies"
+import { getCurrencies } from "@/models/currencies"
 
 export default async function CurrenciesSettingsPage() {
   const currencies = await getCurrencies()

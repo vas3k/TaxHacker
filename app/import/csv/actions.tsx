@@ -1,7 +1,7 @@
 "use server"
 
-import { exportImportFieldsMapping } from "@/data/export_and_import"
-import { createTransaction } from "@/data/transactions"
+import { exportImportFieldsMapping } from "@/models/export_and_import"
+import { createTransaction } from "@/models/transactions"
 import { parse } from "@fast-csv/parse"
 import { revalidatePath } from "next/cache"
 

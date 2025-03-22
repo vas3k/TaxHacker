@@ -3,9 +3,9 @@ import { StatsWidget } from "@/components/dashboard/stats-widget"
 import DashboardUnsortedWidget from "@/components/dashboard/unsorted-widget"
 import { WelcomeWidget } from "@/components/dashboard/welcome-widget"
 import { Separator } from "@/components/ui/separator"
-import { getUnsortedFiles } from "@/data/files"
-import { getSettings } from "@/data/settings"
-import { TransactionFilters } from "@/data/transactions"
+import { getUnsortedFiles } from "@/models/files"
+import { getSettings } from "@/models/settings"
+import { TransactionFilters } from "@/models/transactions"
 
 export default async function Home({ searchParams }: { searchParams: Promise<TransactionFilters> }) {
   const filters = await searchParams

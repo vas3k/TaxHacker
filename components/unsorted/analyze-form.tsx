@@ -4,6 +4,7 @@ import { analyzeTransaction, retrieveAllAttachmentsForAI } from "@/app/ai/analyz
 import { useNotification } from "@/app/context"
 import { deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/unsorted/actions"
 import { FormConvertCurrency } from "@/components/forms/convert-currency"
+import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
@@ -13,7 +14,6 @@ import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@prisma/client"
 import { Brain, Loader2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
-import { FormError } from "../forms/error"
 
 export default function AnalyzeForm({
   file,

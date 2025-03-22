@@ -1,4 +1,4 @@
-import { getTransactionById } from "@/data/transactions"
+import { getTransactionById } from "@/models/transactions"
 import { notFound } from "next/navigation"
 
 export default async function TransactionLayout({

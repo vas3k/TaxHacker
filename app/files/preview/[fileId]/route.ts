@@ -1,6 +1,6 @@
-import { getFileById } from "@/data/files"
 import { resizeImage } from "@/lib/images"
 import { pdfToImages } from "@/lib/pdf"
+import { getFileById } from "@/models/files"
 import fs from "fs/promises"
 import { NextResponse } from "next/server"
 import path from "path"
@@ -27,7 +27,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     try {
       await fs.access(file.path)
     } catch {
-      return new NextResponse("File not found on disk", { status: 404 })
+      return new NextResponse(`File not found on disk: ${file.path}`, { status: 404 })
     }
 
     let previewPath = file.path

@@ -2,11 +2,11 @@
 
 import { useNotification } from "@/app/context"
 import { uploadFilesAction } from "@/app/files/actions"
+import { FormError } from "@/components/forms/error"
 import { FILE_ACCEPTED_MIMETYPES } from "@/lib/files"
 import { Camera, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useState } from "react"
-import { FormError } from "../forms/error"
 
 export default function DashboardDropZoneWidget() {
   const router = useRouter()

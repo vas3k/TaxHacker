@@ -63,11 +63,17 @@ export const updateFile = async (id: string, data: any) => {
 
 export const deleteFile = async (id: string) => {
   const file = await getFileById(id)
-  if (file) {
-    await unlink(path.resolve(file.path))
-
-    return await prisma.file.delete({
-      where: { id },
-    })
+  if (!file) {
+    return
   }
+
+  try {
+    await unlink(path.resolve(file.path))
+  } catch (error) {
+    console.error("Error deleting file:", error)
+  }
+
+  return await prisma.file.delete({
+    where: { id },
+  })
 }

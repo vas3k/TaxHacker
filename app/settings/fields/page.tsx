@@ -1,6 +1,6 @@
 import { addFieldAction, deleteFieldAction, editFieldAction } from "@/app/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
-import { getFields } from "@/data/fields"
+import { getFields } from "@/models/fields"
 
 export default async function FieldsSettingsPage() {
   const fields = await getFields()
