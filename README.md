@@ -41,7 +41,9 @@ Built-in system of filters, support for multiple projects, import-export of tran
 
 ### `1` Upload photos or documents to analyze with LLM
 
-![Analyze with AI](docs/screenshots/analyze.png)
+https://github.com/user-attachments/assets/3326d0e3-0bf6-4c39-9e00-4bf0983d9b7a
+
+> 🎥 [Watch the video](https://github.com/user-attachments/assets/3326d0e3-0bf6-4c39-9e00-4bf0983d9b7a)
 
 Take a photo on upload or a PDF and TaxHacker will automatically recognise, categorise and store transaction information.
 
