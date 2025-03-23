@@ -332,10 +332,10 @@ const fields = [
     isExtra: false,
   },
   {
-    code: "categoryCode",
-    name: "Category",
+    code: "issuedAt",
+    name: "Issued At",
     type: "string",
-    llm_prompt: "category code, one of: {categories.code}",
+    llm_prompt: "issued at date (YYYY-MM-DD format)",
     isVisibleInList: true,
     isVisibleInAnalysis: true,
     isRequired: false,
@@ -352,10 +352,20 @@ const fields = [
     isExtra: false,
   },
   {
-    code: "issuedAt",
-    name: "Issued At",
+    code: "categoryCode",
+    name: "Category",
     type: "string",
-    llm_prompt: "issued at date (YYYY-MM-DD format)",
+    llm_prompt: "category code, one of: {categories.code}",
+    isVisibleInList: true,
+    isVisibleInAnalysis: true,
+    isRequired: false,
+    isExtra: false,
+  },
+  {
+    code: "files",
+    name: "Files",
+    type: "string",
+    llm_prompt: "",
     isVisibleInList: true,
     isVisibleInAnalysis: true,
     isRequired: false,
@@ -483,6 +493,13 @@ async function main() {
   }
 
   // Seed fields
+  await prisma.field.deleteMany({
+    where: {
+      code: {
+        in: fields.map((field) => field.code),
+      },
+    },
+  })
   for (const field of fields) {
     await prisma.field.upsert({
       where: { code: field.code },

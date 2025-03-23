@@ -42,15 +42,16 @@ model Project {
 }
 
 model Field {
-  code                String  @id
+  code                String   @id
   name                String
-  type                String  @default("string")
+  type                String   @default("string")
   llm_prompt          String?
   options             Json?
-  isVisibleInList     Boolean @default(false) @map("is_visible_in_list")
-  isVisibleInAnalysis Boolean @default(false) @map("is_visible_in_analysis")
-  isRequired          Boolean @default(false) @map("is_required")
-  isExtra             Boolean @default(true) @map("is_extra")
+  createdAt           DateTime @default(now()) @map("created_at")
+  isVisibleInList     Boolean  @default(false) @map("is_visible_in_list")
+  isVisibleInAnalysis Boolean  @default(false) @map("is_visible_in_analysis")
+  isRequired          Boolean  @default(false) @map("is_required")
+  isExtra             Boolean  @default(true) @map("is_extra")
 
   @@map("fields")
 }
