@@ -4,7 +4,11 @@ import { Prisma } from "@prisma/client"
 import { cache } from "react"
 
 export const getFields = cache(async () => {
-  return await prisma.field.findMany()
+  return await prisma.field.findMany({
+    orderBy: {
+      createdAt: "asc",
+    },
+  })
 })
 
 export const createField = async (field: Prisma.FieldCreateInput) => {
