@@ -2,6 +2,7 @@
 
 import { transactionFormSchema } from "@/forms/transactions"
 import { FILE_UPLOAD_PATH, getTransactionFileUploadPath } from "@/lib/files"
+import { updateField } from "@/models/fields"
 import { createFile, deleteFile } from "@/models/files"
 import {
   bulkDeleteTransactions,
@@ -158,5 +159,17 @@ export async function bulkDeleteTransactionsAction(transactionIds: string[]) {
   } catch (error) {
     console.error("Failed to delete transactions:", error)
     return { success: false, error: "Failed to delete transactions" }
+  }
+}
+
+export async function updateFieldVisibilityAction(fieldCode: string, isVisible: boolean) {
+  try {
+    await updateField(fieldCode, {
+      isVisibleInList: isVisible,
+    })
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to update field visibility:", error)
+    return { success: false, error: "Failed to update field visibility" }
   }
 }

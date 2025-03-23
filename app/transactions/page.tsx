@@ -45,10 +45,10 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         </div>
       </header>
 
-      <TransactionSearchAndFilters categories={categories} projects={projects} />
+      <TransactionSearchAndFilters categories={categories} projects={projects} fields={fields} />
 
       <main>
-        <TransactionList transactions={transactions} />
+        <TransactionList transactions={transactions} fields={fields} />
 
         {transactions.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-2 h-full min-h-[400px]">

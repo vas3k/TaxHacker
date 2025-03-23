@@ -1,15 +1,24 @@
 "use client"
 
 import { DateRangePicker } from "@/components/forms/date-range-picker"
+import { ColumnSelector } from "@/components/transactions/fields-selector"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { isFiltered, useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { TransactionFilters } from "@/models/transactions"
-import { Category, Project } from "@prisma/client"
+import { Category, Field, Project } from "@prisma/client"
 import { X } from "lucide-react"
 
-export function TransactionSearchAndFilters({ categories, projects }: { categories: Category[]; projects: Project[] }) {
+export function TransactionSearchAndFilters({
+  categories,
+  projects,
+  fields,
+}: {
+  categories: Category[]
+  projects: Project[]
+  fields: Field[]
+}) {
   const [filters, setFilters] = useTransactionFilters()
 
   const handleFilterChange = (name: keyof TransactionFilters, value: any) => {
@@ -95,6 +104,8 @@ export function TransactionSearchAndFilters({ categories, projects }: { categori
             <X className="h-4 w-4" />
           </Button>
         )}
+
+        <ColumnSelector fields={fields} />
       </div>
     </div>
   )

@@ -9,20 +9,27 @@ export type ExportFilters = TransactionFilters
 
 export type ExportFields = string[]
 
-export const exportImportFields = [
-  {
+export type ExportImportFieldSettings = {
+  code: string
+  type: string
+  export?: (value: any) => Promise<any>
+  import?: (value: any) => Promise<any>
+}
+
+export const exportImportFieldsMapping: Record<string, ExportImportFieldSettings> = {
+  name: {
     code: "name",
     type: "string",
   },
-  {
+  description: {
     code: "description",
     type: "string",
   },
-  {
+  merchant: {
     code: "merchant",
     type: "string",
   },
-  {
+  total: {
     code: "total",
     type: "number",
     export: async function (value: number) {
@@ -33,11 +40,11 @@ export const exportImportFields = [
       return isNaN(num) ? 0.0 : num * 100
     },
   },
-  {
+  currencyCode: {
     code: "currencyCode",
     type: "string",
   },
-  {
+  convertedTotal: {
     code: "convertedTotal",
     type: "number",
     export: async function (value: number | null) {
@@ -51,19 +58,19 @@ export const exportImportFields = [
       return isNaN(num) ? 0.0 : num * 100
     },
   },
-  {
+  convertedCurrencyCode: {
     code: "convertedCurrencyCode",
     type: "string",
   },
-  {
+  type: {
     code: "type",
     type: "string",
   },
-  {
+  note: {
     code: "note",
     type: "string",
   },
-  {
+  categoryCode: {
     code: "categoryCode",
     type: "string",
     export: async function (value: string | null) {
@@ -78,7 +85,7 @@ export const exportImportFields = [
       return category?.code
     },
   },
-  {
+  projectCode: {
     code: "projectCode",
     type: "string",
     export: async function (value: string | null) {
@@ -93,7 +100,7 @@ export const exportImportFields = [
       return project?.code
     },
   },
-  {
+  issuedAt: {
     code: "issuedAt",
     type: "date",
     export: async function (value: Date | null) {
@@ -115,12 +122,7 @@ export const exportImportFields = [
       }
     },
   },
-]
-
-export const exportImportFieldsMapping = exportImportFields.reduce((acc, field) => {
-  acc[field.code] = field
-  return acc
-}, {} as Record<string, any>)
+}
 
 export const importProject = async (name: string) => {
   const code = codeFromName(name)

@@ -6,36 +6,47 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { calcTotalPerCurrency } from "@/lib/stats"
 import { cn, formatCurrency } from "@/lib/utils"
-import { Category, Project, Transaction } from "@prisma/client"
+import { Category, Field, Project, Transaction } from "@prisma/client"
 import { formatDate } from "date-fns"
 import { ArrowDownIcon, ArrowUpIcon, File } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
-export const transactionsTable = [
-  {
+type FieldRenderer = {
+  name: string
+  code: string
+  classes?: string
+  sortable: boolean
+  formatValue?: (transaction: Transaction & any) => React.ReactNode
+  footerValue?: (transactions: Transaction[]) => React.ReactNode
+}
+
+export const standardFieldRenderers: Record<string, FieldRenderer> = {
+  name: {
     name: "Name",
-    db: "name",
+    code: "name",
     classes: "font-medium max-w-[300px] min-w-[120px] overflow-hidden",
     sortable: true,
   },
-  {
+  merchant: {
     name: "Merchant",
-    db: "merchant",
-    classes: "max-w-[200px] max-h-[20px]  min-w-[120px] overflow-hidden",
+    code: "merchant",
+    classes: "max-w-[200px] max-h-[20px] min-w-[120px] overflow-hidden",
     sortable: true,
   },
-  {
+  issuedAt: {
     name: "Date",
-    db: "issuedAt",
+    code: "issuedAt",
     classes: "min-w-[100px]",
-    format: (transaction: Transaction) => (transaction.issuedAt ? formatDate(transaction.issuedAt, "yyyy-MM-dd") : ""),
     sortable: true,
+    formatValue: (transaction: Transaction) =>
+      transaction.issuedAt ? formatDate(transaction.issuedAt, "yyyy-MM-dd") : "",
   },
-  {
+  projectCode: {
     name: "Project",
-    db: "projectCode",
-    format: (transaction: Transaction & { project: Project }) =>
+    code: "projectCode",
+    sortable: true,
+    formatValue: (transaction: Transaction & { project: Project }) =>
       transaction.projectCode ? (
         <Badge className="whitespace-nowrap" style={{ backgroundColor: transaction.project?.color }}>
           {transaction.project?.name || ""}
@@ -43,12 +54,12 @@ export const transactionsTable = [
       ) : (
         "-"
       ),
-    sortable: true,
   },
-  {
+  categoryCode: {
     name: "Category",
-    db: "categoryCode",
-    format: (transaction: Transaction & { category: Category }) =>
+    code: "categoryCode",
+    sortable: true,
+    formatValue: (transaction: Transaction & { category: Category }) =>
       transaction.categoryCode ? (
         <Badge className="whitespace-nowrap" style={{ backgroundColor: transaction.category?.color }}>
           {transaction.category?.name || ""}
@@ -56,24 +67,24 @@ export const transactionsTable = [
       ) : (
         "-"
       ),
-    sortable: true,
   },
-  {
+  files: {
     name: "Files",
-    db: "files",
-    format: (transaction: Transaction) => (
+    code: "files",
+    sortable: false,
+    formatValue: (transaction: Transaction) => (
       <div className="flex items-center gap-2 text-sm">
         <File className="w-4 h-4" />
         {(transaction.files as string[]).length}
       </div>
     ),
-    sortable: false,
   },
-  {
+  total: {
     name: "Total",
-    db: "total",
+    code: "total",
     classes: "text-right",
-    format: (transaction: Transaction) => (
+    sortable: true,
+    formatValue: (transaction: Transaction) => (
       <div className="text-right text-lg">
         <div
           className={cn(
@@ -96,8 +107,7 @@ export const transactionsTable = [
         </div>
       </div>
     ),
-    sortable: true,
-    footer: (transactions: Transaction[]) => {
+    footerValue: (transactions: Transaction[]) => {
       const totalPerCurrency = calcTotalPerCurrency(transactions)
       return (
         <div className="flex flex-col">
@@ -110,12 +120,26 @@ export const transactionsTable = [
       )
     },
   },
-]
+}
 
-export function TransactionList({ transactions }: { transactions: Transaction[] }) {
+const getFieldRenderer = (field: Field): FieldRenderer => {
+  if (standardFieldRenderers[field.code as keyof typeof standardFieldRenderers]) {
+    return standardFieldRenderers[field.code as keyof typeof standardFieldRenderers]
+  } else {
+    return {
+      name: field.name,
+      code: field.code,
+      classes: "",
+      sortable: true,
+    }
+  }
+}
+
+export function TransactionList({ transactions, fields = [] }: { transactions: Transaction[]; fields?: Field[] }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const router = useRouter()
   const searchParams = useSearchParams()
+
   const [sorting, setSorting] = useState<{ field: string | null; direction: "asc" | "desc" | null }>(() => {
     const ordering = searchParams.get("ordering")
     if (!ordering) return { field: null, direction: null }
@@ -126,7 +150,18 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
     }
   })
 
-  const toggleAll = () => {
+  const visibleFields = useMemo(
+    () =>
+      fields
+        .filter((field) => field.isVisibleInList)
+        .map((field) => ({
+          ...field,
+          renderer: getFieldRenderer(field),
+        })),
+    [fields]
+  )
+
+  const toggleAllRows = () => {
     if (selectedIds.length === transactions.length) {
       setSelectedIds([])
     } else {
@@ -134,7 +169,7 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
     }
   }
 
-  const toggleOne = (e: React.MouseEvent, id: string) => {
+  const toggleOneRow = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((item) => item !== id))
@@ -187,16 +222,19 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px] select-none">
-              <Checkbox checked={selectedIds.length === transactions.length} onCheckedChange={toggleAll} />
+              <Checkbox checked={selectedIds.length === transactions.length} onCheckedChange={toggleAllRows} />
             </TableHead>
-            {transactionsTable.map((field) => (
+            {visibleFields.map((field) => (
               <TableHead
-                key={field.db}
-                className={cn(field.classes, field.sortable && "hover:cursor-pointer hover:bg-accent select-none")}
-                onClick={() => field.sortable && handleSort(field.db)}
+                key={field.code}
+                className={cn(
+                  field.renderer.classes,
+                  field.renderer.sortable && "hover:cursor-pointer hover:bg-accent select-none"
+                )}
+                onClick={() => field.renderer.sortable && handleSort(field.code)}
               >
-                {field.name}
-                {field.sortable && getSortIcon(field.db)}
+                {field.renderer.name}
+                {field.renderer.sortable && getSortIcon(field.code)}
               </TableHead>
             ))}
           </TableRow>
@@ -213,14 +251,14 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
                   checked={selectedIds.includes(transaction.id)}
                   onCheckedChange={(checked) => {
                     if (checked !== "indeterminate") {
-                      toggleOne({ stopPropagation: () => {} } as React.MouseEvent, transaction.id)
+                      toggleOneRow({ stopPropagation: () => {} } as React.MouseEvent, transaction.id)
                     }
                   }}
                 />
               </TableCell>
-              {transactionsTable.map((field) => (
-                <TableCell key={field.db} className={field.classes}>
-                  {field.format ? field.format(transaction) : transaction[field.db]}
+              {visibleFields.map((field) => (
+                <TableCell key={field.code} className={field.renderer.classes}>
+                  {field.renderer.formatValue ? field.renderer.formatValue(transaction) : transaction[field.code]}
                 </TableCell>
               ))}
             </TableRow>
@@ -229,9 +267,9 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
         <TableFooter>
           <TableRow>
             <TableCell></TableCell>
-            {transactionsTable.map((field) => (
-              <TableCell key={field.db} className={field.classes}>
-                {field.footer ? field.footer(transactions) : ""}
+            {visibleFields.map((field) => (
+              <TableCell key={field.code} className={field.renderer.classes}>
+                {field.renderer.footerValue ? field.renderer.footerValue(transactions) : ""}
               </TableCell>
             ))}
           </TableRow>
