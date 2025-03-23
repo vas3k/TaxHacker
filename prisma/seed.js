@@ -493,13 +493,6 @@ async function main() {
   }
 
   // Seed fields
-  await prisma.field.deleteMany({
-    where: {
-      code: {
-        in: fields.map((field) => field.code),
-      },
-    },
-  })
   for (const field of fields) {
     await prisma.field.upsert({
       where: { code: field.code },
