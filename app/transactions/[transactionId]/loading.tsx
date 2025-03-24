@@ -2,6 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Loading() {
   return (
-    <Skeleton className="flex flex-row flex-wrap md:flex-nowrap justify-center items-start gap-10 p-5 bg-accent max-w-[1200px] min-h-[800px]" />
+    <div className="flex flex-wrap flex-row items-start justify-center gap-4 max-w-6xl">
+      <Skeleton className="w-full h-[800px]" />
+      <Skeleton className="w-1/3 max-w-[380px]" />
+    </div>
   )
 }

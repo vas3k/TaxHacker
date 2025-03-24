@@ -21,7 +21,11 @@ export function SidebarMenuItemWithHighlight({
 
   return (
     <SidebarMenuItem
-      className={cn(isActive && "bg-sidebar-accent font-medium text-sidebar-accent-foreground", className)}
+      className={cn(
+        isActive && "bg-sidebar-accent text-sidebar-accent-foreground",
+        "font-medium rounded-md",
+        className
+      )}
       {...props}
     >
       {children}

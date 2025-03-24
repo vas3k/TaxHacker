@@ -33,8 +33,8 @@
     --sidebar-foreground: 200 10% 30%;
     --sidebar-primary: 200 13% 80%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 200 13% 90%;
-    --sidebar-accent-foreground: 200 10% 30%;
+    --sidebar-accent: 240 5.9% 10%;
+    --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 200 13% 85%;
     --sidebar-ring: 200 13% 80%;
   }
@@ -68,8 +68,8 @@
     --sidebar-foreground: 200 10% 90%;
     --sidebar-primary: 200 13% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 13% 25%;
-    --sidebar-accent-foreground: 200 10% 90%;
+    --sidebar-accent: 240 5.9% 10%;
+    --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 200 13% 25%;
     --sidebar-ring: 200 13% 60%;
   }

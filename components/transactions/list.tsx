@@ -25,13 +25,13 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
   name: {
     name: "Name",
     code: "name",
-    classes: "font-medium max-w-[300px] min-w-[120px] overflow-hidden",
+    classes: "font-medium min-w-[120px] max-w-[300px] overflow-hidden",
     sortable: true,
   },
   merchant: {
     name: "Merchant",
     code: "merchant",
-    classes: "max-w-[200px] max-h-[20px] min-w-[120px] overflow-hidden",
+    classes: "min-w-[120px] max-w-[250px] overflow-hidden",
     sortable: true,
   },
   issuedAt: {
@@ -221,7 +221,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px] select-none">
+            <TableHead className="min-w-[30px] select-none">
               <Checkbox checked={selectedIds.length === transactions.length} onCheckedChange={toggleAllRows} />
             </TableHead>
             {visibleFields.map((field) => (
