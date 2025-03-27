@@ -38,6 +38,14 @@ export default function AnalyzeForm({
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
 
+  const fieldsMap = useMemo(
+    () =>
+      fields.reduce((acc, field) => {
+        acc[field.code] = field
+        return acc
+      }, {} as Record<string, Field>),
+    [fields]
+  )
   const extraFields = useMemo(() => fields.filter((field) => field.isExtra), [fields])
   const initialFormState = useMemo(
     () => ({
@@ -151,6 +159,7 @@ export default function AnalyzeForm({
           name="merchant"
           value={formData.merchant}
           onChange={(e) => setFormData((prev) => ({ ...prev, merchant: e.target.value }))}
+          hideIfEmpty={!fieldsMap["merchant"]?.isVisibleInAnalysis}
         />
 
         <FormInput
@@ -158,7 +167,7 @@ export default function AnalyzeForm({
           name="description"
           value={formData.description}
           onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-          hideIfEmpty={true}
+          hideIfEmpty={!fieldsMap["description"]?.isVisibleInAnalysis}
         />
 
         <div className="flex flex-wrap gap-4">
@@ -182,6 +191,7 @@ export default function AnalyzeForm({
             name="currencyCode"
             value={formData.currencyCode}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, currencyCode: value }))}
+            hideIfEmpty={!fieldsMap["currencyCode"]?.isVisibleInAnalysis}
           />
 
           <FormSelectType
@@ -189,6 +199,7 @@ export default function AnalyzeForm({
             name="type"
             value={formData.type}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
+            hideIfEmpty={!fieldsMap["type"]?.isVisibleInAnalysis}
           />
         </div>
 
@@ -212,7 +223,7 @@ export default function AnalyzeForm({
             name="issuedAt"
             value={formData.issuedAt}
             onChange={(e) => setFormData((prev) => ({ ...prev, issuedAt: e.target.value }))}
-            hideIfEmpty={true}
+            hideIfEmpty={!fieldsMap["issuedAt"]?.isVisibleInAnalysis}
           />
         </div>
 
@@ -224,9 +235,10 @@ export default function AnalyzeForm({
             value={formData.categoryCode}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryCode: value }))}
             placeholder="Select Category"
+            hideIfEmpty={!fieldsMap["categoryCode"]?.isVisibleInAnalysis}
           />
 
-          {projects.length >= 0 && (
+          {projects.length > 0 && (
             <FormSelectProject
               title="Project"
               projects={projects}
@@ -234,6 +246,7 @@ export default function AnalyzeForm({
               value={formData.projectCode}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, projectCode: value }))}
               placeholder="Select Project"
+              hideIfEmpty={!fieldsMap["projectCode"]?.isVisibleInAnalysis}
             />
           )}
         </div>
@@ -243,7 +256,7 @@ export default function AnalyzeForm({
           name="note"
           value={formData.note}
           onChange={(e) => setFormData((prev) => ({ ...prev, note: e.target.value }))}
-          hideIfEmpty={true}
+          hideIfEmpty={!fieldsMap["note"]?.isVisibleInAnalysis}
         />
 
         {extraFields.map((field) => (
@@ -254,7 +267,7 @@ export default function AnalyzeForm({
             name={field.code}
             value={formData[field.code as keyof typeof formData]}
             onChange={(e) => setFormData((prev) => ({ ...prev, [field.code]: e.target.value }))}
-            hideIfEmpty={true}
+            hideIfEmpty={!field.isVisibleInAnalysis}
           />
         ))}
 
@@ -264,7 +277,7 @@ export default function AnalyzeForm({
             name="text"
             value={formData.text}
             onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
-            hideIfEmpty={true}
+            hideIfEmpty={!fieldsMap["text"]?.isVisibleInAnalysis}
           />
         </div>
 

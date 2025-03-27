@@ -2,6 +2,7 @@ import { addProjectAction, deleteProjectAction, editProjectAction } from "@/app/
 import { CrudTable } from "@/components/settings/crud"
 import { randomHexColor } from "@/lib/utils"
 import { getProjects } from "@/models/projects"
+import { Prisma } from "@prisma/client"
 
 export default async function ProjectsSettingsPage() {
   const projects = await getProjects()
@@ -13,7 +14,11 @@ export default async function ProjectsSettingsPage() {
 
   return (
     <div className="container">
-      <h1 className="text-2xl font-bold mb-6">Projects</h1>
+      <h1 className="text-2xl font-bold mb-2">Projects</h1>
+      <p className="text-sm text-gray-500 mb-6 max-w-prose">
+        Use projects to differentiate between the type of activities you do For example: Freelancing, YouTube channel,
+        Blogging. Projects are just a convenient way to separate statistics.
+      </p>
       <CrudTable
         items={projectsWithActions}
         columns={[
@@ -23,15 +28,15 @@ export default async function ProjectsSettingsPage() {
         ]}
         onDelete={async (code) => {
           "use server"
-          await deleteProjectAction(code)
+          return await deleteProjectAction(code)
         }}
         onAdd={async (data) => {
           "use server"
-          await addProjectAction(data as { code: string; name: string; llm_prompt: string; color: string })
+          return await addProjectAction(data as Prisma.ProjectCreateInput)
         }}
         onEdit={async (code, data) => {
           "use server"
-          await editProjectAction(code, data as { name: string; llm_prompt: string; color: string })
+          return await editProjectAction(code, data as Prisma.ProjectUpdateInput)
         }}
       />
     </div>

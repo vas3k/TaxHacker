@@ -8,11 +8,27 @@ export const FormSelectCurrency = ({
   currencies,
   emptyValue,
   placeholder,
+  hideIfEmpty = false,
   ...props
-}: { title: string; currencies: Currency[]; emptyValue?: string; placeholder?: string } & SelectProps) => {
+}: {
+  title: string
+  currencies: Currency[]
+  emptyValue?: string
+  placeholder?: string
+  hideIfEmpty?: boolean
+} & SelectProps) => {
   const items = useMemo(
     () => currencies.map((currency) => ({ code: currency.code, name: `${currency.code} - ${currency.name}` })),
     [currencies]
   )
-  return <FormSelect title={title} items={items} emptyValue={emptyValue} placeholder={placeholder} {...props} />
+  return (
+    <FormSelect
+      title={title}
+      items={items}
+      emptyValue={emptyValue}
+      placeholder={placeholder}
+      hideIfEmpty={hideIfEmpty}
+      {...props}
+    />
+  )
 }

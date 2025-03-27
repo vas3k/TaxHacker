@@ -10,11 +10,27 @@ export const FormSelectCategory = ({
   categories,
   emptyValue,
   placeholder,
+  hideIfEmpty = false,
   ...props
-}: { title: string; categories: Category[]; emptyValue?: string; placeholder?: string } & SelectProps) => {
+}: {
+  title: string
+  categories: Category[]
+  emptyValue?: string
+  placeholder?: string
+  hideIfEmpty?: boolean
+} & SelectProps) => {
   const items = useMemo(
     () => categories.map((category) => ({ code: category.code, name: category.name, color: category.color })),
     [categories]
   )
-  return <FormSelect title={title} items={items} emptyValue={emptyValue} placeholder={placeholder} {...props} />
+  return (
+    <FormSelect
+      title={title}
+      items={items}
+      emptyValue={emptyValue}
+      placeholder={placeholder}
+      hideIfEmpty={hideIfEmpty}
+      {...props}
+    />
+  )
 }

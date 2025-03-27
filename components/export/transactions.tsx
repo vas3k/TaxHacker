@@ -43,7 +43,12 @@ export function ExportTransactionsDialog({
   const handleSubmit = () => {
     router.push(
       `/export/transactions?${new URLSearchParams({
-        ...exportFilters,
+        search: exportFilters?.search || "",
+        dateFrom: exportFilters?.dateFrom || "",
+        dateTo: exportFilters?.dateTo || "",
+        ordering: exportFilters?.ordering || "",
+        categoryCode: exportFilters?.categoryCode || "",
+        projectCode: exportFilters?.projectCode || "",
         fields: exportFields.join(","),
         includeAttachments: includeAttachments.toString(),
       }).toString()}`

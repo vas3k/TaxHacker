@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const fields = (url.searchParams.get("fields")?.split(",") ?? []) as ExportFields
   const includeAttachments = url.searchParams.get("includeAttachments") === "true"
 
-  const transactions = await getTransactions(filters)
+  const { transactions } = await getTransactions(filters)
   const existingFields = await getFields()
 
   // Generate CSV file with all transactions

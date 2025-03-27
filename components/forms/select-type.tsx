@@ -5,8 +5,9 @@ export const FormSelectType = ({
   title,
   emptyValue,
   placeholder,
+  hideIfEmpty = false,
   ...props
-}: { title: string; emptyValue?: string; placeholder?: string } & SelectProps) => {
+}: { title: string; emptyValue?: string; placeholder?: string; hideIfEmpty?: boolean } & SelectProps) => {
   const items = [
     { code: "expense", name: "Expense" },
     { code: "income", name: "Income" },
@@ -14,5 +15,14 @@ export const FormSelectType = ({
     { code: "other", name: "Other" },
   ]
 
-  return <FormSelect title={title} items={items} emptyValue={emptyValue} placeholder={placeholder} {...props} />
+  return (
+    <FormSelect
+      title={title}
+      items={items}
+      emptyValue={emptyValue}
+      placeholder={placeholder}
+      hideIfEmpty={hideIfEmpty}
+      {...props}
+    />
+  )
 }

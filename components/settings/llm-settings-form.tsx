@@ -27,7 +27,7 @@ export default function LLMSettingsForm({ settings, fields }: { settings: Record
         </small>
 
         <FormTextarea
-          title="Prompt for Analyze Transaction"
+          title="Prompt for File Analysis Form"
           name="prompt_analyse_new_file"
           defaultValue={settings.prompt_analyse_new_file}
           className="h-96"

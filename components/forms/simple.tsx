@@ -53,13 +53,19 @@ export const FormSelect = ({
   items,
   emptyValue,
   placeholder,
+  hideIfEmpty = false,
   ...props
 }: {
   title: string
   items: Array<{ code: string; name: string; color?: string }>
   emptyValue?: string
   placeholder?: string
+  hideIfEmpty?: boolean
 } & SelectProps) => {
+  if (hideIfEmpty && (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value) {
+    return null
+  }
+
   return (
     <span className="flex flex-col gap-1">
       <span className="text-sm font-medium">{title}</span>

@@ -2,6 +2,7 @@ import { addCategoryAction, deleteCategoryAction, editCategoryAction } from "@/a
 import { CrudTable } from "@/components/settings/crud"
 import { randomHexColor } from "@/lib/utils"
 import { getCategories } from "@/models/categories"
+import { Prisma } from "@prisma/client"
 
 export default async function CategoriesSettingsPage() {
   const categories = await getCategories()
@@ -13,7 +14,12 @@ export default async function CategoriesSettingsPage() {
 
   return (
     <div className="container">
-      <h1 className="text-2xl font-bold mb-6">Categories</h1>
+      <h1 className="text-2xl font-bold mb-2">Categories</h1>
+      <p className="text-sm text-gray-500 mb-6 max-w-prose">
+        Create your own categories that better reflect the type of income and expenses you have. Define an LLM Prompt so
+        that AI can determine this category automatically.
+      </p>
+
       <CrudTable
         items={categoriesWithActions}
         columns={[
@@ -23,29 +29,15 @@ export default async function CategoriesSettingsPage() {
         ]}
         onDelete={async (code) => {
           "use server"
-          await deleteCategoryAction(code)
+          return await deleteCategoryAction(code)
         }}
         onAdd={async (data) => {
           "use server"
-          await addCategoryAction(
-            data as {
-              code: string
-              name: string
-              llm_prompt?: string
-              color: string
-            }
-          )
+          return await addCategoryAction(data as Prisma.CategoryCreateInput)
         }}
         onEdit={async (code, data) => {
           "use server"
-          await editCategoryAction(
-            code,
-            data as {
-              name: string
-              llm_prompt?: string
-              color?: string
-            }
-          )
+          return await editCategoryAction(code, data as Prisma.CategoryUpdateInput)
         }}
       />
     </div>

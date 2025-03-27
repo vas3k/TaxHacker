@@ -15,54 +15,84 @@ export type TransactionFilters = {
   ordering?: string
   categoryCode?: string
   projectCode?: string
+  page?: number
 }
 
-export const getTransactions = cache(async (filters?: TransactionFilters): Promise<Transaction[]> => {
-  const where: Prisma.TransactionWhereInput = {}
-  let orderBy: Prisma.TransactionOrderByWithRelationInput = { issuedAt: "desc" }
+export type TransactionPagination = {
+  limit: number
+  offset: number
+}
 
-  if (filters) {
-    if (filters.search) {
-      where.OR = [
-        { name: { contains: filters.search } },
-        { merchant: { contains: filters.search } },
-        { description: { contains: filters.search } },
-        { note: { contains: filters.search } },
-        { text: { contains: filters.search } },
-      ]
-    }
+export const getTransactions = cache(
+  async (
+    filters?: TransactionFilters,
+    pagination?: TransactionPagination
+  ): Promise<{
+    transactions: Transaction[]
+    total: number
+  }> => {
+    const where: Prisma.TransactionWhereInput = {}
+    let orderBy: Prisma.TransactionOrderByWithRelationInput = { issuedAt: "desc" }
 
-    if (filters.dateFrom || filters.dateTo) {
-      where.issuedAt = {
-        gte: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
-        lte: filters.dateTo ? new Date(filters.dateTo) : undefined,
+    if (filters) {
+      if (filters.search) {
+        where.OR = [
+          { name: { contains: filters.search } },
+          { merchant: { contains: filters.search } },
+          { description: { contains: filters.search } },
+          { note: { contains: filters.search } },
+          { text: { contains: filters.search } },
+        ]
+      }
+
+      if (filters.dateFrom || filters.dateTo) {
+        where.issuedAt = {
+          gte: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
+          lte: filters.dateTo ? new Date(filters.dateTo) : undefined,
+        }
+      }
+
+      if (filters.categoryCode) {
+        where.categoryCode = filters.categoryCode
+      }
+
+      if (filters.projectCode) {
+        where.projectCode = filters.projectCode
+      }
+
+      if (filters.ordering) {
+        const isDesc = filters.ordering.startsWith("-")
+        const field = isDesc ? filters.ordering.slice(1) : filters.ordering
+        orderBy = { [field]: isDesc ? "desc" : "asc" }
       }
     }
 
-    if (filters.categoryCode) {
-      where.categoryCode = filters.categoryCode
-    }
-
-    if (filters.projectCode) {
-      where.projectCode = filters.projectCode
-    }
-
-    if (filters.ordering) {
-      const isDesc = filters.ordering.startsWith("-")
-      const field = isDesc ? filters.ordering.slice(1) : filters.ordering
-      orderBy = { [field]: isDesc ? "desc" : "asc" }
+    if (pagination) {
+      const total = await prisma.transaction.count({ where })
+      const transactions = await prisma.transaction.findMany({
+        where,
+        include: {
+          category: true,
+          project: true,
+        },
+        orderBy,
+        take: pagination?.limit,
+        skip: pagination?.offset,
+      })
+      return { transactions, total }
+    } else {
+      const transactions = await prisma.transaction.findMany({
+        where,
+        include: {
+          category: true,
+          project: true,
+        },
+        orderBy,
+      })
+      return { transactions, total: transactions.length }
     }
   }
-
-  return await prisma.transaction.findMany({
-    where,
-    include: {
-      category: true,
-      project: true,
-    },
-    orderBy,
-  })
-})
+)
 
 export const getTransactionById = cache(async (id: string): Promise<Transaction | null> => {
   return await prisma.transaction.findUnique({

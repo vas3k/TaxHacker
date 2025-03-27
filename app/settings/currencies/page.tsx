@@ -12,7 +12,10 @@ export default async function CurrenciesSettingsPage() {
 
   return (
     <div className="container">
-      <h1 className="text-2xl font-bold mb-6">Currencies</h1>
+      <h1 className="text-2xl font-bold mb-2">Currencies</h1>
+      <p className="text-sm text-gray-500 mb-6 max-w-prose">
+        Custom currencies would not be automatically converted but you still can have them.
+      </p>
       <CrudTable
         items={currenciesWithActions}
         columns={[
@@ -21,15 +24,15 @@ export default async function CurrenciesSettingsPage() {
         ]}
         onDelete={async (code) => {
           "use server"
-          await deleteCurrencyAction(code)
+          return await deleteCurrencyAction(code)
         }}
         onAdd={async (data) => {
           "use server"
-          await addCurrencyAction(data as { code: string; name: string })
+          return await addCurrencyAction(data as { code: string; name: string })
         }}
         onEdit={async (code, data) => {
           "use server"
-          await editCurrencyAction(code, data as { name: string })
+          return await editCurrencyAction(code, data as { name: string })
         }}
       />
     </div>

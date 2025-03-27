@@ -41,11 +41,11 @@ export function FilePreview({ file }: { file: File }) {
           <p className="text-sm overflow-ellipsis">
             <strong>Type:</strong> {file.mimetype}
           </p>
+          {/* <p className="text-sm overflow-ellipsis">
+            <strong>Uploaded:</strong> {format(file.createdAt, "MMM d, yyyy")}
+          </p> */}
           <p className="text-sm">
             <strong>Size:</strong> {fileSize < 1 ? (fileSize * 1024).toFixed(2) + " KB" : fileSize.toFixed(2) + " MB"}
-          </p>
-          <p className="text-xs overflow-ellipsis">
-            <strong>Path:</strong> {file.path}
           </p>
         </div>
       </div>

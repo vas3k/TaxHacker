@@ -3,35 +3,146 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CircleCheck, Edit, Trash2 } from "lucide-react"
+import { Check, Edit, Trash2 } from "lucide-react"
 import { useOptimistic, useState } from "react"
+
+interface CrudColumn<T> {
+  key: keyof T
+  label: string
+  type?: "text" | "number" | "checkbox" | "select"
+  options?: string[]
+  defaultValue?: string | boolean
+  editable?: boolean
+}
 
 interface CrudProps<T> {
   items: T[]
-  columns: {
-    key: keyof T
-    label: string
-    type?: "text" | "number" | "checkbox"
-    defaultValue?: string
-    editable?: boolean
-  }[]
-  onDelete: (id: string) => Promise<void>
-  onAdd: (data: Partial<T>) => Promise<void>
-  onEdit?: (id: string, data: Partial<T>) => Promise<void>
+  columns: CrudColumn<T>[]
+  onDelete: (id: string) => Promise<{ success: boolean; error?: string }>
+  onAdd: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>
+  onEdit?: (id: string, data: Partial<T>) => Promise<{ success: boolean; error?: string }>
 }
 
 export function CrudTable<T extends { [key: string]: any }>({ items, columns, onDelete, onAdd, onEdit }: CrudProps<T>) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [newItem, setNewItem] = useState<Partial<T>>({})
-  const [editingItem, setEditingItem] = useState<Partial<T>>({})
+  const [newItem, setNewItem] = useState<Partial<T>>(itemDefaults(columns))
+  const [editingItem, setEditingItem] = useState<Partial<T>>(itemDefaults(columns))
   const [optimisticItems, addOptimisticItem] = useOptimistic(items, (state, newItem: T) => [...state, newItem])
+
+  const FormCell = (item: T, column: CrudColumn<T>) => {
+    if (column.type === "checkbox") {
+      return item[column.key] ? <Check /> : ""
+    }
+    return item[column.key]
+  }
+
+  const EditFormCell = (item: T, column: CrudColumn<T>) => {
+    if (column.type === "checkbox") {
+      return (
+        <input
+          type="checkbox"
+          checked={editingItem[column.key]}
+          onChange={(e) =>
+            setEditingItem({
+              ...editingItem,
+              [column.key]: e.target.checked,
+            })
+          }
+        />
+      )
+    } else if (column.type === "select") {
+      return (
+        <select
+          value={editingItem[column.key]}
+          className="p-2 rounded-md border bg-transparent"
+          onChange={(e) =>
+            setEditingItem({
+              ...editingItem,
+              [column.key]: e.target.value,
+            })
+          }
+        >
+          {column.options?.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      )
+    }
+
+    return (
+      <Input
+        type="text"
+        value={editingItem[column.key] || ""}
+        onChange={(e) =>
+          setEditingItem({
+            ...editingItem,
+            [column.key]: e.target.value,
+          })
+        }
+      />
+    )
+  }
+
+  const AddFormCell = (column: CrudColumn<T>) => {
+    if (column.type === "checkbox") {
+      return (
+        <input
+          type="checkbox"
+          checked={Boolean(newItem[column.key] || column.defaultValue)}
+          onChange={(e) =>
+            setNewItem({
+              ...newItem,
+              [column.key]: e.target.checked,
+            })
+          }
+        />
+      )
+    } else if (column.type === "select") {
+      return (
+        <select
+          value={String(newItem[column.key] || column.defaultValue || "")}
+          className="p-2 rounded-md border bg-transparent"
+          onChange={(e) =>
+            setNewItem({
+              ...newItem,
+              [column.key]: e.target.value,
+            })
+          }
+        >
+          {column.options?.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      )
+    }
+    return (
+      <Input
+        type={column.type || "text"}
+        value={String(newItem[column.key] || column.defaultValue || "")}
+        onChange={(e) =>
+          setNewItem({
+            ...newItem,
+            [column.key]: e.target.value,
+          })
+        }
+      />
+    )
+  }
 
   const handleAdd = async () => {
     try {
-      await onAdd(newItem)
-      setIsAdding(false)
-      setNewItem({})
+      const result = await onAdd(newItem)
+      if (result.success) {
+        setIsAdding(false)
+        setNewItem(itemDefaults(columns))
+      } else {
+        alert(result.error)
+      }
     } catch (error) {
       console.error("Failed to add item:", error)
     }
@@ -40,9 +151,13 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
   const handleEdit = async (id: string) => {
     if (!onEdit) return
     try {
-      await onEdit(id, editingItem)
-      setEditingId(null)
-      setEditingItem({})
+      const result = await onEdit(id, editingItem)
+      if (result.success) {
+        setEditingId(null)
+        setEditingItem({})
+      } else {
+        alert(result.error)
+      }
     } catch (error) {
       console.error("Failed to edit item:", error)
     }
@@ -55,7 +170,10 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
 
   const handleDelete = async (id: string) => {
     try {
-      await onDelete(id)
+      const result = await onDelete(id)
+      if (!result.success) {
+        alert(result.error)
+      }
     } catch (error) {
       console.error("Failed to delete item:", error)
     }
@@ -77,26 +195,9 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
             <TableRow key={index}>
               {columns.map((column) => (
                 <TableCell key={String(column.key)} className="first:font-semibold">
-                  {editingId === (item.code || item.id) && column.editable ? (
-                    <Input
-                      type={column.type || "text"}
-                      value={editingItem[column.key] || ""}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          [column.key]: column.type === "checkbox" ? e.target.checked : e.target.value,
-                        })
-                      }
-                    />
-                  ) : column.type === "checkbox" ? (
-                    item[column.key] ? (
-                      <CircleCheck />
-                    ) : (
-                      ""
-                    )
-                  ) : (
-                    item[column.key]
-                  )}
+                  {editingId === (item.code || item.id) && column.editable
+                    ? EditFormCell(item, column)
+                    : FormCell(item, column)}
                 </TableCell>
               ))}
               <TableCell>
@@ -113,7 +214,14 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
                   ) : (
                     <>
                       {onEdit && (
-                        <Button variant="ghost" size="icon" onClick={() => startEditing(item)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            startEditing(item)
+                            setIsAdding(false)
+                          }}
+                        >
                           <Edit />
                         </Button>
                       )}
@@ -132,18 +240,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
             <TableRow>
               {columns.map((column) => (
                 <TableCell key={String(column.key)} className="first:font-semibold">
-                  {column.editable && (
-                    <Input
-                      type={column.type || "text"}
-                      value={newItem[column.key] || column.defaultValue || ""}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          [column.key]: column.type === "checkbox" ? e.target.checked : e.target.value,
-                        })
-                      }
-                    />
-                  )}
+                  {column.editable && AddFormCell(column)}
                 </TableCell>
               ))}
               <TableCell>
@@ -160,7 +257,23 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
           )}
         </TableBody>
       </Table>
-      {!isAdding && <Button onClick={() => setIsAdding(true)}>Add New</Button>}
+      {!isAdding && (
+        <Button
+          onClick={() => {
+            setIsAdding(true)
+            setEditingId(null)
+          }}
+        >
+          Add New
+        </Button>
+      )}
     </div>
   )
+}
+
+function itemDefaults<T>(columns: CrudColumn<T>[]) {
+  return columns.reduce((acc, column) => {
+    acc[column.key] = column.defaultValue as T[keyof T]
+    return acc
+  }, {} as Partial<T>)
 }

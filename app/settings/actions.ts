@@ -1,12 +1,19 @@
 "use server"
 
-import { settingsFormSchema } from "@/forms/settings"
-import { codeFromName } from "@/lib/utils"
+import {
+  categoryFormSchema,
+  currencyFormSchema,
+  fieldFormSchema,
+  projectFormSchema,
+  settingsFormSchema,
+} from "@/forms/settings"
+import { codeFromName, randomHexColor } from "@/lib/utils"
 import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
 import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
 import { createField, deleteField, updateField } from "@/models/fields"
 import { createProject, deleteProject, updateProject } from "@/models/projects"
 import { updateSettings } from "@/models/settings"
+import { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
@@ -26,106 +33,180 @@ export async function saveSettingsAction(prevState: any, formData: FormData) {
   // return { success: true }
 }
 
-export async function addProjectAction(data: { name: string; llm_prompt?: string; color?: string }) {
+export async function addProjectAction(data: Prisma.ProjectCreateInput) {
+  const validatedForm = projectFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const project = await createProject({
-    code: codeFromName(data.name),
-    name: data.name,
-    llm_prompt: data.llm_prompt || null,
-    color: data.color || "#000000",
+    code: codeFromName(validatedForm.data.name),
+    name: validatedForm.data.name,
+    llm_prompt: validatedForm.data.llm_prompt || null,
+    color: validatedForm.data.color || randomHexColor(),
   })
   revalidatePath("/settings/projects")
-  return project
+
+  return { success: true, project }
 }
 
-export async function editProjectAction(code: string, data: { name: string; llm_prompt?: string; color?: string }) {
+export async function editProjectAction(code: string, data: Prisma.ProjectUpdateInput) {
+  const validatedForm = projectFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const project = await updateProject(code, {
-    name: data.name,
-    llm_prompt: data.llm_prompt,
-    color: data.color,
+    name: validatedForm.data.name,
+    llm_prompt: validatedForm.data.llm_prompt,
+    color: validatedForm.data.color || "",
   })
   revalidatePath("/settings/projects")
-  return project
+
+  return { success: true, project }
 }
 
 export async function deleteProjectAction(code: string) {
-  await deleteProject(code)
+  try {
+    await deleteProject(code)
+  } catch (error) {
+    return { success: false, error: "Failed to delete project" + error }
+  }
   revalidatePath("/settings/projects")
+  return { success: true }
 }
 
-export async function addCurrencyAction(data: { code: string; name: string }) {
+export async function addCurrencyAction(data: Prisma.CurrencyCreateInput) {
+  const validatedForm = currencyFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const currency = await createCurrency({
-    code: data.code,
-    name: data.name,
+    code: validatedForm.data.code,
+    name: validatedForm.data.name,
   })
   revalidatePath("/settings/currencies")
-  return currency
+
+  return { success: true, currency }
 }
 
-export async function editCurrencyAction(code: string, data: { name: string }) {
-  const currency = await updateCurrency(code, { name: data.name })
+export async function editCurrencyAction(code: string, data: Prisma.CurrencyUpdateInput) {
+  const validatedForm = currencyFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
+  const currency = await updateCurrency(code, { name: validatedForm.data.name })
   revalidatePath("/settings/currencies")
-  return currency
+  return { success: true, currency }
 }
 
 export async function deleteCurrencyAction(code: string) {
-  await deleteCurrency(code)
+  try {
+    await deleteCurrency(code)
+  } catch (error) {
+    return { success: false, error: "Failed to delete currency" + error }
+  }
   revalidatePath("/settings/currencies")
+  return { success: true }
 }
 
-export async function addCategoryAction(data: { name: string; llm_prompt?: string; color?: string }) {
+export async function addCategoryAction(data: Prisma.CategoryCreateInput) {
+  const validatedForm = categoryFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const category = await createCategory({
-    code: codeFromName(data.name),
-    name: data.name,
-    llm_prompt: data.llm_prompt,
-    color: data.color,
+    code: codeFromName(validatedForm.data.name),
+    name: validatedForm.data.name,
+    llm_prompt: validatedForm.data.llm_prompt,
+    color: validatedForm.data.color || "",
   })
   revalidatePath("/settings/categories")
-  return category
+
+  return { success: true, category }
 }
 
-export async function editCategoryAction(code: string, data: { name: string; llm_prompt?: string; color?: string }) {
+export async function editCategoryAction(code: string, data: Prisma.CategoryUpdateInput) {
+  const validatedForm = categoryFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const category = await updateCategory(code, {
-    name: data.name,
-    llm_prompt: data.llm_prompt,
-    color: data.color,
+    name: validatedForm.data.name,
+    llm_prompt: validatedForm.data.llm_prompt,
+    color: validatedForm.data.color || "",
   })
   revalidatePath("/settings/categories")
-  return category
+
+  return { success: true, category }
 }
 
 export async function deleteCategoryAction(code: string) {
-  await deleteCategory(code)
+  try {
+    await deleteCategory(code)
+  } catch (error) {
+    return { success: false, error: "Failed to delete category" + error }
+  }
   revalidatePath("/settings/categories")
+  return { success: true }
 }
 
-export async function addFieldAction(data: { name: string; type: string; llm_prompt?: string; isRequired?: boolean }) {
+export async function addFieldAction(data: Prisma.FieldCreateInput) {
+  const validatedForm = fieldFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const field = await createField({
-    code: codeFromName(data.name),
-    name: data.name,
-    type: data.type,
-    llm_prompt: data.llm_prompt,
-    isRequired: data.isRequired,
+    code: codeFromName(validatedForm.data.name),
+    name: validatedForm.data.name,
+    type: validatedForm.data.type,
+    llm_prompt: validatedForm.data.llm_prompt,
+    isVisibleInList: validatedForm.data.isVisibleInList,
+    isVisibleInAnalysis: validatedForm.data.isVisibleInAnalysis,
     isExtra: true,
   })
   revalidatePath("/settings/fields")
-  return field
+
+  return { success: true, field }
 }
 
-export async function editFieldAction(
-  code: string,
-  data: { name: string; type: string; llm_prompt?: string; isRequired?: boolean }
-) {
+export async function editFieldAction(code: string, data: Prisma.FieldUpdateInput) {
+  const validatedForm = fieldFormSchema.safeParse(data)
+
+  if (!validatedForm.success) {
+    return { success: false, error: validatedForm.error.message }
+  }
+
   const field = await updateField(code, {
-    name: data.name,
-    type: data.type,
-    llm_prompt: data.llm_prompt,
-    isRequired: data.isRequired,
+    name: validatedForm.data.name,
+    type: validatedForm.data.type,
+    llm_prompt: validatedForm.data.llm_prompt,
+    isVisibleInList: validatedForm.data.isVisibleInList,
+    isVisibleInAnalysis: validatedForm.data.isVisibleInAnalysis,
   })
   revalidatePath("/settings/fields")
-  return field
+
+  return { success: true, field }
 }
 
 export async function deleteFieldAction(code: string) {
-  await deleteField(code)
+  try {
+    await deleteField(code)
+  } catch (error) {
+    return { success: false, error: "Failed to delete field" + error }
+  }
   revalidatePath("/settings/fields")
+  return { success: true }
 }

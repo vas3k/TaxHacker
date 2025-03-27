@@ -57,7 +57,7 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
         </div>
       </Card>
 
-      <div className="w-1/3 max-w-[380px] space-y-4">
+      <div className="w-1/2 max-w-[400px] space-y-4">
         <TransactionFiles transaction={transaction} files={files} />
       </div>
     </div>
