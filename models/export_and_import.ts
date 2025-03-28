@@ -16,7 +16,7 @@ export type ExportImportFieldSettings = {
   import?: (value: any) => Promise<any>
 }
 
-export const exportImportFieldsMapping: Record<string, ExportImportFieldSettings> = {
+export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettings> = {
   name: {
     code: "name",
     type: "string",

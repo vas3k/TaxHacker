@@ -3,7 +3,7 @@
 import { FormError } from "@/components/forms/error"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Download } from "lucide-react"
+import { Download, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useActionState } from "react"
 import { restoreBackupAction } from "./actions"
@@ -18,38 +18,48 @@ export default function BackupSettingsPage() {
         <div className="flex flex-row gap-4">
           <Link href="/settings/backups/data">
             <Button>
-              <Download /> Download data directory
+              <Download /> Download Data Archive
             </Button>
           </Link>
         </div>
         <div className="text-sm text-muted-foreground max-w-xl">
-          The archive consists of all uploaded files and the SQLite database. You can view the contents of the database
-          using any SQLite viewer.
+          Inside the archive you will find all the uploaded files, as well as JSON files for transactions, categories,
+          projects, fields, currencies, and settings. You can view, edit or migrate your data to another service.
         </div>
       </div>
 
-      <Card className="flex flex-col gap-4 mt-16 p-5 bg-red-100 max-w-xl">
-        <h2 className="text-xl font-semibold">How to restore from a backup</h2>
-        <div className="text-md">
-          This feature doesn't work automatically yet. Use your docker deployment with backup archive to manually put
-          database.sqlite and uploaded files into the paths specified in DATABASE_URL and UPLOAD_PATH
-        </div>
-        {/* <form action={restoreBackup}>
-          <label>
-            <input type="file" name="file" />
-          </label>
-          <Button type="submit" variant="destructive" disabled={restorePending}>
-            {restorePending ? (
-              <>
-                <Loader2 className="animate-spin" /> Uploading new database...
-              </>
-            ) : (
-              "Restore"
-            )}
-          </Button>
-        </form> */}
+      <Card className="flex flex-col gap-2 mt-16 p-5 bg-red-100 max-w-xl">
+        <h2 className="text-xl font-semibold">Restore from a backup</h2>
+        <p className="text-sm text-muted-foreground">
+          ⚠️ This action will delete all existing data from your current database and remove all uploaded files. Be
+          careful and make a backup first!
+        </p>
+        <form action={restoreBackup}>
+          <div className="flex flex-col gap-4 pt-4">
+            <input type="hidden" name="removeExistingData" value="true" />
+            <label>
+              <input type="file" name="file" />
+            </label>
+            <Button type="submit" variant="destructive" disabled={restorePending}>
+              {restorePending ? (
+                <>
+                  <Loader2 className="animate-spin" /> Restoring from backup...
+                </>
+              ) : (
+                "Delete existing data and restore from backup"
+              )}
+            </Button>
+          </div>
+        </form>
         {restoreState?.error && <FormError>{restoreState.error}</FormError>}
       </Card>
+
+      {restoreState?.success && (
+        <Card className="flex flex-col gap-2 p-5 bg-green-100 max-w-xl">
+          <h2 className="text-xl font-semibold">Backup restored successfully</h2>
+          <p className="text-sm text-muted-foreground">You can now continue using the app.</p>
+        </Card>
+      )}
     </div>
   )
 }

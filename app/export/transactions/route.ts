@@ -1,4 +1,4 @@
-import { ExportFields, ExportFilters, exportImportFieldsMapping } from "@/models/export_and_import"
+import { EXPORT_AND_IMPORT_FIELD_MAP, ExportFields, ExportFilters } from "@/models/export_and_import"
 import { getFields } from "@/models/fields"
 import { getFilesByTransactionId } from "@/models/files"
 import { getTransactions } from "@/models/transactions"
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       const row: Record<string, any> = {}
       for (const key of fieldKeys) {
         const value = transaction[key as keyof typeof transaction] ?? ""
-        const exportFieldSettings = exportImportFieldsMapping[key]
+        const exportFieldSettings = EXPORT_AND_IMPORT_FIELD_MAP[key]
         if (exportFieldSettings && exportFieldSettings.export) {
           row[key] = await exportFieldSettings.export(value)
         } else {

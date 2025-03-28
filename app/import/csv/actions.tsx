@@ -1,6 +1,6 @@
 "use server"
 
-import { exportImportFieldsMapping } from "@/models/export_and_import"
+import { EXPORT_AND_IMPORT_FIELD_MAP } from "@/models/export_and_import"
 import { createTransaction } from "@/models/transactions"
 import { parse } from "@fast-csv/parse"
 import { revalidatePath } from "next/cache"
@@ -44,7 +44,7 @@ export async function saveTransactionsAction(prevState: any, formData: FormData)
     for (const row of rows) {
       const transactionData: Record<string, unknown> = {}
       for (const [fieldCode, value] of Object.entries(row)) {
-        const fieldDef = exportImportFieldsMapping[fieldCode]
+        const fieldDef = EXPORT_AND_IMPORT_FIELD_MAP[fieldCode]
         if (fieldDef?.import) {
           transactionData[fieldCode] = await fieldDef.import(value as string)
         } else {

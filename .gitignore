@@ -45,7 +45,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sqlite
+# databases
+pgdata
 *.db
 *.sqlite
 *.sqlite3
