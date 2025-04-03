@@ -1,15 +1,15 @@
+import { default as globalConfig } from "@/lib/config"
 import { getSessionCookie } from "better-auth/cookies"
 import { NextRequest, NextResponse } from "next/server"
-import { AUTH_LOGIN_URL, IS_SELF_HOSTED_MODE } from "./lib/constants"
 
 export default async function middleware(request: NextRequest) {
-  if (IS_SELF_HOSTED_MODE) {
+  if (globalConfig.selfHosted.isEnabled) {
     return NextResponse.next()
   }
 
   const sessionCookie = getSessionCookie(request, { cookiePrefix: "taxhacker" })
   if (!sessionCookie) {
-    return NextResponse.redirect(new URL(AUTH_LOGIN_URL, request.url))
+    return NextResponse.redirect(new URL(globalConfig.auth.loginUrl, request.url))
   }
   return NextResponse.next()
 }

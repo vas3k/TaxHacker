@@ -3,7 +3,7 @@ import { FormInput } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { ColoredText } from "@/components/ui/colored-text"
-import { IS_SELF_HOSTED_MODE, SELF_HOSTED_REDIRECT_URL } from "@/lib/constants"
+import config from "@/lib/config"
 import { DEFAULT_CURRENCIES, DEFAULT_SETTINGS } from "@/models/defaults"
 import { getSelfHostedUser } from "@/models/users"
 import { ShieldAlert } from "lucide-react"
@@ -11,7 +11,7 @@ import { redirect } from "next/navigation"
 import { selfHostedGetStartedAction } from "../actions"
 
 export default async function SelfHostedWelcomePage() {
-  if (!IS_SELF_HOSTED_MODE) {
+  if (!config.selfHosted.isEnabled) {
     return (
       <Card className="w-full max-w-xl mx-auto p-8 flex flex-col items-center justify-center gap-6">
         <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -31,7 +31,7 @@ export default async function SelfHostedWelcomePage() {
 
   const user = await getSelfHostedUser()
   if (user) {
-    redirect(SELF_HOSTED_REDIRECT_URL)
+    redirect(config.selfHosted.redirectUrl)
   }
 
   return (

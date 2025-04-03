@@ -1,11 +1,12 @@
+import SignupForm from "@/components/auth/signup-form"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { ColoredText } from "@/components/ui/colored-text"
-import { IS_SELF_HOSTED_MODE, SELF_HOSTED_REDIRECT_URL } from "@/lib/constants"
+import config from "@/lib/config"
 import { redirect } from "next/navigation"
 
 export default async function LoginPage() {
-  if (IS_SELF_HOSTED_MODE) {
-    redirect(SELF_HOSTED_REDIRECT_URL)
+  if (config.selfHosted.isEnabled) {
+    redirect(config.selfHosted.redirectUrl)
   }
 
   return (
@@ -15,10 +16,13 @@ export default async function LoginPage() {
         <ColoredText>TaxHacker: Cloud Edition</ColoredText>
       </CardTitle>
       <CardContent className="w-full">
-        <div className="text-center text-md text-muted-foreground">
-          Creating new account is disabled for now. Please use the self-hosted version.
-        </div>
-        {/* <SignupForm /> */}
+        {config.auth.disableSignup ? (
+          <div className="text-center text-md text-muted-foreground">
+            Creating new account is disabled for now. Please use the self-hosted version.
+          </div>
+        ) : (
+          <SignupForm />
+        )}
       </CardContent>
     </Card>
   )

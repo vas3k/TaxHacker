@@ -17,7 +17,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
-import { APP_TITLE, IS_SELF_HOSTED_MODE } from "@/lib/constants"
+import config from "@/lib/config"
 import { ClockArrowUp, FileText, Import, LayoutDashboard, Settings, Sparkles, Upload } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -28,7 +28,15 @@ import { Blinker } from "./blinker"
 import { SidebarMenuItemWithHighlight } from "./sidebar-item"
 import SidebarUser from "./sidebar-user"
 
-export function AppSidebar({ unsortedFilesCount, profile }: { unsortedFilesCount: number; profile: UserProfile }) {
+export function AppSidebar({
+  profile,
+  unsortedFilesCount,
+  isSelfHosted,
+}: {
+  profile: UserProfile
+  unsortedFilesCount: number
+  isSelfHosted: boolean
+}) {
   const { open, setOpenMobile } = useSidebar()
   const pathname = usePathname()
   const { notification } = useNotification()
@@ -46,7 +54,7 @@ export function AppSidebar({ unsortedFilesCount, profile }: { unsortedFilesCount
             <Image src="/logo/256.png" alt="Logo" className="h-10 w-10 rounded-lg" width={40} height={40} />
             <div className="grid flex-1 text-left leading-tight">
               <span className="truncate font-semibold text-lg">
-                <ColoredText>{APP_TITLE}</ColoredText>
+                <ColoredText>{config.app.title}</ColoredText>
               </span>
             </div>
           </Link>
@@ -124,7 +132,7 @@ export function AppSidebar({ unsortedFilesCount, profile }: { unsortedFilesCount
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {IS_SELF_HOSTED_MODE && (
+                {isSelfHosted && (
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <Link href="https://vas3k.com/donate/" target="_blank">
@@ -146,7 +154,7 @@ export function AppSidebar({ unsortedFilesCount, profile }: { unsortedFilesCount
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarUser profile={profile} />
+                  <SidebarUser profile={profile} isSelfHosted={isSelfHosted} />
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>

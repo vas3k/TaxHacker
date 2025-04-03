@@ -4,7 +4,7 @@ import { deleteTransactionFileAction, uploadTransactionFilesAction } from "@/app
 import { FilePreview } from "@/components/files/preview"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { FILE_ACCEPTED_MIMETYPES } from "@/lib/constants"
+import config from "@/lib/config"
 import { File, Transaction } from "@prisma/client"
 import { Loader2, Upload, X } from "lucide-react"
 import { useState } from "react"
@@ -72,7 +72,7 @@ export default function TransactionFiles({ transaction, files }: { transaction: 
             name="file"
             className="absolute inset-0 top-0 left-0 w-full h-full opacity-0"
             onChange={handleFileChange}
-            accept={FILE_ACCEPTED_MIMETYPES}
+            accept={config.upload.acceptedMimeTypes}
           />
         </label>
       </Card>

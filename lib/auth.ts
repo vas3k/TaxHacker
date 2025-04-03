@@ -1,6 +1,6 @@
-import { AUTH_LOGIN_URL, IS_SELF_HOSTED_MODE, SELF_HOSTED_REDIRECT_URL } from "@/lib/constants"
+import config from "@/lib/config"
 import { createUserDefaults } from "@/models/defaults"
-import { getSelfHostedUser, getUserByEmail } from "@/models/users"
+import { getSelfHostedUser } from "@/models/users"
 import { User } from "@prisma/client"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
@@ -22,7 +22,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   email: {
     provider: "resend",
-    from: process.env.RESEND_FROM_EMAIL!,
+    from: config.email.from,
     resend,
   },
   session: {
@@ -49,14 +49,10 @@ export const auth = betterAuth({
   },
   plugins: [
     emailOTP({
-      disableSignUp: true,
+      disableSignUp: config.auth.disableSignup,
       otpLength: 6,
       expiresIn: 10 * 60, // 10 minutes
       sendVerificationOTP: async ({ email, otp }) => {
-        const user = await getUserByEmail(email as string)
-        if (!user) {
-          throw new Error("User with this email does not exist")
-        }
         await sendOTPCodeEmail({ email, otp })
       },
     }),
@@ -65,7 +61,7 @@ export const auth = betterAuth({
 })
 
 export async function getSession() {
-  if (IS_SELF_HOSTED_MODE) {
+  if (config.selfHosted.isEnabled) {
     const user = await getSelfHostedUser()
     return user ? { user } : null
   }
@@ -78,10 +74,10 @@ export async function getSession() {
 export async function getCurrentUser(): Promise<User> {
   const session = await getSession()
   if (!session || !session.user) {
-    if (IS_SELF_HOSTED_MODE) {
-      redirect(SELF_HOSTED_REDIRECT_URL)
+    if (config.selfHosted.isEnabled) {
+      redirect(config.selfHosted.redirectUrl)
     } else {
-      redirect(AUTH_LOGIN_URL)
+      redirect(config.auth.loginUrl)
     }
   }
   return session.user as User

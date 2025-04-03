@@ -3,7 +3,7 @@
 import { useNotification } from "@/app/(app)/context"
 import { uploadFilesAction } from "@/app/(app)/files/actions"
 import { Button } from "@/components/ui/button"
-import { FILE_ACCEPTED_MIMETYPES } from "@/lib/constants"
+import config from "@/lib/config"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ComponentProps, startTransition, useRef, useState } from "react"
@@ -54,7 +54,7 @@ export function UploadButton({ children, ...props }: { children: React.ReactNode
         id="fileInput"
         className="hidden"
         multiple
-        accept={FILE_ACCEPTED_MIMETYPES}
+        accept={config.upload.acceptedMimeTypes}
         onChange={handleFileChange}
       />
 

@@ -1,13 +1,13 @@
+import config from "@/lib/config"
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
-import { APP_DESCRIPTION, APP_TITLE } from "@/lib/constants"
 
 export const metadata: Metadata = {
   title: {
     template: "%s | TaxHacker",
-    default: APP_TITLE,
+    default: config.app.title,
   },
-  description: APP_DESCRIPTION,
+  description: config.app.description,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

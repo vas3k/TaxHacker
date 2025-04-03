@@ -10,12 +10,11 @@ import {
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
 import { authClient } from "@/lib/auth-client"
-import { IS_SELF_HOSTED_MODE } from "@/lib/constants"
 import { LogOut, MoreVertical, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-export default function SidebarUser({ profile }: { profile: UserProfile }) {
+export default function SidebarUser({ profile, isSelfHosted }: { profile: UserProfile; isSelfHosted: boolean }) {
   const signOut = async () => {
     await authClient.signOut({})
     redirect("/")
@@ -61,14 +60,16 @@ export default function SidebarUser({ profile }: { profile: UserProfile }) {
             </Link>
           </DropdownMenuItem> */}
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        {!IS_SELF_HOSTED_MODE && (
-          <DropdownMenuItem asChild>
-            <span onClick={signOut} className="flex items-center gap-2 text-red-600 cursor-pointer">
-              <LogOut className="h-4 w-4" />
-              Log out
-            </span>
-          </DropdownMenuItem>
+        {!isSelfHosted && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <span onClick={signOut} className="flex items-center gap-2 text-red-600 cursor-pointer">
+                <LogOut className="h-4 w-4" />
+                Log out
+              </span>
+            </DropdownMenuItem>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

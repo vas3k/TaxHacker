@@ -1,5 +1,6 @@
 "use server"
 
+import config from "@/lib/config"
 import { resend, sendNewsletterWelcomeEmail } from "@/lib/email"
 
 export async function subscribeToNewsletterAction(email: string) {
@@ -9,7 +10,7 @@ export async function subscribeToNewsletterAction(email: string) {
     }
 
     const existingContacts = await resend.contacts.list({
-      audienceId: process.env.RESEND_AUDIENCE_ID as string,
+      audienceId: config.email.audienceId,
     })
 
     if (existingContacts.data) {
@@ -22,7 +23,7 @@ export async function subscribeToNewsletterAction(email: string) {
 
     await resend.contacts.create({
       email,
-      audienceId: process.env.RESEND_AUDIENCE_ID as string,
+      audienceId: config.email.audienceId,
       unsubscribed: false,
     })
 

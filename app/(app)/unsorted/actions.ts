@@ -6,7 +6,7 @@ import { buildLLMPrompt } from "@/ai/prompt"
 import { fieldsToJsonSchema } from "@/ai/schema"
 import { transactionFormSchema } from "@/forms/transactions"
 import { getCurrentUser } from "@/lib/auth"
-import { IS_SELF_HOSTED_MODE } from "@/lib/constants"
+import config from "@/lib/config"
 import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { deleteFile, getFileById, updateFile } from "@/models/files"
@@ -50,7 +50,7 @@ export async function analyzeFileAction(
     prompt,
     schema,
     attachments,
-    IS_SELF_HOSTED_MODE ? settings.openai_api_key : process.env.OPENAI_API_KEY || ""
+    config.selfHosted.isEnabled ? settings.openai_api_key : process.env.OPENAI_API_KEY || ""
   )
 
   console.log("Analysis results:", results)

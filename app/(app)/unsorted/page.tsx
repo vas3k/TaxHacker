@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import AnalyzeForm from "@/components/unsorted/analyze-form"
 import { getCurrentUser } from "@/lib/auth"
-import { IS_SELF_HOSTED_MODE } from "@/lib/constants"
+import config from "@/lib/config"
 import { getCategories } from "@/models/categories"
 import { getCurrencies } from "@/models/currencies"
 import { getFields } from "@/models/fields"
@@ -36,7 +36,7 @@ export default async function UnsortedPage() {
         <h2 className="text-3xl font-bold tracking-tight">You have {files.length} unsorted files</h2>
       </header>
 
-      {IS_SELF_HOSTED_MODE && !settings.openai_api_key && (
+      {config.selfHosted.isEnabled && !settings.openai_api_key && (
         <Alert>
           <Settings className="h-4 w-4 mt-2" />
           <div className="flex flex-row justify-between pt-2">

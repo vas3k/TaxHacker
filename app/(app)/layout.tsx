@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/sidebar/sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { getCurrentUser } from "@/lib/auth"
-import { APP_DESCRIPTION, APP_TITLE } from "@/lib/constants"
+import config from "@/lib/config"
 import { getUnsortedFilesCount } from "@/models/files"
 import type { Metadata, Viewport } from "next"
 import "../globals.css"
@@ -13,9 +13,9 @@ import { NotificationProvider } from "./context"
 export const metadata: Metadata = {
   title: {
     template: "%s | TaxHacker",
-    default: APP_TITLE,
+    default: config.app.title,
   },
-  description: APP_DESCRIPTION,
+  description: config.app.description,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -38,13 +38,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SidebarProvider>
           <MobileMenu unsortedFilesCount={unsortedFilesCount} />
           <AppSidebar
-            unsortedFilesCount={unsortedFilesCount}
             profile={{
               id: user.id,
               name: user.name || "",
               email: user.email,
               avatar: user.avatar || undefined,
             }}
+            unsortedFilesCount={unsortedFilesCount}
+            isSelfHosted={config.selfHosted.isEnabled}
           />
           <SidebarInset className="w-full h-full mt-[60px] md:mt-0 overflow-auto">{children}</SidebarInset>
         </SidebarProvider>

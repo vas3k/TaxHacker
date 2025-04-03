@@ -3,7 +3,7 @@
 import { useNotification } from "@/app/(app)/context"
 import { uploadFilesAction } from "@/app/(app)/files/actions"
 import { FormError } from "@/components/forms/error"
-import { FILE_ACCEPTED_MIMETYPES } from "@/lib/constants"
+import config from "@/lib/config"
 import { Camera, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useState } from "react"
@@ -48,7 +48,7 @@ export default function DashboardDropZoneWidget() {
           id="fileInput"
           className="hidden"
           multiple
-          accept={FILE_ACCEPTED_MIMETYPES}
+          accept={config.upload.acceptedMimeTypes}
           onChange={handleFileChange}
         />
         <div className="flex flex-col items-center justify-center gap-4 p-8 text-center h-full">

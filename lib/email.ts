@@ -2,14 +2,15 @@ import { NewsletterWelcomeEmail } from "@/components/emails/newsletter-welcome-e
 import { OTPEmail } from "@/components/emails/otp-email"
 import React from "react"
 import { Resend } from "resend"
+import config from "./config"
 
-export const resend = new Resend(process.env.RESEND_API_KEY)
+export const resend = new Resend(config.email.apiKey)
 
 export async function sendOTPCodeEmail({ email, otp }: { email: string; otp: string }) {
   const html = React.createElement(OTPEmail, { otp })
 
   return await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL!,
+    from: config.email.from,
     to: email,
     subject: "Your TaxHacker verification code",
     react: html,
@@ -20,7 +21,7 @@ export async function sendNewsletterWelcomeEmail(email: string) {
   const html = React.createElement(NewsletterWelcomeEmail)
 
   return await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL as string,
+    from: config.email.from,
     to: email,
     subject: "Welcome to TaxHacker Newsletter!",
     react: html,

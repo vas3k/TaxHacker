@@ -6,29 +6,40 @@ import { FormError } from "@/components/forms/error"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
-import { IS_SELF_HOSTED_MODE } from "@/lib/constants"
 import { Field } from "@prisma/client"
 import { CircleCheckBig, Edit } from "lucide-react"
 import Link from "next/link"
 import { useActionState } from "react"
 
-export default function LLMSettingsForm({ settings, fields }: { settings: Record<string, string>; fields: Field[] }) {
+export default function LLMSettingsForm({
+  settings,
+  fields,
+  showApiKey = true,
+}: {
+  settings: Record<string, string>
+  fields: Field[]
+  showApiKey?: boolean
+}) {
   const [saveState, saveAction, pending] = useActionState(saveSettingsAction, null)
 
   return (
     <>
       <form action={saveAction} className="space-y-4">
-        {IS_SELF_HOSTED_MODE && (
-          <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={settings.openai_api_key} />
-        )}
+        {showApiKey && (
+          <>
+            <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={settings.openai_api_key} />
 
-        {IS_SELF_HOSTED_MODE && (
-          <small className="text-muted-foreground">
-            Get your API key from{" "}
-            <a href="https://platform.openai.com/settings/organization/api-keys" target="_blank" className="underline">
-              OpenAI Platform Console
-            </a>
-          </small>
+            <small className="text-muted-foreground">
+              Get your API key from{" "}
+              <a
+                href="https://platform.openai.com/settings/organization/api-keys"
+                target="_blank"
+                className="underline"
+              >
+                OpenAI Platform Console
+              </a>
+            </small>
+          </>
         )}
 
         <FormTextarea

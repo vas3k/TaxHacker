@@ -4,7 +4,7 @@ import DashboardUnsortedWidget from "@/components/dashboard/unsorted-widget"
 import { WelcomeWidget } from "@/components/dashboard/welcome-widget"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUser } from "@/lib/auth"
-import { APP_DESCRIPTION } from "@/lib/constants"
+import config from "@/lib/config"
 import { getUnsortedFiles } from "@/models/files"
 import { getSettings } from "@/models/settings"
 import { TransactionFilters } from "@/models/transactions"
@@ -12,7 +12,7 @@ import { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: APP_DESCRIPTION,
+  description: config.app.description,
 }
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<TransactionFilters> }) {

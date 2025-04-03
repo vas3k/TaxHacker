@@ -1,13 +1,13 @@
 import LandingPage from "@/app/landing/landing"
 import { getSession } from "@/lib/auth"
-import { IS_SELF_HOSTED_MODE, SELF_HOSTED_REDIRECT_URL } from "@/lib/constants"
+import config from "@/lib/config"
 import { redirect } from "next/navigation"
 
 export default async function Home() {
   const session = await getSession()
   if (!session) {
-    if (IS_SELF_HOSTED_MODE) {
-      redirect(SELF_HOSTED_REDIRECT_URL)
+    if (config.selfHosted.isEnabled) {
+      redirect(config.selfHosted.redirectUrl)
     }
     return <LandingPage />
   }
