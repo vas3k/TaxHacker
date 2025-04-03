@@ -1,0 +1,27 @@
+services:
+  app:
+    image: ghcr.io/vas3k/taxhacker:latest
+    container_name: taxhacker_app
+    networks:
+      - taxhacker_network
+    environment:
+      - NODE_ENV=production
+      - UPLOAD_PATH=/app/data/uploads
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:7331:7331"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+networks:
+  taxhacker_network:
+    driver: bridge

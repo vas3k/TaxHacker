@@ -20,6 +20,8 @@ export type UserProfile = {
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  appName: config.app.title,
+  secret: config.auth.secret,
   email: {
     provider: "resend",
     from: config.email.from,

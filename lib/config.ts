@@ -13,6 +13,7 @@ const config = {
     welcomeUrl: "/self-hosted",
   },
   auth: {
+    secret: process.env.BETTER_AUTH_SECRET || "please-set-secret",
     loginUrl: "/enter",
     disableSignup: process.env.DISABLE_SIGNUP === "true" || process.env.SELF_HOSTED_MODE === "true",
   },
