@@ -1,8 +1,7 @@
 "use client"
 
-import { useNotification } from "@/app/context"
+import { useNotification } from "@/app/(app)/context"
 import { UploadButton } from "@/components/files/upload-button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Sidebar,
   SidebarContent,
@@ -17,20 +16,19 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { UserProfile } from "@/lib/auth"
+import { APP_TITLE, IS_SELF_HOSTED_MODE } from "@/lib/constants"
 import { ClockArrowUp, FileText, Import, LayoutDashboard, Settings, Sparkles, Upload } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect } from "react"
+import { ColoredText } from "../ui/colored-text"
 import { Blinker } from "./blinker"
 import { SidebarMenuItemWithHighlight } from "./sidebar-item"
+import SidebarUser from "./sidebar-user"
 
-export function AppSidebar({
-  settings,
-  unsortedFilesCount,
-}: {
-  settings: Record<string, string>
-  unsortedFilesCount: number
-}) {
+export function AppSidebar({ unsortedFilesCount, profile }: { unsortedFilesCount: number; profile: UserProfile }) {
   const { open, setOpenMobile } = useSidebar()
   const pathname = usePathname()
   const { notification } = useNotification()
@@ -44,25 +42,14 @@ export function AppSidebar({
     <>
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
-          {open ? (
-            <Link href="/" className="flex items-center gap-2 p-2">
-              <Avatar className="h-12 w-12 rounded-lg">
-                <AvatarImage src="/logo/256.png" />
-                <AvatarFallback className="rounded-lg">AI</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-semibold">{settings.app_title}</span>
-                <span className="truncate text-xs">Beta</span>
-              </div>
-            </Link>
-          ) : (
-            <Link href="/">
-              <Avatar className="h-10 w-10 rounded-lg">
-                <AvatarImage src="/logo/256.png" />
-                <AvatarFallback className="rounded-lg">AI</AvatarFallback>
-              </Avatar>
-            </Link>
-          )}
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo/256.png" alt="Logo" className="h-10 w-10 rounded-lg" width={40} height={40} />
+            <div className="grid flex-1 text-left leading-tight">
+              <span className="truncate font-semibold text-lg">
+                <ColoredText>{APP_TITLE}</ColoredText>
+              </span>
+            </div>
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
@@ -74,9 +61,9 @@ export function AppSidebar({
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItemWithHighlight href="/">
+                <SidebarMenuItemWithHighlight href="/dashboard">
                   <SidebarMenuButton asChild>
-                    <Link href="/">
+                    <Link href="/dashboard">
                       <LayoutDashboard />
                       <span>Home</span>
                     </Link>
@@ -137,19 +124,30 @@ export function AppSidebar({
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link href="https://vas3k.com/donate/" target="_blank">
-                      <Sparkles />
-                      Thank the author
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {IS_SELF_HOSTED_MODE && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="https://vas3k.com/donate/" target="_blank">
+                        <Sparkles />
+                        Thank the author
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 {!open && (
                   <SidebarMenuItem>
                     <SidebarTrigger />
                   </SidebarMenuItem>
                 )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarUser profile={profile} />
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

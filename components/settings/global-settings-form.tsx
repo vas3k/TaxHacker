@@ -1,11 +1,10 @@
 "use client"
 
-import { saveSettingsAction } from "@/app/settings/actions"
+import { saveSettingsAction } from "@/app/(app)/settings/actions"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectType } from "@/components/forms/select-type"
-import { FormInput } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Category, Currency } from "@prisma/client"
 import { CircleCheckBig } from "lucide-react"
@@ -24,8 +23,6 @@ export default function GlobalSettingsForm({
 
   return (
     <form action={saveAction} className="space-y-4">
-      <FormInput title="App Title" name="app_title" defaultValue={settings.app_title} />
-
       <FormSelectCurrency
         title="Default Currency"
         name="default_currency"

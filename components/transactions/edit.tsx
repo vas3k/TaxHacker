@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteTransactionAction, saveTransactionAction } from "@/app/transactions/actions"
+import { deleteTransactionAction, saveTransactionAction } from "@/app/(app)/transactions/actions"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
@@ -47,10 +47,13 @@ export default function TransactionEditForm({
     projectCode: transaction.projectCode || settings.default_project,
     issuedAt: transaction.issuedAt ? format(transaction.issuedAt, "yyyy-MM-dd") : "",
     note: transaction.note || "",
-    ...extraFields.reduce((acc, field) => {
-      acc[field.code] = transaction.extra?.[field.code as keyof typeof transaction.extra] || ""
-      return acc
-    }, {} as Record<string, any>),
+    ...extraFields.reduce(
+      (acc, field) => {
+        acc[field.code] = transaction.extra?.[field.code as keyof typeof transaction.extra] || ""
+        return acc
+      },
+      {} as Record<string, any>
+    ),
   })
 
   const handleDelete = async () => {

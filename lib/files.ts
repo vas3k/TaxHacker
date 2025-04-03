@@ -1,30 +1,38 @@
-import { Transaction } from "@prisma/client"
-import { randomUUID } from "crypto"
+import { File, Transaction, User } from "@prisma/client"
+import { access, constants } from "fs/promises"
 import path from "path"
 
-export const FILE_ACCEPTED_MIMETYPES = "image/*,.pdf,.doc,.docx,.xls,.xlsx"
 export const FILE_UPLOAD_PATH = path.resolve(process.env.UPLOAD_PATH || "./uploads")
-export const FILE_UNSORTED_UPLOAD_PATH = path.join(FILE_UPLOAD_PATH, "unsorted")
-export const FILE_PREVIEWS_PATH = path.join(FILE_UPLOAD_PATH, "previews")
-export const FILE_IMPORT_CSV_UPLOAD_PATH = path.join(FILE_UPLOAD_PATH, "csv")
+export const FILE_UNSORTED_DIRECTORY_NAME = "unsorted"
+export const FILE_PREVIEWS_DIRECTORY_NAME = "previews"
+export const FILE_IMPORT_CSV_DIRECTORY_NAME = "csv"
 
-export async function getUnsortedFileUploadPath(filename: string) {
-  const fileUuid = randomUUID()
-  const fileExtension = path.extname(filename)
-  const storedFileName = `${fileUuid}${fileExtension}`
-  const filePath = path.join(FILE_UNSORTED_UPLOAD_PATH, storedFileName)
-
-  return { fileUuid, filePath }
+export async function getUserUploadsDirectory(user: User) {
+  return path.join(FILE_UPLOAD_PATH, user.email)
 }
 
-export async function getTransactionFileUploadPath(filename: string, transaction: Transaction) {
-  const fileUuid = randomUUID()
+export async function getUserPreviewsDirectory(user: User) {
+  return path.join(FILE_UPLOAD_PATH, user.email, FILE_PREVIEWS_DIRECTORY_NAME)
+}
+
+export async function unsortedFilePath(fileUuid: string, filename: string): Promise<string> {
+  const fileExtension = path.extname(filename)
+  return path.join(FILE_UNSORTED_DIRECTORY_NAME, `${fileUuid}${fileExtension}`)
+}
+
+export async function previewFilePath(fileUuid: string, page: number): Promise<string> {
+  return path.join(FILE_PREVIEWS_DIRECTORY_NAME, `${fileUuid}.${page}.webp`)
+}
+
+export async function getTransactionFileUploadPath(fileUuid: string, filename: string, transaction: Transaction) {
   const fileExtension = path.extname(filename)
   const storedFileName = `${fileUuid}${fileExtension}`
-  const formattedPath = formatFilePath(storedFileName, transaction.issuedAt || new Date())
-  const filePath = path.join(FILE_UPLOAD_PATH, formattedPath)
+  return formatFilePath(storedFileName, transaction.issuedAt || new Date())
+}
 
-  return { fileUuid, filePath }
+export async function fullPathForFile(user: User, file: File) {
+  const userUploadsDirectory = await getUserUploadsDirectory(user)
+  return path.join(userUploadsDirectory, file.path)
 }
 
 function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{name}{ext}") {
@@ -34,4 +42,13 @@ function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{nam
   const name = path.basename(filename, ext)
 
   return format.replace("{YYYY}", String(year)).replace("{MM}", month).replace("{name}", name).replace("{ext}", ext)
+}
+
+export async function fileExists(filePath: string) {
+  try {
+    await access(filePath, constants.F_OK)
+    return true
+  } catch {
+    return false
+  }
 }

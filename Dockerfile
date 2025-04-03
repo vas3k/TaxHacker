@@ -2,9 +2,7 @@ FROM node:23-slim AS base
 
 # Default environment variables
 ENV PORT=7331
-ENV UPLOAD_PATH=/app/data/uploads
 ENV NODE_ENV=production
-ENV DATABASE_URL=file:/app/data/db.sqlite
 
 # Build stage
 FROM base AS builder
@@ -36,6 +34,7 @@ RUN apt-get update && apt-get install -y \
     graphicsmagick \
     openssl \
     libwebp-dev \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -55,7 +54,7 @@ COPY --from=builder /app/next.config.ts ./
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Create directory for SQLite database and set permissions
+# Create directory for uploads
 RUN mkdir -p /app/data
 
 EXPOSE 7331

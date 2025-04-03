@@ -1,11 +1,12 @@
 "use client"
 
-import { fieldsToJsonSchema } from "@/app/ai/schema"
-import { saveSettingsAction } from "@/app/settings/actions"
+import { fieldsToJsonSchema } from "@/ai/schema"
+import { saveSettingsAction } from "@/app/(app)/settings/actions"
 import { FormError } from "@/components/forms/error"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
+import { IS_SELF_HOSTED_MODE } from "@/lib/constants"
 import { Field } from "@prisma/client"
 import { CircleCheckBig, Edit } from "lucide-react"
 import Link from "next/link"
@@ -17,14 +18,18 @@ export default function LLMSettingsForm({ settings, fields }: { settings: Record
   return (
     <>
       <form action={saveAction} className="space-y-4">
-        <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={settings.openai_api_key} />
+        {IS_SELF_HOSTED_MODE && (
+          <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={settings.openai_api_key} />
+        )}
 
-        <small className="text-muted-foreground">
-          Get your API key from{" "}
-          <a href="https://platform.openai.com/settings/organization/api-keys" target="_blank" className="underline">
-            OpenAI Platform Console
-          </a>
-        </small>
+        {IS_SELF_HOSTED_MODE && (
+          <small className="text-muted-foreground">
+            Get your API key from{" "}
+            <a href="https://platform.openai.com/settings/organization/api-keys" target="_blank" className="underline">
+              OpenAI Platform Console
+            </a>
+          </small>
+        )}
 
         <FormTextarea
           title="Prompt for File Analysis Form"

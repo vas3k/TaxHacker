@@ -6,10 +6,11 @@ import path from "path"
 import { cache } from "react"
 import { getTransactionById } from "./transactions"
 
-export const getUnsortedFiles = cache(async () => {
+export const getUnsortedFiles = cache(async (userId: string) => {
   return await prisma.file.findMany({
     where: {
       isReviewed: false,
+      userId,
     },
     orderBy: {
       createdAt: "desc",
@@ -17,28 +18,30 @@ export const getUnsortedFiles = cache(async () => {
   })
 })
 
-export const getUnsortedFilesCount = cache(async () => {
+export const getUnsortedFilesCount = cache(async (userId: string) => {
   return await prisma.file.count({
     where: {
       isReviewed: false,
+      userId,
     },
   })
 })
 
-export const getFileById = cache(async (id: string) => {
+export const getFileById = cache(async (id: string, userId: string) => {
   return await prisma.file.findFirst({
-    where: { id },
+    where: { id, userId },
   })
 })
 
-export const getFilesByTransactionId = cache(async (id: string) => {
-  const transaction = await getTransactionById(id)
+export const getFilesByTransactionId = cache(async (id: string, userId: string) => {
+  const transaction = await getTransactionById(id, userId)
   if (transaction && transaction.files) {
     return await prisma.file.findMany({
       where: {
         id: {
           in: transaction.files as string[],
         },
+        userId,
       },
       orderBy: {
         createdAt: "asc",
@@ -48,21 +51,24 @@ export const getFilesByTransactionId = cache(async (id: string) => {
   return []
 })
 
-export const createFile = async (data: any) => {
+export const createFile = async (userId: string, data: any) => {
   return await prisma.file.create({
-    data,
+    data: {
+      ...data,
+      userId,
+    },
   })
 }
 
-export const updateFile = async (id: string, data: any) => {
+export const updateFile = async (id: string, userId: string, data: any) => {
   return await prisma.file.update({
-    where: { id },
+    where: { id, userId },
     data,
   })
 }
 
-export const deleteFile = async (id: string) => {
-  const file = await getFileById(id)
+export const deleteFile = async (id: string, userId: string) => {
+  const file = await getFileById(id, userId)
   if (!file) {
     return
   }
@@ -74,6 +80,6 @@ export const deleteFile = async (id: string) => {
   }
 
   return await prisma.file.delete({
-    where: { id },
+    where: { id, userId },
   })
 }

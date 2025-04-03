@@ -1,6 +1,7 @@
 import { FiltersWidget } from "@/components/dashboard/filters-widget"
 import { ProjectsWidget } from "@/components/dashboard/projects-widget"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getCurrentUser } from "@/lib/auth"
 import { formatCurrency } from "@/lib/utils"
 import { getProjects } from "@/models/projects"
 import { getDashboardStats, getProjectStats } from "@/models/stats"
@@ -8,11 +9,12 @@ import { TransactionFilters } from "@/models/transactions"
 import { ArrowDown, ArrowUp, BicepsFlexed } from "lucide-react"
 
 export async function StatsWidget({ filters }: { filters: TransactionFilters }) {
-  const projects = await getProjects()
-  const stats = await getDashboardStats(filters)
+  const user = await getCurrentUser()
+  const projects = await getProjects(user.id)
+  const stats = await getDashboardStats(user.id, filters)
   const statsPerProject = Object.fromEntries(
     await Promise.all(
-      projects.map((project) => getProjectStats(project.code, filters).then((stats) => [project.code, stats]))
+      projects.map((project) => getProjectStats(user.id, project.code, filters).then((stats) => [project.code, stats]))
     )
   )
 

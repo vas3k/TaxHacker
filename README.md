@@ -47,7 +47,7 @@ https://github.com/user-attachments/assets/3326d0e3-0bf6-4c39-9e00-4bf0983d9b7a
 
 Take a photo on upload or a PDF and TaxHacker will automatically recognise, categorise and store transaction information.
 
-- Upload multiple documents and store in “unsorted” until you get the time to sort them out by hand or with an AI
+- Upload multiple documents and store in "unsorted" until you get the time to sort them out by hand or with an AI
 - Use LLM to extract key information like date, amount, and vendor
 - Automatically categorize transactions based on its content
 - Store everything in a structured format for easy filtering and retrieval
@@ -115,9 +115,16 @@ curl -O https://raw.githubusercontent.com/vas3k/TaxHacker/main/docker-compose.ym
 docker compose up
 ```
 
+The Docker Compose setup includes:
+
+- TaxHacker application container
+- PostgreSQL 17 database container
+- Automatic database migrations
+- Volume mounts for persistent data storage
+
 New docker image is automatically built and published on every new release. You can use specific version tags (e.g. `v1.0.0`) or `latest` for the most recent version.
 
-For more advanced setups, you can adapt Docker Compose configuration to your own needs. The default configuration uses the pre-built image from GHCR, but you can still build locally using the provided [Dockerfile](./Dockerfile) if needed. 
+For more advanced setups, you can adapt Docker Compose configuration to your own needs. The default configuration uses the pre-built image from GHCR, but you can still build locally using the provided [Dockerfile](./Dockerfile) if needed.
 
 For example:
 
@@ -129,8 +136,9 @@ services:
       - "7331:7331"
     environment:
       - NODE_ENV=production
+      - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
-      - DATABASE_URL=file:/app/data/db.sqlite
+      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/taxhacker
     volumes:
       - ./data:/app/data
     restart: unless-stopped
@@ -142,9 +150,15 @@ Configure TaxHacker to suit your needs with these environment variables:
 
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
-| `UPLOAD_PATH` | Yes | Local directory for uploading files | `./upload` |
-| `DATABASE_URL` | Yes | Database file for SQLite | `file:./db.sqlite` |
-| `PROMPT_ANALYSE_NEW_FILE` | No | Default prompt for LLM | `Act as an accountant...` |
+| `PORT` | No | Port to run the server on | `7331` |
+| `SELF_HOSTED_MODE` | No | Enable self-hosted mode and automatic login | `false` |
+| `UPLOAD_PATH` | Yes | Local directory for uploading files | `./data/uploads` |
+| `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://postgres:postgres@localhost:5432/taxhacker` |
+| `OPENAI_API_KEY` | No | OpenAI API key for AI features | `sk-...` |
+| `RESEND_API_KEY` | No | Resend API key for email notifications | `re_...` |
+| `RESEND_AUDIENCE_ID` | No | Resend audience ID for newsletters | `fde8dd49-...` |
+| `RESEND_FROM_EMAIL` | No | Email address to send from | `TaxHacker <hello@taxhacker.app>` |
+
 
 ## ⌨️ Local Development
 
@@ -152,7 +166,7 @@ We use:
 
 - Next.js version 15+ or later
 - [Prisma](https://www.prisma.io/) for database models and migrations
-- SQLite as a database
+- PostgreSQL as a database (PostgreSQL 17+ recommended)
 - Ghostscript and graphicsmagick libs for PDF files (can be installed on macOS via `brew install gs graphicsmagick`)
 
 Set up a local development environment with these steps:
@@ -167,13 +181,13 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
+
 # Edit .env with your configuration
+# Make sure to set DATABASE_URL to your PostgreSQL connection string
+# Example: postgresql://user@localhost:5432/taxhacker
 
 # Initialize the database
 npx prisma generate && npx prisma migrate dev
-
-# Seed the database with default data (optional)
-npm run seed
 
 # Start the development server
 npm run dev

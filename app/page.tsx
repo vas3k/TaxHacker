@@ -1,30 +1,16 @@
-import DashboardDropZoneWidget from "@/components/dashboard/drop-zone-widget"
-import { StatsWidget } from "@/components/dashboard/stats-widget"
-import DashboardUnsortedWidget from "@/components/dashboard/unsorted-widget"
-import { WelcomeWidget } from "@/components/dashboard/welcome-widget"
-import { Separator } from "@/components/ui/separator"
-import { getUnsortedFiles } from "@/models/files"
-import { getSettings } from "@/models/settings"
-import { TransactionFilters } from "@/models/transactions"
+import LandingPage from "@/app/landing/landing"
+import { getSession } from "@/lib/auth"
+import { IS_SELF_HOSTED_MODE, SELF_HOSTED_REDIRECT_URL } from "@/lib/constants"
+import { redirect } from "next/navigation"
 
-export default async function Home({ searchParams }: { searchParams: Promise<TransactionFilters> }) {
-  const filters = await searchParams
-  const unsortedFiles = await getUnsortedFiles()
-  const settings = await getSettings()
+export default async function Home() {
+  const session = await getSession()
+  if (!session) {
+    if (IS_SELF_HOSTED_MODE) {
+      redirect(SELF_HOSTED_REDIRECT_URL)
+    }
+    return <LandingPage />
+  }
 
-  return (
-    <div className="flex flex-col gap-5 p-5 w-full max-w-7xl self-center">
-      <div className="flex flex-col sm:flex-row gap-5 items-stretch h-full">
-        <DashboardDropZoneWidget />
-
-        <DashboardUnsortedWidget files={unsortedFiles} />
-      </div>
-
-      {settings.is_welcome_message_hidden !== "true" && <WelcomeWidget />}
-
-      <Separator />
-
-      <StatsWidget filters={filters} />
-    </div>
-  )
+  redirect("/dashboard")
 }

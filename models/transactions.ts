@@ -25,13 +25,14 @@ export type TransactionPagination = {
 
 export const getTransactions = cache(
   async (
+    userId: string,
     filters?: TransactionFilters,
     pagination?: TransactionPagination
   ): Promise<{
     transactions: Transaction[]
     total: number
   }> => {
-    const where: Prisma.TransactionWhereInput = {}
+    const where: Prisma.TransactionWhereInput = { userId }
     let orderBy: Prisma.TransactionOrderByWithRelationInput = { issuedAt: "desc" }
 
     if (filters) {
@@ -94,9 +95,9 @@ export const getTransactions = cache(
   }
 )
 
-export const getTransactionById = cache(async (id: string): Promise<Transaction | null> => {
+export const getTransactionById = cache(async (id: string, userId: string): Promise<Transaction | null> => {
   return await prisma.transaction.findUnique({
-    where: { id },
+    where: { id, userId },
     include: {
       category: true,
       project: true,
@@ -104,22 +105,23 @@ export const getTransactionById = cache(async (id: string): Promise<Transaction 
   })
 })
 
-export const createTransaction = async (data: TransactionData): Promise<Transaction> => {
-  const { standard, extra } = await splitTransactionDataExtraFields(data)
+export const createTransaction = async (userId: string, data: TransactionData): Promise<Transaction> => {
+  const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
 
   return await prisma.transaction.create({
     data: {
       ...standard,
       extra: extra,
+      userId,
     },
   })
 }
 
-export const updateTransaction = async (id: string, data: TransactionData): Promise<Transaction> => {
-  const { standard, extra } = await splitTransactionDataExtraFields(data)
+export const updateTransaction = async (id: string, userId: string, data: TransactionData): Promise<Transaction> => {
+  const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
 
   return await prisma.transaction.update({
-    where: { id },
+    where: { id, userId },
     data: {
       ...standard,
       extra: extra,
@@ -127,43 +129,47 @@ export const updateTransaction = async (id: string, data: TransactionData): Prom
   })
 }
 
-export const updateTransactionFiles = async (id: string, files: string[]): Promise<Transaction> => {
+export const updateTransactionFiles = async (id: string, userId: string, files: string[]): Promise<Transaction> => {
   return await prisma.transaction.update({
-    where: { id },
+    where: { id, userId },
     data: { files },
   })
 }
 
-export const deleteTransaction = async (id: string): Promise<Transaction | undefined> => {
-  const transaction = await getTransactionById(id)
+export const deleteTransaction = async (id: string, userId: string): Promise<Transaction | undefined> => {
+  const transaction = await getTransactionById(id, userId)
 
   if (transaction) {
     const files = Array.isArray(transaction.files) ? transaction.files : []
 
     for (const fileId of files as string[]) {
-      await deleteFile(fileId)
+      await deleteFile(fileId, userId)
     }
 
     return await prisma.transaction.delete({
-      where: { id },
+      where: { id, userId },
     })
   }
 }
 
-export const bulkDeleteTransactions = async (ids: string[]) => {
+export const bulkDeleteTransactions = async (ids: string[], userId: string) => {
   return await prisma.transaction.deleteMany({
-    where: { id: { in: ids } },
+    where: { id: { in: ids }, userId },
   })
 }
 
 const splitTransactionDataExtraFields = async (
-  data: TransactionData
+  data: TransactionData,
+  userId: string
 ): Promise<{ standard: TransactionData; extra: Prisma.InputJsonValue }> => {
-  const fields = await getFields()
-  const fieldMap = fields.reduce((acc, field) => {
-    acc[field.code] = field
-    return acc
-  }, {} as Record<string, Field>)
+  const fields = await getFields(userId)
+  const fieldMap = fields.reduce(
+    (acc, field) => {
+      acc[field.code] = field
+      return acc
+    },
+    {} as Record<string, Field>
+  )
 
   const standard: Omit<Partial<Transaction>, "extra"> = {}
   const extra: Record<string, unknown> = {}

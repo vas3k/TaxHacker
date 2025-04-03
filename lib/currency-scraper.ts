@@ -27,7 +27,10 @@ export async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: 
 export async function fetchHistoricalCurrencyRates(currency: string = "USD", date: Date): Promise<HistoricRate[]> {
   const formattedDate = format(date, "yyyy-MM-dd")
 
-  const url = `https://corsproxy.io/?${encodeURIComponent(
+  console.log("DATE", formattedDate)
+  console.log("QUERY", encodeURIComponent(`https://www.xe.com/currencytables/?from=${currency}&date=${formattedDate}`))
+
+  const url = `https://corsproxy.io/?url=${encodeURIComponent(
     `https://www.xe.com/currencytables/?from=${currency}&date=${formattedDate}`
   )}`
 

@@ -1,10 +1,10 @@
 "use client"
 
-import { deleteTransactionFileAction, uploadTransactionFilesAction } from "@/app/transactions/actions"
+import { deleteTransactionFileAction, uploadTransactionFilesAction } from "@/app/(app)/transactions/actions"
 import { FilePreview } from "@/components/files/preview"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { FILE_ACCEPTED_MIMETYPES } from "@/lib/files"
+import { FILE_ACCEPTED_MIMETYPES } from "@/lib/constants"
 import { File, Transaction } from "@prisma/client"
 import { Loader2, Upload, X } from "lucide-react"
 import { useState } from "react"

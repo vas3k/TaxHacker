@@ -1,6 +1,6 @@
 "use client"
 
-import { parseCSVAction, saveTransactionsAction } from "@/app/import/csv/actions"
+import { parseCSVAction, saveTransactionsAction } from "@/app/(app)/import/csv/actions"
 import { FormError } from "@/components/forms/error"
 import { Button } from "@/components/ui/button"
 import { Field } from "@prisma/client"

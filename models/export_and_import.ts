@@ -12,8 +12,8 @@ export type ExportFields = string[]
 export type ExportImportFieldSettings = {
   code: string
   type: string
-  export?: (value: any) => Promise<any>
-  import?: (value: any) => Promise<any>
+  export?: (userId: string, value: any) => Promise<any>
+  import?: (userId: string, value: any) => Promise<any>
 }
 
 export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettings> = {
@@ -32,10 +32,10 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
   total: {
     code: "total",
     type: "number",
-    export: async function (value: number) {
+    export: async function (userId: string, value: number) {
       return value / 100
     },
-    import: async function (value: string) {
+    import: async function (userId: string, value: string) {
       const num = parseFloat(value)
       return isNaN(num) ? 0.0 : num * 100
     },
@@ -47,13 +47,13 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
   convertedTotal: {
     code: "convertedTotal",
     type: "number",
-    export: async function (value: number | null) {
+    export: async function (userId: string, value: number | null) {
       if (!value) {
         return null
       }
       return value / 100
     },
-    import: async function (value: string) {
+    import: async function (userId: string, value: string) {
       const num = parseFloat(value)
       return isNaN(num) ? 0.0 : num * 100
     },
@@ -73,37 +73,37 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
   categoryCode: {
     code: "categoryCode",
     type: "string",
-    export: async function (value: string | null) {
+    export: async function (userId: string, value: string | null) {
       if (!value) {
         return null
       }
-      const category = await getCategoryByCode(value)
+      const category = await getCategoryByCode(userId, value)
       return category?.name
     },
-    import: async function (value: string) {
-      const category = await importCategory(value)
+    import: async function (userId: string, value: string) {
+      const category = await importCategory(userId, value)
       return category?.code
     },
   },
   projectCode: {
     code: "projectCode",
     type: "string",
-    export: async function (value: string | null) {
+    export: async function (userId: string, value: string | null) {
       if (!value) {
         return null
       }
-      const project = await getProjectByCode(value)
+      const project = await getProjectByCode(userId, value)
       return project?.name
     },
-    import: async function (value: string) {
-      const project = await importProject(value)
+    import: async function (userId: string, value: string) {
+      const project = await importProject(userId, value)
       return project?.code
     },
   },
   issuedAt: {
     code: "issuedAt",
     type: "date",
-    export: async function (value: Date | null) {
+    export: async function (userId: string, value: Date | null) {
       if (!value || isNaN(value.getTime())) {
         return null
       }
@@ -114,7 +114,7 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
         return null
       }
     },
-    import: async function (value: string) {
+    import: async function (userId: string, value: string) {
       try {
         return new Date(value)
       } catch (error) {
@@ -124,7 +124,7 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
   },
 }
 
-export const importProject = async (name: string) => {
+export const importProject = async (userId: string, name: string) => {
   const code = codeFromName(name)
 
   const existingProject = await prisma.project.findFirst({
@@ -137,10 +137,10 @@ export const importProject = async (name: string) => {
     return existingProject
   }
 
-  return await createProject({ code, name })
+  return await createProject(userId, { code, name })
 }
 
-export const importCategory = async (name: string) => {
+export const importCategory = async (userId: string, name: string) => {
   const code = codeFromName(name)
 
   const existingCategory = await prisma.category.findFirst({
@@ -153,5 +153,5 @@ export const importCategory = async (name: string) => {
     return existingCategory
   }
 
-  return await createCategory({ code, name })
+  return await createCategory(userId, { code, name })
 }

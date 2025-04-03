@@ -1,8 +1,8 @@
 "use client"
 
-import { useNotification } from "@/app/context"
-import { uploadFilesAction } from "@/app/files/actions"
-import { uploadTransactionFilesAction } from "@/app/transactions/actions"
+import { useNotification } from "@/app/(app)/context"
+import { uploadFilesAction } from "@/app/(app)/files/actions"
+import { uploadTransactionFilesAction } from "@/app/(app)/transactions/actions"
 import { AlertCircle, CloudUpload, Loader2 } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { startTransition, useEffect, useRef, useState } from "react"

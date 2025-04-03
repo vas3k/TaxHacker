@@ -2,15 +2,10 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSidebar } from "@/components/ui/sidebar"
+import { APP_TITLE } from "@/lib/constants"
 import Link from "next/link"
 
-export default function MobileMenu({
-  settings,
-  unsortedFilesCount,
-}: {
-  settings: Record<string, string>
-  unsortedFilesCount: number
-}) {
+export default function MobileMenu({ unsortedFilesCount }: { unsortedFilesCount: number }) {
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -20,7 +15,7 @@ export default function MobileMenu({
         <AvatarFallback className="rounded-lg">AI</AvatarFallback>
       </Avatar>
       <Link href="/" className="text-lg font-bold">
-        {settings.app_title}
+        {APP_TITLE}
       </Link>
       <Link
         href="/unsorted"

@@ -1,25 +1,30 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardTitle } from "@/components/ui/card"
+import { ColoredText } from "@/components/ui/colored-text"
+import { getCurrentUser } from "@/lib/auth"
 import { getSettings, updateSettings } from "@/models/settings"
 import { Banknote, ChartBarStacked, FolderOpenDot, Key, TextCursorInput, X } from "lucide-react"
 import { revalidatePath } from "next/cache"
 import Link from "next/link"
 
 export async function WelcomeWidget() {
-  const settings = await getSettings()
+  const user = await getCurrentUser()
+  const settings = await getSettings(user.id)
 
   return (
-    <Card className="flex flex-col md:flex-row items-start gap-10 p-10 w-full">
+    <Card className="flex flex-col lg:flex-row items-start gap-10 p-10 w-full">
       <img src="/logo/1024.png" alt="Logo" className="w-64 h-64" />
       <div className="flex flex-col">
         <CardTitle className="flex items-center justify-between">
-          <span className="text-2xl font-bold">Hey, I'm TaxHacker 👋</span>
+          <span className="text-2xl font-bold">
+            <ColoredText>Hey, I'm TaxHacker 👋</ColoredText>
+          </span>
           <Button
             variant="outline"
             size="icon"
             onClick={async () => {
               "use server"
-              await updateSettings("is_welcome_message_hidden", "true")
+              await updateSettings(user.id, "is_welcome_message_hidden", "true")
               revalidatePath("/")
             }}
           >

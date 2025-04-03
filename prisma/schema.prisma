@@ -6,43 +6,129 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                  String        @id @default(uuid()) @db.Uuid
+  email               String        @unique
+  name                String
+  avatar              String?
+  settings            Setting[]
+  categories          Category[]
+  projects            Project[]
+  fields              Field[]
+  files               File[]
+  currencies          Currency[]
+  transactions        Transaction[]
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  membershipPlan      String?       @map("membership_plan")
+  membershipExpiresAt DateTime?     @map("membership_expires_at")
+
+  sessions Session[]
+
+  emailVerified Boolean   @default(false) @map("is_email_verified")
+  image         String?
+  accounts      Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id") @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("verification")
+}
+
 model Setting {
-  code        String  @unique
+  id          String  @id @default(uuid()) @db.Uuid
+  userId      String  @map("user_id") @db.Uuid
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code        String
   name        String
   description String?
   value       String?
 
+  @@unique([userId, code])
   @@map("settings")
 }
 
 model Category {
-  code         String        @id
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @map("user_id") @db.Uuid
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code         String
   name         String
   color        String        @default("#000000")
   llm_prompt   String?
   transactions Transaction[]
   createdAt    DateTime      @default(now()) @map("created_at")
 
+  @@unique([userId, code])
   @@map("categories")
 }
 
 model Project {
-  code         String        @id
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @map("user_id") @db.Uuid
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code         String
   name         String
   color        String        @default("#000000")
   llm_prompt   String?
   transactions Transaction[]
   createdAt    DateTime      @default(now()) @map("created_at")
 
+  @@unique([userId, code])
   @@map("projects")
 }
 
 model Field {
-  code                String   @id
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @map("user_id") @db.Uuid
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code                String
   name                String
   type                String   @default("string")
   llm_prompt          String?
@@ -53,11 +139,14 @@ model Field {
   isRequired          Boolean  @default(false) @map("is_required")
   isExtra             Boolean  @default(true) @map("is_extra")
 
+  @@unique([userId, code])
   @@map("fields")
 }
 
 model File {
-  id         String   @id @default(uuid())
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   filename   String
   path       String
   mimetype   String
@@ -69,7 +158,9 @@ model File {
 }
 
 model Transaction {
-  id                    String    @id @default(uuid())
+  id                    String    @id @default(uuid()) @db.Uuid
+  userId                String    @map("user_id") @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name                  String?
   description           String?
   merchant              String?
@@ -81,15 +172,16 @@ model Transaction {
   note                  String?
   files                 Json      @default("[]")
   extra                 Json?
-  category              Category? @relation(fields: [categoryCode], references: [code])
-  categoryCode          String?   @map("category_id")
-  project               Project?  @relation(fields: [projectCode], references: [code])
-  projectCode           String?   @map("project_id")
+  category              Category? @relation(fields: [categoryCode, userId], references: [code, userId])
+  categoryCode          String?   @map("category_code")
+  project               Project?  @relation(fields: [projectCode, userId], references: [code, userId])
+  projectCode           String?   @map("project_code")
   issuedAt              DateTime? @map("issued_at")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   text                  String?
 
+  @@index([userId])
   @@index([projectCode])
   @@index([categoryCode])
   @@index([issuedAt])
@@ -100,8 +192,12 @@ model Transaction {
 }
 
 model Currency {
-  code String @id
-  name String
+  id     String  @id @default(uuid()) @db.Uuid
+  userId String? @map("user_id") @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code   String
+  name   String
 
+  @@unique([userId, code])
   @@map("currencies")
 }

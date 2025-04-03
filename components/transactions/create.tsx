@@ -1,6 +1,6 @@
 "use client"
 
-import { createTransactionAction } from "@/app/transactions/actions"
+import { createTransactionAction } from "@/app/(app)/transactions/actions"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"

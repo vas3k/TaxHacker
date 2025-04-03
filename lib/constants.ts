@@ -1,0 +1,7 @@
+export const APP_TITLE = "TaxHacker"
+export const APP_DESCRIPTION = "Your personal AI accountant"
+export const FILE_ACCEPTED_MIMETYPES = "image/*,.pdf,.doc,.docx,.xls,.xlsx"
+export const IS_SELF_HOSTED_MODE = process.env.SELF_HOSTED_MODE === "true"
+export const SELF_HOSTED_REDIRECT_URL = "/self-hosted/redirect"
+export const SELF_HOSTED_WELCOME_URL = "/self-hosted"
+export const AUTH_LOGIN_URL = "/enter"

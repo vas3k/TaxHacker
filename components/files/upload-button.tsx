@@ -1,9 +1,9 @@
 "use client"
 
-import { useNotification } from "@/app/context"
-import { uploadFilesAction } from "@/app/files/actions"
+import { useNotification } from "@/app/(app)/context"
+import { uploadFilesAction } from "@/app/(app)/files/actions"
 import { Button } from "@/components/ui/button"
-import { FILE_ACCEPTED_MIMETYPES } from "@/lib/files"
+import { FILE_ACCEPTED_MIMETYPES } from "@/lib/constants"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ComponentProps, startTransition, useRef, useState } from "react"

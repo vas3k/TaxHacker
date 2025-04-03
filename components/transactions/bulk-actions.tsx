@@ -1,6 +1,6 @@
 "use client"
 
-import { bulkDeleteTransactionsAction } from "@/app/transactions/actions"
+import { bulkDeleteTransactionsAction } from "@/app/(app)/transactions/actions"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronUp, Trash2 } from "lucide-react"

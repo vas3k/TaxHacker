@@ -1,8 +1,7 @@
 "use client"
 
-import { analyzeTransaction, retrieveAllAttachmentsForAI } from "@/app/ai/analyze"
-import { useNotification } from "@/app/context"
-import { deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/unsorted/actions"
+import { useNotification } from "@/app/(app)/context"
+import { analyzeFileAction, deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/(app)/unsorted/actions"
 import { FormConvertCurrency } from "@/components/forms/convert-currency"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
@@ -40,10 +39,13 @@ export default function AnalyzeForm({
 
   const fieldsMap = useMemo(
     () =>
-      fields.reduce((acc, field) => {
-        acc[field.code] = field
-        return acc
-      }, {} as Record<string, Field>),
+      fields.reduce(
+        (acc, field) => {
+          acc[field.code] = field
+          return acc
+        },
+        {} as Record<string, Field>
+      ),
     [fields]
   )
   const extraFields = useMemo(() => fields.filter((field) => field.isExtra), [fields])
@@ -62,10 +64,13 @@ export default function AnalyzeForm({
       issuedAt: "",
       note: "",
       text: "",
-      ...extraFields.reduce((acc, field) => {
-        acc[field.code] = ""
-        return acc
-      }, {} as Record<string, string>),
+      ...extraFields.reduce(
+        (acc, field) => {
+          acc[field.code] = ""
+          return acc
+        },
+        {} as Record<string, string>
+      ),
     }),
     [file.filename, settings, extraFields]
   )
@@ -89,20 +94,10 @@ export default function AnalyzeForm({
 
   const startAnalyze = async () => {
     setIsAnalyzing(true)
-    setAnalyzeStep("Retrieving files...")
     setAnalyzeError("")
     try {
-      const attachments = await retrieveAllAttachmentsForAI(file)
-
       setAnalyzeStep("Analyzing...")
-      const results = await analyzeTransaction(
-        settings.prompt_analyse_new_file || process.env.PROMPT_ANALYSE_NEW_FILE || "",
-        settings,
-        fields,
-        categories,
-        projects,
-        attachments
-      )
+      const results = await analyzeFileAction(file, settings, fields, categories, projects)
 
       console.log("Analysis results:", results)
 
@@ -114,7 +109,6 @@ export default function AnalyzeForm({
             ([_, value]) => value !== null && value !== undefined && value !== ""
           )
         )
-        console.log("Setting form data:", nonEmptyFields)
         setFormData({ ...formData, ...nonEmptyFields })
       }
     } catch (error) {
