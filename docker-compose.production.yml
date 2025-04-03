@@ -6,6 +6,7 @@ services:
       - taxhacker_network
     environment:
       - NODE_ENV=production
+      - BASE_URL=https://taxhacker.app
       - UPLOAD_PATH=/app/data/uploads
     env_file:
       - .env

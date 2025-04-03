@@ -3,6 +3,7 @@ const config = {
     title: "TaxHacker",
     description: "Your personal AI accountant",
     version: process.env.npm_package_version || "0.0.1",
+    baseURL: process.env.BASE_URL || "http://localhost:" + process.env.PORT,
   },
   upload: {
     acceptedMimeTypes: "image/*,.pdf,.doc,.docx,.xls,.xlsx",
