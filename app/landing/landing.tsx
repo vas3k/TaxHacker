@@ -31,7 +31,7 @@ export default function LandingPage() {
               🚀 Under Active Development
             </div>
             <h1 className="text-5xl font-bold tracking-tight sm:text-6xl mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent pb-2">
-              Organize receipts, track expenses, and prepare your taxes with AI
+              Let AI finally care about your taxes, scan your receipts and analyze your expenses
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               A self-hosted accounting app crafted with love for freelancers and small businesses.
@@ -77,11 +77,11 @@ export default function LandingPage() {
               <div className="inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-medium mb-4">
                 LLM-Powered
               </div>
-              <h3 className="text-2xl font-semibold mb-4">AI Document Analyzer</h3>
+              <h3 className="text-2xl font-semibold mb-4">Analyze photos and invoices with AI</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <span className="text-blue-600 mr-2">✓</span>
-                  Upload photos or PDFs for automatic recognition
+                  Upload your receipts or invoices in PDF for automatic recognition
                 </li>
                 <li className="flex items-center">
                   <span className="text-blue-600 mr-2">✓</span>
@@ -108,7 +108,7 @@ export default function LandingPage() {
               <div className="inline-block px-3 py-1 rounded-full bg-green-50 text-green-600 text-sm font-medium mb-4">
                 Currency Converter
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Multi-Currency Support</h3>
+              <h3 className="text-2xl font-semibold mb-4">Automatically convert currencies</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <span className="text-green-600 mr-2">✓</span>
@@ -142,7 +142,7 @@ export default function LandingPage() {
               <div className="inline-block px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-sm font-medium mb-4">
                 Filters
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Income & Expense Tracker</h3>
+              <h3 className="text-2xl font-semibold mb-4">Organize expenses and income</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <span className="text-green-600 mr-2">✓</span>
@@ -173,7 +173,7 @@ export default function LandingPage() {
               <div className="inline-block px-3 py-1 rounded-full bg-purple-50 text-purple-600 text-sm font-medium mb-4">
                 Customization
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Custom LLM promts for everything</h3>
+              <h3 className="text-2xl font-semibold mb-4">Create custom LLM promts to extract anything</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-2">✓</span>
@@ -428,7 +428,7 @@ export default function LandingPage() {
 
       <footer className="py-8 px-8 bg-white">
         <div className="max-w-7xl mx-auto text-center text-sm text-gray-500">
-          Made with ❤️ by{" "}
+          Made with ❤️ in Berlin by{" "}
           <a href="https://github.com/vas3k" className="underline">
             vas3k
           </a>

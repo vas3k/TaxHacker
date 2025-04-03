@@ -38,7 +38,7 @@ export function NewsletterForm() {
           plans and new features. No marketing, ads or spam.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md mx-auto">
-          <div className="flex gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <input
               type="email"
               value={email}
