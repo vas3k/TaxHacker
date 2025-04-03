@@ -1,13 +1,16 @@
 #!/bin/sh
 set -e
 
-# Wait for database to be ready using psql and DATABASE_URL
-echo "Waiting for PostgreSQL to be ready at $DATABASE_URL..."
-until PGPASSWORD="${PGPASSWORD:-}" psql "$DATABASE_URL" -c '\q' >/dev/null 2>&1; do
-  echo "PostgreSQL is unavailable - sleeping"
+# Extract server part from DATABASE_URL (remove database name)
+SERVER_URL=$(echo "$DATABASE_URL" | sed 's/\/[^/]*$//')
+
+# Wait for database to be ready using psql and SERVER_URL
+echo "Waiting for PostgreSQL server to be ready at $SERVER_URL..."
+until psql "$SERVER_URL" -c '\q' >/dev/null 2>&1; do
+  echo "PostgreSQL server is unavailable - sleeping"
   sleep 1
 done
-echo "PostgreSQL is ready!"
+echo "PostgreSQL server is ready!"
 
 # Run database migrations
 echo "Running database migrations..."
