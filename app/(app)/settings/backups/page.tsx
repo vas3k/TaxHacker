@@ -31,22 +31,25 @@ export default function BackupSettingsPage() {
       <Card className="flex flex-col gap-2 mt-16 p-5 bg-red-100 max-w-xl">
         <h2 className="text-xl font-semibold">Restore from a backup</h2>
         <p className="text-sm text-muted-foreground">
-          ⚠️ This action will delete all existing data from your current database and remove all uploaded files. Be
-          careful and make a backup first!
+          ⚠️ This action is irreversible. Restoring from a backup will delete all existing data from your current
+          database and remove all uploaded files. Be careful and make a backup first!
         </p>
         <form action={restoreBackup}>
           <div className="flex flex-col gap-4 pt-4">
-            <input type="hidden" name="removeExistingData" value="true" />
             <label>
-              <input type="file" name="file" />
+              <input type="file" name="file" required />
+            </label>
+            <label className="flex flex-row gap-2 items-center">
+              <input type="checkbox" name="removeExistingData" required />
+              <span className="text-red-500">I undestand that it will permanently delete all existing data</span>
             </label>
             <Button type="submit" variant="destructive" disabled={restorePending}>
               {restorePending ? (
                 <>
-                  <Loader2 className="animate-spin" /> Restoring from backup...
+                  <Loader2 className="animate-spin" /> Restoring from backup... (it can take a while)
                 </>
               ) : (
-                "Delete existing data and restore from backup"
+                "Restore from backup"
               )}
             </Button>
           </div>

@@ -50,7 +50,7 @@ export async function analyzeFileAction(
     prompt,
     schema,
     attachments,
-    config.selfHosted.isEnabled ? settings.openai_api_key : process.env.OPENAI_API_KEY || ""
+    settings.openai_api_key || config.ai.openaiApiKey
   )
 
   console.log("Analysis results:", results)

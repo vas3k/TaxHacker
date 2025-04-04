@@ -29,10 +29,6 @@ Built-in system of filters, support for multiple projects, import-export of tran
 
 ![Dashboard](docs/screenshots/title.png)
 
-> \[!NOTE]
->
-> TaxHacker is a single-user app. SaaS or Electron version will probably be developed in the future if anyone is interested.
-
 > \[!IMPORTANT]
 >
 > This project is still at a very early stage. Use it at your own risk! **Star Us** to receive notifications about new bugfixes and features from GitHub ⭐️
@@ -151,12 +147,12 @@ Configure TaxHacker to suit your needs with these environment variables:
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `PORT` | No | Port to run the server on | `7331` |
-| `SELF_HOSTED_MODE` | No | Enable self-hosted mode and automatic login | `false` |
 | `UPLOAD_PATH` | Yes | Local directory for uploading files | `./data/uploads` |
-| `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://postgres:postgres@localhost:5432/taxhacker` |
-| `OPENAI_API_KEY` | No | OpenAI API key for AI features | `sk-...` |
+| `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://user@localhost:5432/taxhacker` |
+| `SELF_HOSTED_MODE` | No | Set it to "true" if you're self-hosting the app: it enables auto-login, custom API keys, and more | `false` |
+| `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
+| `OPENAI_API_KEY` | No | OpenAI API key for AI features. In self-hosted mode you can set it up in settings too. | `sk-...` |
 | `RESEND_API_KEY` | No | Resend API key for email notifications | `re_...` |
-| `RESEND_AUDIENCE_ID` | No | Resend audience ID for newsletters | `fde8dd49-...` |
 | `RESEND_FROM_EMAIL` | No | Email address to send from | `TaxHacker <hello@taxhacker.app>` |
 
 

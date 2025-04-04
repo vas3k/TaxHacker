@@ -45,7 +45,7 @@ export default async function SelfHostedWelcomePage() {
 
         <form action={selfHostedGetStartedAction} className="flex flex-col gap-8 pt-8">
           <div>
-            <FormInput title="OpenAI API Key" name="openai_api_key" />
+            <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={config.ai.openaiApiKey} />
 
             <small className="text-xs text-muted-foreground">
               Get your API key from{" "}

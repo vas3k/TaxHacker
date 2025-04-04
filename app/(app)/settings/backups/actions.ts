@@ -30,11 +30,6 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
     return { success: false, error: "Bad zip archive" }
   }
 
-  if (REMOVE_EXISTING_DATA) {
-    await cleanupUserTables(user.id)
-    await fs.rm(userUploadsDirectory, { recursive: true, force: true })
-  }
-
   // Check metadata and start restoring
   try {
     const metadataFile = zip.file("data/metadata.json")
@@ -56,6 +51,12 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
       }
     } else {
       console.warn("No metadata found in backup, assuming legacy format")
+    }
+
+    // Remove existing data
+    if (REMOVE_EXISTING_DATA) {
+      await cleanupUserTables(user.id)
+      await fs.rm(userUploadsDirectory, { recursive: true, force: true })
     }
 
     const counters: Record<string, number> = {}

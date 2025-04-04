@@ -13,6 +13,9 @@ const config = {
     redirectUrl: "/self-hosted/redirect",
     welcomeUrl: "/self-hosted",
   },
+  ai: {
+    openaiApiKey: process.env.OPENAI_API_KEY || "",
+  },
   auth: {
     secret: process.env.BETTER_AUTH_SECRET || "please-set-secret",
     loginUrl: "/enter",
