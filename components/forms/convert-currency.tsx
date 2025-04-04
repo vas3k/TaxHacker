@@ -1,4 +1,3 @@
-import { getCurrencyRate } from "@/lib/currency-scraper"
 import { formatCurrency } from "@/lib/utils"
 import { format, startOfDay } from "date-fns"
 import { Loader2 } from "lucide-react"
@@ -74,4 +73,25 @@ export const FormConvertCurrency = ({
       )}
     </div>
   )
+}
+
+async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
+  try {
+    const formattedDate = format(date, "yyyy-MM-dd")
+    const url = `/api/currency?from=${currencyCodeFrom}&to=${currencyCodeTo}&date=${formattedDate}`
+
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("Currency API error:", errorData.error)
+      return 0
+    }
+
+    const data = await response.json()
+    return data.rate
+  } catch (error) {
+    console.error("Error fetching currency rate:", error)
+    return 0
+  }
 }
