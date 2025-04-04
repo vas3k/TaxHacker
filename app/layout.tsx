@@ -14,10 +14,32 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
+  metadataBase: new URL(config.app.baseURL),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: config.app.baseURL,
+    title: config.app.title,
+    description: config.app.description,
+    siteName: config.app.title,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: config.app.title,
+    description: config.app.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export const viewport: Viewport = {
   themeColor: "#ffffff",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,8 +47,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <head>
         <meta name="theme-color" content="#ffffff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
-      <body>{children}</body>
+      <body className="min-h-screen bg-white antialiased">{children}</body>
     </html>
   )
 }

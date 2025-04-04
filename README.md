@@ -131,7 +131,6 @@ services:
     ports:
       - "7331:7331"
     environment:
-      - NODE_ENV=production
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/taxhacker
@@ -146,7 +145,7 @@ Configure TaxHacker to suit your needs with these environment variables:
 
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
-| `PORT` | No | Port to run the server on | `7331` |
+| `PORT` | No | Port to run the app on | `7331` (default) |
 | `UPLOAD_PATH` | Yes | Local directory for uploading files | `./data/uploads` |
 | `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://user@localhost:5432/taxhacker` |
 | `SELF_HOSTED_MODE` | No | Set it to "true" if you're self-hosting the app: it enables auto-login, custom API keys, and more | `false` |

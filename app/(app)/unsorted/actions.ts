@@ -29,6 +29,11 @@ export async function analyzeFileAction(
     return { success: false, error: "File not found or does not belong to the user" }
   }
 
+  const apiKey = settings.openai_api_key || config.ai.openaiApiKey || ""
+  if (!apiKey) {
+    return { success: false, error: "OpenAI API key is not set" }
+  }
+
   let attachments: AnalyzeAttachment[] = []
   try {
     attachments = await loadAttachmentsForAI(user, file)
@@ -46,12 +51,7 @@ export async function analyzeFileAction(
 
   const schema = fieldsToJsonSchema(fields)
 
-  const results = await analyzeTransaction(
-    prompt,
-    schema,
-    attachments,
-    settings.openai_api_key || config.ai.openaiApiKey
-  )
+  const results = await analyzeTransaction(prompt, schema, attachments, apiKey)
 
   console.log("Analysis results:", results)
 
