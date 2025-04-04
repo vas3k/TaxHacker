@@ -78,9 +78,7 @@ export const FormConvertCurrency = ({
 async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
   try {
     const formattedDate = format(date, "yyyy-MM-dd")
-    const url = `/api/currency?from=${currencyCodeFrom}&to=${currencyCodeTo}&date=${formattedDate}`
-
-    const response = await fetch(url)
+    const response = await fetch(`/api/currency?from=${currencyCodeFrom}&to=${currencyCodeTo}&date=${formattedDate}`)
 
     if (!response.ok) {
       const errorData = await response.json()

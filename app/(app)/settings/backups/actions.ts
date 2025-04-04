@@ -10,6 +10,7 @@ import path from "path"
 
 const SUPPORTED_BACKUP_VERSIONS = ["1.0"]
 const REMOVE_EXISTING_DATA = true
+const MAX_BACKUP_SIZE = 256 * 1024 * 1024 // 256MB
 
 export async function restoreBackupAction(prevState: any, formData: FormData) {
   const user = await getCurrentUser()
@@ -18,6 +19,10 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
 
   if (!file || file.size === 0) {
     return { success: false, error: "No file provided" }
+  }
+
+  if (file.size > MAX_BACKUP_SIZE) {
+    return { success: false, error: `Backup file too large. Maximum size is ${MAX_BACKUP_SIZE / 1024 / 1024}MB` }
   }
 
   // Read zip archive
@@ -88,7 +93,7 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
       const userUploadsDirectory = await getUserUploadsDirectory(user)
 
       for (const file of files) {
-        const filePathWithoutPrefix = file.path.replace(/^.*\/uploads\//, "")
+        const filePathWithoutPrefix = path.normalize(file.path.replace(/^.*\/uploads\//, ""))
         const zipFilePath = path.join("data/uploads", filePathWithoutPrefix)
         const zipFile = zip.file(zipFilePath)
         if (!zipFile) {
@@ -96,12 +101,16 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
           continue
         }
 
+        const fileContents = await zipFile.async("nodebuffer")
         const fullFilePath = path.join(userUploadsDirectory, filePathWithoutPrefix)
-        const fileContent = await zipFile.async("nodebuffer")
+        if (!fullFilePath.startsWith(path.normalize(userUploadsDirectory))) {
+          console.error(`Attempted path traversal detected for file ${file.path}`)
+          continue
+        }
 
         try {
           await fs.mkdir(path.dirname(fullFilePath), { recursive: true })
-          await fs.writeFile(fullFilePath, fileContent)
+          await fs.writeFile(fullFilePath, fileContents)
           restoredFilesCount++
         } catch (error) {
           console.error(`Error writing file ${fullFilePath}:`, error)

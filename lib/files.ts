@@ -32,7 +32,7 @@ export async function getTransactionFileUploadPath(fileUuid: string, filename: s
 
 export async function fullPathForFile(user: User, file: File) {
   const userUploadsDirectory = await getUserUploadsDirectory(user)
-  return path.join(userUploadsDirectory, file.path)
+  return path.join(userUploadsDirectory, path.normalize(file.path))
 }
 
 function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{name}{ext}") {
@@ -46,7 +46,7 @@ function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{nam
 
 export async function fileExists(filePath: string) {
   try {
-    await access(filePath, constants.F_OK)
+    await access(path.normalize(filePath), constants.F_OK)
     return true
   } catch {
     return false

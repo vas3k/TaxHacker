@@ -81,8 +81,8 @@ export async function saveFileAsTransactionAction(prevState: any, formData: Form
     const newRelativeFilePath = await getTransactionFileUploadPath(file.id, originalFileName, transaction)
 
     // Move file to new location and name
-    const oldFullFilePath = path.join(userUploadsDirectory, file.path)
-    const newFullFilePath = path.join(userUploadsDirectory, newRelativeFilePath)
+    const oldFullFilePath = path.join(userUploadsDirectory, path.normalize(file.path))
+    const newFullFilePath = path.join(userUploadsDirectory, path.normalize(newRelativeFilePath))
     await mkdir(path.dirname(newFullFilePath), { recursive: true })
     await rename(path.resolve(oldFullFilePath), path.resolve(newFullFilePath))
 
