@@ -256,7 +256,7 @@ export default function AnalyzeForm({
         {extraFields.map((field) => (
           <FormInput
             key={field.code}
-            type={field.type}
+            type="text"
             title={field.name}
             name={field.code}
             value={formData[field.code as keyof typeof formData]}
