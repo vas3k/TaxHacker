@@ -171,7 +171,7 @@ export async function editCategoryAction(userId: string, code: string, data: Pri
   return { success: true, category }
 }
 
-export async function deleteCategoryAction(code: string, userId: string) {
+export async function deleteCategoryAction(userId: string, code: string) {
   try {
     await deleteCategory(userId, code)
   } catch (error) {

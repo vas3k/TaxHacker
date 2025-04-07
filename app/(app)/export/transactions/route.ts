@@ -47,6 +47,7 @@ export async function GET(request: Request) {
           value = transaction[field.code as keyof typeof transaction] ?? ""
         }
 
+        // Check if the field has a special export rules
         const exportFieldSettings = EXPORT_AND_IMPORT_FIELD_MAP[field.code]
         if (exportFieldSettings && exportFieldSettings.export) {
           row[field.code] = await exportFieldSettings.export(user.id, value)
