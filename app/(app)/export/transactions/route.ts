@@ -39,13 +39,19 @@ export async function GET(request: Request) {
     // CSV rows
     for (const transaction of transactions) {
       const row: Record<string, any> = {}
-      for (const key of fieldKeys) {
-        const value = transaction[key as keyof typeof transaction] ?? ""
-        const exportFieldSettings = EXPORT_AND_IMPORT_FIELD_MAP[key]
-        if (exportFieldSettings && exportFieldSettings.export) {
-          row[key] = await exportFieldSettings.export(user.id, value)
+      for (const field of existingFields) {
+        let value
+        if (field.isExtra) {
+          value = transaction.extra?.[field.code as keyof typeof transaction.extra] ?? ""
         } else {
-          row[key] = value
+          value = transaction[field.code as keyof typeof transaction] ?? ""
+        }
+
+        const exportFieldSettings = EXPORT_AND_IMPORT_FIELD_MAP[field.code]
+        if (exportFieldSettings && exportFieldSettings.export) {
+          row[field.code] = await exportFieldSettings.export(user.id, value)
+        } else {
+          row[field.code] = value
         }
       }
 
