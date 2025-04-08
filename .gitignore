@@ -53,3 +53,5 @@ pgdata
 *.sqlite3
 *.sqlite-journal
 *.db-journal
+# Sentry Config File
+.env.sentry-build-plugin
