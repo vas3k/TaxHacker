@@ -145,7 +145,7 @@ export default function TransactionEditForm({
       {extraFields.map((field) => (
         <FormInput
           key={field.code}
-          type={field.type}
+          type="text"
           title={field.name}
           name={field.code}
           defaultValue={formData[field.code as keyof typeof formData] || ""}
