@@ -21,6 +21,10 @@ type FieldRenderer = {
   footerValue?: (transactions: Transaction[]) => React.ReactNode
 }
 
+type FieldWithRenderer = Field & {
+  renderer: FieldRenderer
+}
+
 export const standardFieldRenderers: Record<string, FieldRenderer> = {
   name: {
     name: "Name",
@@ -151,7 +155,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
   })
 
   const visibleFields = useMemo(
-    () =>
+    (): FieldWithRenderer[] =>
       fields
         .filter((field) => field.isVisibleInList)
         .map((field) => ({
@@ -194,6 +198,16 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
       field: newDirection ? field : null,
       direction: newDirection,
     })
+  }
+
+  const renderFieldInTable = (transaction: Transaction, field: FieldWithRenderer) => {
+    if (field.isExtra) {
+      return transaction.extra?.[field.code as keyof typeof transaction.extra]
+    } else if (field.renderer.formatValue) {
+      return field.renderer.formatValue(transaction)
+    } else {
+      return transaction[field.code as keyof Transaction]
+    }
   }
 
   useEffect(() => {
@@ -258,7 +272,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
               </TableCell>
               {visibleFields.map((field) => (
                 <TableCell key={field.code} className={field.renderer.classes}>
-                  {field.renderer.formatValue ? field.renderer.formatValue(transaction) : transaction[field.code]}
+                  {renderFieldInTable(transaction, field)}
                 </TableCell>
               ))}
             </TableRow>
