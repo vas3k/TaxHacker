@@ -65,6 +65,12 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
   type: {
     code: "type",
     type: "string",
+    export: async function (userId: string, value: string | null) {
+      return value ? value.toLowerCase() : ""
+    },
+    import: async function (userId: string, value: string) {
+      return value.toLowerCase()
+    },
   },
   note: {
     code: "note",
