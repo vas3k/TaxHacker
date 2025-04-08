@@ -12,7 +12,7 @@ import { Category, Currency, Field, Project, Transaction } from "@prisma/client"
 import { format } from "date-fns"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { startTransition, useActionState, useEffect, useState } from "react"
+import { startTransition, useActionState, useEffect, useMemo, useState } from "react"
 
 export default function TransactionEditForm({
   transaction,
@@ -56,6 +56,16 @@ export default function TransactionEditForm({
     ),
   })
 
+  const fieldMap = useMemo(() => {
+    return fields.reduce(
+      (acc, field) => {
+        acc[field.code] = field
+        return acc
+      },
+      {} as Record<string, Field>
+    )
+  }, [fields])
+
   const handleDelete = async () => {
     if (confirm("Are you sure? This will delete the transaction with all the files permanently")) {
       startTransition(async () => {
@@ -75,15 +85,15 @@ export default function TransactionEditForm({
     <form action={saveAction} className="space-y-4">
       <input type="hidden" name="transactionId" value={transaction.id} />
 
-      <FormInput title="Name" name="name" defaultValue={formData.name} />
+      <FormInput title={fieldMap.name.name} name="name" defaultValue={formData.name} />
 
-      <FormInput title="Merchant" name="merchant" defaultValue={formData.merchant} />
+      <FormInput title={fieldMap.merchant.name} name="merchant" defaultValue={formData.merchant} />
 
-      <FormInput title="Description" name="description" defaultValue={formData.description} />
+      <FormInput title={fieldMap.description.name} name="description" defaultValue={formData.description} />
 
       <div className="flex flex-row gap-4">
         <FormInput
-          title="Total"
+          title={fieldMap.total.name}
           type="number"
           step="0.01"
           name="total"
@@ -92,7 +102,7 @@ export default function TransactionEditForm({
         />
 
         <FormSelectCurrency
-          title="Currency"
+          title={fieldMap.currencyCode.name}
           name="currencyCode"
           value={formData.currencyCode}
           onValueChange={(value) => {
@@ -101,7 +111,7 @@ export default function TransactionEditForm({
           currencies={currencies}
         />
 
-        <FormSelectType title="Type" name="type" defaultValue={formData.type} />
+        <FormSelectType title={fieldMap.type.name} name="type" defaultValue={formData.type} />
       </div>
 
       {formData.currencyCode !== settings.default_currency || formData.convertedTotal !== 0 ? (
@@ -127,21 +137,26 @@ export default function TransactionEditForm({
       )}
 
       <div className="flex flex-row flex-grow gap-4">
-        <FormInput title="Issued At" type="date" name="issuedAt" defaultValue={formData.issuedAt} />
+        <FormInput title={fieldMap.issuedAt.name} type="date" name="issuedAt" defaultValue={formData.issuedAt} />
       </div>
 
       <div className="flex flex-row gap-4">
         <FormSelectCategory
-          title="Category"
+          title={fieldMap.categoryCode.name}
           categories={categories}
           name="categoryCode"
           defaultValue={formData.categoryCode}
         />
 
-        <FormSelectProject title="Project" projects={projects} name="projectCode" defaultValue={formData.projectCode} />
+        <FormSelectProject
+          title={fieldMap.projectCode.name}
+          projects={projects}
+          name="projectCode"
+          defaultValue={formData.projectCode}
+        />
       </div>
 
-      <FormTextarea title="Note" name="note" defaultValue={formData.note} className="h-24" />
+      <FormTextarea title={fieldMap.note.name} name="note" defaultValue={formData.note} className="h-24" />
       {extraFields.map((field) => (
         <FormInput
           key={field.code}

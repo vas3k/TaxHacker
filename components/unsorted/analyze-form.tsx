@@ -37,17 +37,16 @@ export default function AnalyzeForm({
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
 
-  const fieldsMap = useMemo(
-    () =>
-      fields.reduce(
-        (acc, field) => {
-          acc[field.code] = field
-          return acc
-        },
-        {} as Record<string, Field>
-      ),
-    [fields]
-  )
+  const fieldMap = useMemo(() => {
+    return fields.reduce(
+      (acc, field) => {
+        acc[field.code] = field
+        return acc
+      },
+      {} as Record<string, Field>
+    )
+  }, [fields])
+
   const extraFields = useMemo(() => fields.filter((field) => field.isExtra), [fields])
   const initialFormState = useMemo(
     () => ({
@@ -141,7 +140,7 @@ export default function AnalyzeForm({
       <form className="space-y-4" action={saveAsTransaction}>
         <input type="hidden" name="fileId" value={file.id} />
         <FormInput
-          title="Name"
+          title={fieldMap.name.name}
           name="name"
           value={formData.name}
           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
@@ -149,24 +148,24 @@ export default function AnalyzeForm({
         />
 
         <FormInput
-          title="Merchant"
+          title={fieldMap.merchant.name}
           name="merchant"
           value={formData.merchant}
           onChange={(e) => setFormData((prev) => ({ ...prev, merchant: e.target.value }))}
-          hideIfEmpty={!fieldsMap["merchant"]?.isVisibleInAnalysis}
+          hideIfEmpty={!fieldMap.merchant.isVisibleInAnalysis}
         />
 
         <FormInput
-          title="Description"
+          title={fieldMap.description.name}
           name="description"
           value={formData.description}
           onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-          hideIfEmpty={!fieldsMap["description"]?.isVisibleInAnalysis}
+          hideIfEmpty={!fieldMap.description.isVisibleInAnalysis}
         />
 
         <div className="flex flex-wrap gap-4">
           <FormInput
-            title="Total"
+            title={fieldMap.total.name}
             name="total"
             type="number"
             step="0.01"
@@ -180,20 +179,20 @@ export default function AnalyzeForm({
           />
 
           <FormSelectCurrency
-            title="Currency"
+            title={fieldMap.currencyCode.name}
             currencies={currencies}
             name="currencyCode"
             value={formData.currencyCode}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, currencyCode: value }))}
-            hideIfEmpty={!fieldsMap["currencyCode"]?.isVisibleInAnalysis}
+            hideIfEmpty={!fieldMap.currencyCode.isVisibleInAnalysis}
           />
 
           <FormSelectType
-            title="Type"
+            title={fieldMap.type.name}
             name="type"
             value={formData.type}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
-            hideIfEmpty={!fieldsMap["type"]?.isVisibleInAnalysis}
+            hideIfEmpty={!fieldMap.type.isVisibleInAnalysis}
           />
         </div>
 
@@ -212,45 +211,45 @@ export default function AnalyzeForm({
 
         <div className="flex flex-row gap-4">
           <FormInput
-            title="Issued At"
+            title={fieldMap.issuedAt.name}
             type="date"
             name="issuedAt"
             value={formData.issuedAt}
             onChange={(e) => setFormData((prev) => ({ ...prev, issuedAt: e.target.value }))}
-            hideIfEmpty={!fieldsMap["issuedAt"]?.isVisibleInAnalysis}
+            hideIfEmpty={!fieldMap.issuedAt.isVisibleInAnalysis}
           />
         </div>
 
         <div className="flex flex-row gap-4">
           <FormSelectCategory
-            title="Category"
+            title={fieldMap.categoryCode.name}
             categories={categories}
             name="categoryCode"
             value={formData.categoryCode}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryCode: value }))}
             placeholder="Select Category"
-            hideIfEmpty={!fieldsMap["categoryCode"]?.isVisibleInAnalysis}
+            hideIfEmpty={!fieldMap.categoryCode.isVisibleInAnalysis}
           />
 
           {projects.length > 0 && (
             <FormSelectProject
-              title="Project"
+              title={fieldMap.projectCode.name}
               projects={projects}
               name="projectCode"
               value={formData.projectCode}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, projectCode: value }))}
               placeholder="Select Project"
-              hideIfEmpty={!fieldsMap["projectCode"]?.isVisibleInAnalysis}
+              hideIfEmpty={!fieldMap.projectCode.isVisibleInAnalysis}
             />
           )}
         </div>
 
         <FormInput
-          title="Note"
+          title={fieldMap.note.name}
           name="note"
           value={formData.note}
           onChange={(e) => setFormData((prev) => ({ ...prev, note: e.target.value }))}
-          hideIfEmpty={!fieldsMap["note"]?.isVisibleInAnalysis}
+          hideIfEmpty={!fieldMap.note.isVisibleInAnalysis}
         />
 
         {extraFields.map((field) => (
@@ -267,11 +266,11 @@ export default function AnalyzeForm({
 
         <div className="hidden">
           <FormTextarea
-            title="Recognized Text"
+            title={fieldMap.text.name}
             name="text"
             value={formData.text}
             onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
-            hideIfEmpty={!fieldsMap["text"]?.isVisibleInAnalysis}
+            hideIfEmpty={!fieldMap.text.isVisibleInAnalysis}
           />
         </div>
 

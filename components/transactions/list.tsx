@@ -247,7 +247,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
                 )}
                 onClick={() => field.renderer.sortable && handleSort(field.code)}
               >
-                {field.renderer.name}
+                {field.name || field.renderer.name}
                 {field.renderer.sortable && getSortIcon(field.code)}
               </TableHead>
             ))}
