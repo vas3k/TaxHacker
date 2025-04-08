@@ -200,13 +200,13 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
     })
   }
 
-  const renderFieldInTable = (transaction: Transaction, field: FieldWithRenderer) => {
+  const renderFieldInTable = (transaction: Transaction, field: FieldWithRenderer): string | React.ReactNode => {
     if (field.isExtra) {
-      return transaction.extra?.[field.code as keyof typeof transaction.extra]
+      return transaction.extra?.[field.code as keyof typeof transaction.extra] ?? ""
     } else if (field.renderer.formatValue) {
       return field.renderer.formatValue(transaction)
     } else {
-      return transaction[field.code as keyof Transaction]
+      return String(transaction[field.code as keyof Transaction])
     }
   }
 
