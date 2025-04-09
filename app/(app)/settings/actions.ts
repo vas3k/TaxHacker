@@ -8,19 +8,23 @@ import {
   settingsFormSchema,
 } from "@/forms/settings"
 import { userFormSchema } from "@/forms/users"
+import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { codeFromName, randomHexColor } from "@/lib/utils"
 import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
 import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
 import { createField, deleteField, updateField } from "@/models/fields"
 import { createProject, deleteProject, updateProject } from "@/models/projects"
-import { updateSettings } from "@/models/settings"
+import { SettingsMap, updateSettings } from "@/models/settings"
 import { updateUser } from "@/models/users"
-import { Prisma } from "@prisma/client"
+import { Prisma, User } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-export async function saveSettingsAction(prevState: any, formData: FormData) {
+export async function saveSettingsAction(
+  _prevState: ActionState<SettingsMap> | null,
+  formData: FormData
+): Promise<ActionState<SettingsMap>> {
   const user = await getCurrentUser()
   const validatedForm = settingsFormSchema.safeParse(Object.fromEntries(formData))
 
@@ -29,7 +33,10 @@ export async function saveSettingsAction(prevState: any, formData: FormData) {
   }
 
   for (const key in validatedForm.data) {
-    await updateSettings(user.id, key, validatedForm.data[key as keyof typeof validatedForm.data])
+    const value = validatedForm.data[key as keyof typeof validatedForm.data]
+    if (value !== undefined) {
+      await updateSettings(user.id, key, value)
+    }
   }
 
   revalidatePath("/settings")
@@ -37,7 +44,10 @@ export async function saveSettingsAction(prevState: any, formData: FormData) {
   // return { success: true }
 }
 
-export async function saveProfileAction(prevState: any, formData: FormData) {
+export async function saveProfileAction(
+  _prevState: ActionState<User> | null,
+  formData: FormData
+): Promise<ActionState<User>> {
   const user = await getCurrentUser()
   const validatedForm = userFormSchema.safeParse(Object.fromEntries(formData))
 

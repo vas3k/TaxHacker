@@ -1,5 +1,6 @@
 "use server"
 
+import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { getUserUploadsDirectory } from "@/lib/files"
@@ -12,7 +13,14 @@ const SUPPORTED_BACKUP_VERSIONS = ["1.0"]
 const REMOVE_EXISTING_DATA = true
 const MAX_BACKUP_SIZE = 256 * 1024 * 1024 // 256MB
 
-export async function restoreBackupAction(prevState: any, formData: FormData) {
+type BackupRestoreResult = {
+  counters: Record<string, number>
+}
+
+export async function restoreBackupAction(
+  _prevState: ActionState<BackupRestoreResult> | null,
+  formData: FormData
+): Promise<ActionState<BackupRestoreResult>> {
   const user = await getCurrentUser()
   const userUploadsDirectory = await getUserUploadsDirectory(user)
   const file = formData.get("file") as File
@@ -32,7 +40,7 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
     const fileData = Buffer.from(fileBuffer)
     zip = await JSZip.loadAsync(fileData)
   } catch (error) {
-    return { success: false, error: "Bad zip archive" }
+    return { success: false, error: "Bad zip archive: " + (error as Error).message }
   }
 
   // Check metadata and start restoring
@@ -133,7 +141,7 @@ export async function restoreBackupAction(prevState: any, formData: FormData) {
       }
     }
 
-    return { success: true, message: "Restore completed successfully", counters }
+    return { success: true, data: { counters } }
   } catch (error) {
     console.error("Error restoring from backup:", error)
     return {

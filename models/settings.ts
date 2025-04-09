@@ -13,7 +13,7 @@ export const getSettings = cache(async (userId: string): Promise<SettingsMap> =>
   }, {} as SettingsMap)
 })
 
-export const updateSettings = cache(async (userId: string, code: string, value: any) => {
+export const updateSettings = cache(async (userId: string, code: string, value: string | undefined) => {
   return await prisma.setting.upsert({
     where: { userId_code: { code, userId } },
     update: { value },

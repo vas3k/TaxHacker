@@ -1,6 +1,7 @@
 "use server"
 
 import { transactionFormSchema } from "@/forms/transactions"
+import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
 import { updateField } from "@/models/fields"
@@ -13,12 +14,16 @@ import {
   updateTransaction,
   updateTransactionFiles,
 } from "@/models/transactions"
+import { Transaction } from "@prisma/client"
 import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
 
-export async function createTransactionAction(prevState: any, formData: FormData) {
+export async function createTransactionAction(
+  _prevState: ActionState<Transaction> | null,
+  formData: FormData
+): Promise<ActionState<Transaction>> {
   try {
     const user = await getCurrentUser()
     const validatedForm = transactionFormSchema.safeParse(Object.fromEntries(formData.entries()))
@@ -30,14 +35,17 @@ export async function createTransactionAction(prevState: any, formData: FormData
     const transaction = await createTransaction(user.id, validatedForm.data)
 
     revalidatePath("/transactions")
-    return { success: true, transactionId: transaction.id }
+    return { success: true, data: transaction }
   } catch (error) {
     console.error("Failed to create transaction:", error)
     return { success: false, error: "Failed to create transaction" }
   }
 }
 
-export async function saveTransactionAction(prevState: any, formData: FormData) {
+export async function saveTransactionAction(
+  _prevState: ActionState<Transaction> | null,
+  formData: FormData
+): Promise<ActionState<Transaction>> {
   try {
     const user = await getCurrentUser()
     const transactionId = formData.get("transactionId") as string
@@ -50,14 +58,17 @@ export async function saveTransactionAction(prevState: any, formData: FormData) 
     const transaction = await updateTransaction(transactionId, user.id, validatedForm.data)
 
     revalidatePath("/transactions")
-    return { success: true, transactionId: transaction.id }
+    return { success: true, data: transaction }
   } catch (error) {
     console.error("Failed to update transaction:", error)
     return { success: false, error: "Failed to save transaction" }
   }
 }
 
-export async function deleteTransactionAction(prevState: any, transactionId: string) {
+export async function deleteTransactionAction(
+  _prevState: ActionState<Transaction> | null,
+  transactionId: string
+): Promise<ActionState<Transaction>> {
   try {
     const user = await getCurrentUser()
     const transaction = await getTransactionById(transactionId, user.id)
@@ -67,7 +78,7 @@ export async function deleteTransactionAction(prevState: any, transactionId: str
 
     revalidatePath("/transactions")
 
-    return { success: true, transactionId: transaction.id }
+    return { success: true, data: transaction }
   } catch (error) {
     console.error("Failed to delete transaction:", error)
     return { success: false, error: "Failed to delete transaction" }
@@ -77,7 +88,7 @@ export async function deleteTransactionAction(prevState: any, transactionId: str
 export async function deleteTransactionFileAction(
   transactionId: string,
   fileId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState<Transaction>> {
   if (!fileId || !transactionId) {
     return { success: false, error: "File ID and transaction ID are required" }
   }
@@ -96,10 +107,10 @@ export async function deleteTransactionFileAction(
 
   await deleteFile(fileId, user.id)
   revalidatePath(`/transactions/${transactionId}`)
-  return { success: true }
+  return { success: true, data: transaction }
 }
 
-export async function uploadTransactionFilesAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
+export async function uploadTransactionFilesAction(formData: FormData): Promise<ActionState<Transaction>> {
   try {
     const transactionId = formData.get("transactionId") as string
     const files = formData.getAll("files") as File[]

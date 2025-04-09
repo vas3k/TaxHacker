@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
     // CSV rows
     for (const transaction of transactions) {
-      const row: Record<string, any> = {}
+      const row: Record<string, unknown> = {}
       for (const field of existingFields) {
         let value
         if (field.isExtra) {

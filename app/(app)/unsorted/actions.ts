@@ -5,13 +5,14 @@ import { AnalyzeAttachment, loadAttachmentsForAI } from "@/ai/attachments"
 import { buildLLMPrompt } from "@/ai/prompt"
 import { fieldsToJsonSchema } from "@/ai/schema"
 import { transactionFormSchema } from "@/forms/transactions"
+import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
 import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { deleteFile, getFileById, updateFile } from "@/models/files"
 import { createTransaction, updateTransactionFiles } from "@/models/transactions"
-import { Category, Field, File, Project } from "@prisma/client"
+import { Category, Field, File, Project, Transaction } from "@prisma/client"
 import { mkdir, rename } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
@@ -22,7 +23,7 @@ export async function analyzeFileAction(
   fields: Field[],
   categories: Category[],
   projects: Project[]
-): Promise<{ success: boolean; data?: Record<string, any>; error?: string }> {
+): Promise<ActionState<Record<string, string>>> {
   const user = await getCurrentUser()
 
   if (!file || file.userId !== user.id) {
@@ -58,7 +59,10 @@ export async function analyzeFileAction(
   return results
 }
 
-export async function saveFileAsTransactionAction(prevState: any, formData: FormData) {
+export async function saveFileAsTransactionAction(
+  _prevState: ActionState<Transaction> | null,
+  formData: FormData
+): Promise<ActionState<Transaction>> {
   try {
     const user = await getCurrentUser()
     const validatedForm = transactionFormSchema.safeParse(Object.fromEntries(formData.entries()))
@@ -97,14 +101,17 @@ export async function saveFileAsTransactionAction(prevState: any, formData: Form
     revalidatePath("/unsorted")
     revalidatePath("/transactions")
 
-    return { success: true, transactionId: transaction.id }
+    return { success: true, data: transaction }
   } catch (error) {
     console.error("Failed to save transaction:", error)
     return { success: false, error: `Failed to save transaction: ${error}` }
   }
 }
 
-export async function deleteUnsortedFileAction(prevState: any, fileId: string) {
+export async function deleteUnsortedFileAction(
+  _prevState: ActionState<Transaction> | null,
+  fileId: string
+): Promise<ActionState<Transaction>> {
   try {
     const user = await getCurrentUser()
     await deleteFile(fileId, user.id)

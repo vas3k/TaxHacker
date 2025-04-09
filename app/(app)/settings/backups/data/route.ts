@@ -9,7 +9,7 @@ import path from "path"
 const MAX_FILE_SIZE = 64 * 1024 * 1024 // 64MB
 const BACKUP_VERSION = "1.0"
 
-export async function GET(request: Request) {
+export async function GET() {
   const user = await getCurrentUser()
   const userUploadsDirectory = await getUserUploadsDirectory(user)
 
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
 }
 
 async function getAllFilePaths(dirPath: string): Promise<string[]> {
-  let filePaths: string[] = []
+  const filePaths: string[] = []
 
   async function readDirectoryRecursively(currentPath: string) {
     const isDirExists = await fileExists(currentPath)

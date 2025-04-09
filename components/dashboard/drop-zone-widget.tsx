@@ -27,7 +27,7 @@ export default function DashboardDropZoneWidget() {
 
       // Submit the files using the server action
       startTransition(async () => {
-        const result = await uploadFilesAction(null, formData)
+        const result = await uploadFilesAction(formData)
         if (result.success) {
           showNotification({ code: "sidebar.unsorted", message: "new" })
           setTimeout(() => showNotification({ code: "sidebar.unsorted", message: "" }), 3000)

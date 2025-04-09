@@ -23,10 +23,11 @@ export function ImportCSVTable({ fields }: { fields: Field[] }) {
 
   useEffect(() => {
     if (parseState?.success && parseState.data) {
-      setCSVData(parseState.data)
-      if (parseState.data.length > 0) {
+      const parsedData = parseState.data as string[][]
+      setCSVData(parsedData)
+      if (parsedData.length > 0) {
         setColumnMappings(
-          parseState.data[0].map((value) => {
+          parsedData[0].map((value) => {
             const field = fields.find((field) => field.code === value || field.name === value)
             return field?.code || ""
           })

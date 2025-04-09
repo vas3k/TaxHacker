@@ -1,12 +1,17 @@
 "use server"
 
+import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { EXPORT_AND_IMPORT_FIELD_MAP } from "@/models/export_and_import"
 import { createTransaction } from "@/models/transactions"
 import { parse } from "@fast-csv/parse"
+import { Transaction } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 
-export async function parseCSVAction(prevState: any, formData: FormData) {
+export async function parseCSVAction(
+  _prevState: ActionState<string[][]> | null,
+  formData: FormData
+): Promise<ActionState<string[][]>> {
   const file = formData.get("file") as File
   if (!file) {
     return { success: false, error: "No file uploaded" }
@@ -38,7 +43,10 @@ export async function parseCSVAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function saveTransactionsAction(prevState: any, formData: FormData) {
+export async function saveTransactionsAction(
+  _prevState: ActionState<Transaction> | null,
+  formData: FormData
+): Promise<ActionState<Transaction>> {
   const user = await getCurrentUser()
   try {
     const rows = JSON.parse(formData.get("rows") as string) as Record<string, unknown>[]

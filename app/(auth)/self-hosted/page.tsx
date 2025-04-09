@@ -7,6 +7,7 @@ import config from "@/lib/config"
 import { DEFAULT_CURRENCIES, DEFAULT_SETTINGS } from "@/models/defaults"
 import { getSelfHostedUser } from "@/models/users"
 import { ShieldAlert } from "lucide-react"
+import Image from "next/image"
 import { redirect } from "next/navigation"
 import { selfHostedGetStartedAction } from "../actions"
 
@@ -36,12 +37,12 @@ export default async function SelfHostedWelcomePage() {
 
   return (
     <Card className="w-full max-w-xl mx-auto p-8 flex flex-col items-center justify-center gap-4">
-      <img src="/logo/512.png" alt="Logo" className="w-36 h-36" />
+      <Image src="/logo/512.png" alt="Logo" width={144} height={144} className="w-36 h-36" />
       <CardTitle className="text-3xl font-bold ">
         <ColoredText>TaxHacker: Self-Hosted Edition</ColoredText>
       </CardTitle>
       <CardDescription className="flex flex-col gap-4 text-center text-lg">
-        <p>Welcome to your own instance of TaxHacker. Let's set up a couple of settings to get started.</p>
+        <p>Welcome to your own instance of TaxHacker. Let&apos;s set up a couple of settings to get started.</p>
 
         <form action={selfHostedGetStartedAction} className="flex flex-col gap-8 pt-8">
           <div>

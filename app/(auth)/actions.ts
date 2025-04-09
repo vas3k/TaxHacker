@@ -15,12 +15,12 @@ export async function selfHostedGetStartedAction(formData: FormData) {
 
   const openaiApiKey = formData.get("openai_api_key")
   if (openaiApiKey) {
-    await updateSettings(user.id, "openai_api_key", openaiApiKey)
+    await updateSettings(user.id, "openai_api_key", openaiApiKey as string)
   }
 
   const defaultCurrency = formData.get("default_currency")
   if (defaultCurrency) {
-    await updateSettings(user.id, "default_currency", defaultCurrency)
+    await updateSettings(user.id, "default_currency", defaultCurrency as string)
   }
 
   revalidatePath("/dashboard")

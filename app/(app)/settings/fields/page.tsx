@@ -17,8 +17,9 @@ export default async function FieldsSettingsPage() {
     <div className="container">
       <h1 className="text-2xl font-bold mb-2">Custom Fields</h1>
       <p className="text-sm text-gray-500 mb-6 max-w-prose">
-        You can add new fields to your transactions. Standard fields can't be removed but you can tweak their prompts or
-        hide them. If you don't want a field to be analyzed by AI but filled in by hand, leave the "LLM prompt" empty.
+        You can add new fields to your transactions. Standard fields can&apos;t be removed but you can tweak their
+        prompts or hide them. If you don&apos;t want a field to be analyzed by AI but filled in by hand, leave the
+        &quot;LLM prompt&quot; empty.
       </p>
       <CrudTable
         items={fieldsWithActions}

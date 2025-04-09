@@ -1,5 +1,6 @@
 "use server"
 
+import { ActionState } from "@/lib/actions"
 import OpenAI from "openai"
 import { AnalyzeAttachment } from "./attachments"
 
@@ -8,7 +9,7 @@ export async function analyzeTransaction(
   schema: Record<string, unknown>,
   attachments: AnalyzeAttachment[],
   apiKey: string
-): Promise<{ success: boolean; data?: Record<string, any>; error?: string }> {
+): Promise<ActionState<Record<string, string>>> {
   const openai = new OpenAI({
     apiKey,
   })

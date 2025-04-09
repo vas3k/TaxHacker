@@ -62,7 +62,7 @@ export default function BackupSettingsPage() {
           <h2 className="text-xl font-semibold">Backup restored successfully</h2>
           <p className="text-sm text-muted-foreground">You can now continue using the app. Import stats:</p>
           <ul className="list-disc list-inside">
-            {Object.entries(restoreState.counters || {}).map(([key, value]) => (
+            {Object.entries(restoreState.data?.counters || {}).map(([key, value]) => (
               <li key={key}>
                 <span className="font-bold">{key}</span>: {value} items
               </li>

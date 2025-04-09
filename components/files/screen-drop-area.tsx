@@ -65,7 +65,7 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
         startTransition(async () => {
           const result = transactionId
             ? await uploadTransactionFilesAction(formData)
-            : await uploadFilesAction(null, formData)
+            : await uploadFilesAction(formData)
 
           if (result.success) {
             showNotification({ code: "sidebar.unsorted", message: "new" })
@@ -88,18 +88,18 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
 
   // Add event listeners to document body
   useEffect(() => {
-    document.body.addEventListener("dragenter", handleDragEnter as any)
-    document.body.addEventListener("dragover", handleDragOver as any)
-    document.body.addEventListener("dragleave", handleDragLeave as any)
-    document.body.addEventListener("drop", handleDrop as any)
+    document.body.addEventListener("dragenter", handleDragEnter as unknown as EventListener)
+    document.body.addEventListener("dragover", handleDragOver as unknown as EventListener)
+    document.body.addEventListener("dragleave", handleDragLeave as unknown as EventListener)
+    document.body.addEventListener("drop", handleDrop as unknown as EventListener)
 
     return () => {
-      document.body.removeEventListener("dragenter", handleDragEnter as any)
-      document.body.removeEventListener("dragover", handleDragOver as any)
-      document.body.removeEventListener("dragleave", handleDragLeave as any)
-      document.body.removeEventListener("drop", handleDrop as any)
+      document.body.removeEventListener("dragenter", handleDragEnter as unknown as EventListener)
+      document.body.removeEventListener("dragover", handleDragOver as unknown as EventListener)
+      document.body.removeEventListener("dragleave", handleDragLeave as unknown as EventListener)
+      document.body.removeEventListener("drop", handleDrop as unknown as EventListener)
     }
-  }, [isDragging])
+  }, [isDragging, handleDrop])
 
   return (
     <div className="relative min-h-screen w-full">

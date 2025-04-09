@@ -1,5 +1,6 @@
 "use server"
 
+import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { getUserUploadsDirectory, unsortedFilePath } from "@/lib/files"
 import { createFile } from "@/models/files"
@@ -8,7 +9,7 @@ import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
 
-export async function uploadFilesAction(prevState: any, formData: FormData) {
+export async function uploadFilesAction(formData: FormData): Promise<ActionState<null>> {
   const user = await getCurrentUser()
   const files = formData.getAll("files")
 

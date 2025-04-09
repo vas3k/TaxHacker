@@ -8,10 +8,10 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
       <header className="py-6 px-8 bg-white/80 backdrop-blur-md shadow-sm fixed w-full z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <a href="/" className="flex items-center gap-2">
-            <img src="/logo/256.png" alt="Logo" className="h-8" />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo/256.png" alt="Logo" width={32} height={32} className="h-8" />
             <ColoredText className="text-2xl font-bold">TaxHacker</ColoredText>
-          </a>
+          </Link>
           <div className="flex gap-4">
             <Link
               href="#start"
@@ -43,12 +43,12 @@ export default function LandingPage() {
               >
                 Get Started
               </Link>
-              <a
+              <Link
                 href="mailto:me@vas3k.ru"
                 className="px-8 py-3 border border-gray-200 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-all"
               >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
           <div className="relative aspect-auto rounded-2xl overflow-hidden shadow-2xl ring-8 ring-gray-100 hover:scale-105 transition-all duration-300">
@@ -323,7 +323,7 @@ export default function LandingPage() {
               Upcoming Features
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              We're a small, indie project constantly improving. Here's what we're working on next.
+              We&apos;re a small, indie project constantly improving. Here&apos;s what we&apos;re working on next.
             </p>
           </div>
 
@@ -429,9 +429,9 @@ export default function LandingPage() {
       <footer className="py-8 px-8 bg-white">
         <div className="max-w-7xl mx-auto text-center text-sm text-gray-500">
           Made with ❤️ in Berlin by{" "}
-          <a href="https://github.com/vas3k" className="underline">
+          <Link href="https://github.com/vas3k" className="underline">
             vas3k
-          </a>
+          </Link>
         </div>
       </footer>
     </div>
