@@ -19,8 +19,21 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    dragCounter.current++
 
+    // Check if the dragged items are files
+    const items = e.dataTransfer.items
+    if (!items) return
+
+    let hasFiles = false
+    for (const item of items) {
+      if (item.kind === "file") {
+        hasFiles = true
+        break
+      }
+    }
+    if (!hasFiles) return
+
+    dragCounter.current++
     if (dragCounter.current === 1) {
       setIsDragging(true)
     }
@@ -48,11 +61,12 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
     // Reset counter and dragging state
     dragCounter.current = 0
     setIsDragging(false)
-    setIsUploading(true)
-    setUploadError("")
 
     const files = e.dataTransfer.files
     if (files && files.length > 0) {
+      setIsUploading(true)
+      setUploadError("")
+
       try {
         const formData = new FormData()
         if (transactionId) {
