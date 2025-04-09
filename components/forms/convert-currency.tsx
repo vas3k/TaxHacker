@@ -1,8 +1,8 @@
+import { FormError } from "@/components/forms/error"
 import { formatCurrency } from "@/lib/utils"
 import { format, startOfDay } from "date-fns"
 import { Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
-
 export const FormConvertCurrency = ({
   originalTotal,
   originalCurrencyCode,
@@ -25,18 +25,23 @@ export const FormConvertCurrency = ({
   const [exchangeRate, setExchangeRate] = useState(0)
   const [convertedTotal, setConvertedTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true)
+        setError(null)
+
         const exchangeRate = await getCurrencyRate(originalCurrencyCode, targetCurrencyCode, normalizedDate)
+
         setExchangeRate(exchangeRate)
         setConvertedTotal(Math.round(originalTotal * exchangeRate * 100) / 100)
       } catch (error) {
         console.error("Error fetching currency rates:", error)
         setExchangeRate(0)
         setConvertedTotal(0)
+        setError(error instanceof Error ? error.message : "Failed to fetch currency rate")
       } finally {
         setIsLoading(false)
       }
@@ -74,7 +79,10 @@ export const FormConvertCurrency = ({
               className="w-32 rounded-md border border-input px-2 py-1"
             />
           </div>
-          <div className="text-xs text-muted-foreground">The exchange rate will be added to the transaction</div>
+          {!error && (
+            <div className="text-xs text-muted-foreground">The exchange rate will be added to the transaction</div>
+          )}
+          {error && <FormError className="mt-0 text-sm">{error}</FormError>}
         </div>
       )}
     </div>
@@ -82,20 +90,15 @@ export const FormConvertCurrency = ({
 }
 
 async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
-  try {
-    const formattedDate = format(date, "yyyy-MM-dd")
-    const response = await fetch(`/api/currency?from=${currencyCodeFrom}&to=${currencyCodeTo}&date=${formattedDate}`)
+  const formattedDate = format(date, "yyyy-MM-dd")
+  const response = await fetch(`/api/currency?from=${currencyCodeFrom}&to=${currencyCodeTo}&date=${formattedDate}`)
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error("Currency API error:", errorData.error)
-      return 0
-    }
-
-    const data = await response.json()
-    return data.rate
-  } catch (error) {
-    console.error("Error fetching currency rate:", error)
-    return 0
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.log("Currency API error:", errorData.error)
+    throw new Error(errorData.error || "Failed to fetch currency rate")
   }
+
+  const data = await response.json()
+  return data.rate
 }

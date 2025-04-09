@@ -1,9 +1,10 @@
 import config from "@/lib/config"
 import { createUserDefaults } from "@/models/defaults"
-import { getSelfHostedUser } from "@/models/users"
+import { getSelfHostedUser, getUserByEmail } from "@/models/users"
 import { User } from "@prisma/client"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
+import { APIError } from "better-auth/api"
 import { nextCookies } from "better-auth/next-js"
 import { emailOTP } from "better-auth/plugins/email-otp"
 import { headers } from "next/headers"
@@ -56,6 +57,10 @@ export const auth = betterAuth({
       otpLength: 6,
       expiresIn: 10 * 60, // 10 minutes
       sendVerificationOTP: async ({ email, otp }) => {
+        const user = await getUserByEmail(email)
+        if (!user) {
+          throw new APIError("NOT_FOUND", { message: "User with this email does not exist" })
+        }
         await sendOTPCodeEmail({ email, otp })
       },
     }),
