@@ -16,9 +16,14 @@ export const FormConvertCurrency = ({
   date?: Date | undefined
   onChange?: (value: number) => void
 }) => {
+  if (!originalTotal || !originalCurrencyCode || !targetCurrencyCode || originalCurrencyCode === targetCurrencyCode) {
+    return <></>
+  }
+
   const normalizedDate = startOfDay(date || new Date(Date.now() - 24 * 60 * 60 * 1000))
   const normalizedDateString = format(normalizedDate, "yyyy-MM-dd")
   const [exchangeRate, setExchangeRate] = useState(0)
+  const [convertedTotal, setConvertedTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -27,11 +32,11 @@ export const FormConvertCurrency = ({
         setIsLoading(true)
         const exchangeRate = await getCurrencyRate(originalCurrencyCode, targetCurrencyCode, normalizedDate)
         setExchangeRate(exchangeRate)
-        onChange?.(originalTotal * exchangeRate)
+        setConvertedTotal(Math.round(originalTotal * exchangeRate * 100) / 100)
       } catch (error) {
         console.error("Error fetching currency rates:", error)
         setExchangeRate(0)
-        onChange?.(0)
+        setConvertedTotal(0)
       } finally {
         setIsLoading(false)
       }
@@ -40,31 +45,36 @@ export const FormConvertCurrency = ({
     fetchData()
   }, [originalCurrencyCode, targetCurrencyCode, normalizedDateString, originalTotal])
 
-  if (!originalTotal || !originalCurrencyCode || !targetCurrencyCode || originalCurrencyCode === targetCurrencyCode) {
-    return <></>
-  }
+  useEffect(() => {
+    onChange?.(convertedTotal)
+  }, [convertedTotal])
 
   return (
-    <div className="flex flex-row gap-2 items-center text-muted-foreground">
+    <div className="flex flex-row gap-2 items-center">
       {isLoading ? (
-        <div className="flex flex-row gap-2">
-          <Loader2 className="animate-spin" />
-          <div>Loading exchange rates...</div>
+        <div className="flex flex-row items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <div className="font-semibold">Loading exchange rates...</div>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
-          <div>{formatCurrency(originalTotal * 100, originalCurrencyCode)}</div>
-          <div>=</div>
-          <div>{formatCurrency(originalTotal * 100 * exchangeRate, targetCurrencyCode).slice(0, 1)}</div>
-          <input
-            type="number"
-            step="0.01"
-            name="convertedTotal"
-            value={(originalTotal * exchangeRate).toFixed(2)}
-            onChange={(e) => onChange?.(parseFloat(e.target.value))}
-            className="w-32 rounded-md border border-input bg-transparent  px-1"
-          />
-          <div className="text-xs">(exchange rate on {format(normalizedDate, "LLLL dd, yyyy")})</div>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div>{formatCurrency(originalTotal * 100, originalCurrencyCode)}</div>
+            <div>=</div>
+            <div>{formatCurrency(originalTotal * 100 * exchangeRate, targetCurrencyCode).slice(0, 1)}</div>
+            <input
+              type="number"
+              step="0.01"
+              name="convertedTotal"
+              value={convertedTotal}
+              onChange={(e) => {
+                const newValue = parseFloat(e.target.value || "0")
+                !isNaN(newValue) && setConvertedTotal(Math.round(newValue * 100) / 100)
+              }}
+              className="w-32 rounded-md border border-input px-2 py-1"
+            />
+          </div>
+          <div className="text-xs text-muted-foreground">The exchange rate will be added to the transaction</div>
         </div>
       )}
     </div>
