@@ -32,18 +32,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getCurrentUser()
   const unsortedFilesCount = await getUnsortedFilesCount(user.id)
 
+  const userProfile = {
+    id: user.id,
+    name: user.name || "",
+    email: user.email,
+    avatar: user.avatar || undefined,
+    storageUsed: user.storageUsed || 0,
+  }
+
   return (
     <NotificationProvider>
       <ScreenDropArea>
         <SidebarProvider>
           <MobileMenu unsortedFilesCount={unsortedFilesCount} />
           <AppSidebar
-            profile={{
-              id: user.id,
-              name: user.name || "",
-              email: user.email,
-              avatar: user.avatar || undefined,
-            }}
+            profile={userProfile}
             unsortedFilesCount={unsortedFilesCount}
             isSelfHosted={config.selfHosted.isEnabled}
           />

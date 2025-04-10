@@ -2,8 +2,9 @@
 
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
-import { getUserUploadsDirectory, unsortedFilePath } from "@/lib/files"
+import { getDirectorySize, getUserUploadsDirectory, unsortedFilePath } from "@/lib/files"
 import { createFile } from "@/models/files"
+import { updateUser } from "@/models/users"
 import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
@@ -49,6 +50,10 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
       return fileRecord
     })
   )
+
+  // Update user storage used
+  const storageUsed = await getDirectorySize(await getUserUploadsDirectory(user))
+  await updateUser(user.id, { storageUsed })
 
   console.log("uploadedFiles", uploadedFiles)
 

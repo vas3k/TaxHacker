@@ -1,5 +1,5 @@
 import { File, Transaction, User } from "@prisma/client"
-import { access, constants } from "fs/promises"
+import { access, constants, readdir, stat } from "fs/promises"
 import path from "path"
 
 export const FILE_UPLOAD_PATH = path.resolve(process.env.UPLOAD_PATH || "./uploads")
@@ -51,4 +51,22 @@ export async function fileExists(filePath: string) {
   } catch {
     return false
   }
+}
+
+export async function getDirectorySize(directoryPath: string) {
+  let totalSize = 0
+  async function calculateSize(dir: string) {
+    const files = await readdir(dir, { withFileTypes: true })
+    for (const file of files) {
+      const fullPath = path.join(dir, file.name)
+      if (file.isDirectory()) {
+        await calculateSize(fullPath)
+      } else if (file.isFile()) {
+        const stats = await stat(fullPath)
+        totalSize += stats.size
+      }
+    }
+  }
+  await calculateSize(directoryPath)
+  return totalSize
 }

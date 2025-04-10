@@ -3,7 +3,7 @@
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
-import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
+import { getDirectorySize, getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
 import { updateField } from "@/models/fields"
 import { createFile, deleteFile } from "@/models/files"
 import {
@@ -14,6 +14,7 @@ import {
   updateTransaction,
   updateTransactionFiles,
 } from "@/models/transactions"
+import { updateUser } from "@/models/users"
 import { Transaction } from "@prisma/client"
 import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
@@ -106,6 +107,11 @@ export async function deleteTransactionFileAction(
   )
 
   await deleteFile(fileId, user.id)
+
+  // Update user storage used
+  const storageUsed = await getDirectorySize(await getUserUploadsDirectory(user))
+  await updateUser(user.id, { storageUsed })
+
   revalidatePath(`/transactions/${transactionId}`)
   return { success: true, data: transaction }
 }
@@ -168,6 +174,10 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
         ? [...(transaction.files as string[]), ...fileRecords.map((file) => file.id)]
         : fileRecords.map((file) => file.id)
     )
+
+    // Update user storage used
+    const storageUsed = await getDirectorySize(await getUserUploadsDirectory(user))
+    await updateUser(user.id, { storageUsed })
 
     revalidatePath(`/transactions/${transactionId}`)
     return { success: true }

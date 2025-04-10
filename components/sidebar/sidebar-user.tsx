@@ -10,7 +10,8 @@ import {
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
 import { authClient } from "@/lib/auth-client"
-import { LogOut, MoreVertical, User } from "lucide-react"
+import { formatBytes } from "@/lib/utils"
+import { HardDrive, LogOut, MoreVertical, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -59,6 +60,13 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
               Your Subscription
             </Link>
           </DropdownMenuItem> */}
+
+          <DropdownMenuItem asChild>
+            <Link href="/settings/profile" className="flex items-center gap-2">
+              <HardDrive className="h-4 w-4" />
+              Storage: {profile.storageUsed ? formatBytes(profile.storageUsed) : "N/A"}
+            </Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         {!isSelfHosted && (
           <>

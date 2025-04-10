@@ -1,5 +1,6 @@
 "use client"
 
+import { formatBytes } from "@/lib/utils"
 import { File } from "@prisma/client"
 import Image from "next/image"
 import Link from "next/link"
@@ -9,9 +10,7 @@ export function FilePreview({ file }: { file: File }) {
   const [isEnlarged, setIsEnlarged] = useState(false)
 
   const fileSize =
-    file.metadata && typeof file.metadata === "object" && "size" in file.metadata
-      ? Number(file.metadata.size) / 1024 / 1024
-      : 0
+    file.metadata && typeof file.metadata === "object" && "size" in file.metadata ? Number(file.metadata.size) : 0
 
   return (
     <>
@@ -45,7 +44,7 @@ export function FilePreview({ file }: { file: File }) {
             <strong>Uploaded:</strong> {format(file.createdAt, "MMM d, yyyy")}
           </p> */}
           <p className="text-sm">
-            <strong>Size:</strong> {fileSize < 1 ? (fileSize * 1024).toFixed(2) + " KB" : fileSize.toFixed(2) + " MB"}
+            <strong>Size:</strong> {formatBytes(fileSize)}
           </p>
         </div>
       </div>

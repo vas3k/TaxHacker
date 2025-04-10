@@ -17,6 +17,7 @@ export type UserProfile = {
   name: string
   email: string
   avatar?: string
+  storageUsed?: number
 }
 
 export const auth = betterAuth({

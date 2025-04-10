@@ -45,6 +45,7 @@ export async function analyzeTransaction(
     })
 
     console.log("ChatGPT response:", response.output_text)
+    console.log("ChatGPT tokens used:", response.usage)
 
     const result = JSON.parse(response.output_text)
     return { success: true, data: result }

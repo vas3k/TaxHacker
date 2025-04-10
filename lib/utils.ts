@@ -16,6 +16,18 @@ export function formatCurrency(total: number, currency: string) {
   }).format(total / 100)
 }
 
+export function formatBytes(bytes: number) {
+  if (bytes === 0) return "0 Bytes"
+
+  const sizes = ["Bytes", "KB", "MB", "GB"]
+  const maxIndex = sizes.length - 1
+
+  const i = Math.min(Math.floor(Math.log10(bytes) / Math.log10(1024)), maxIndex)
+  const value = bytes / Math.pow(1024, i)
+
+  return `${parseFloat(value.toFixed(2))} ${sizes[i]}`
+}
+
 export function codeFromName(name: string, maxLength: number = 16) {
   const code = slugify(name, {
     replacement: "_",
