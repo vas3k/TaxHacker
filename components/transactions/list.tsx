@@ -134,7 +134,7 @@ const getFieldRenderer = (field: Field): FieldRenderer => {
       name: field.name,
       code: field.code,
       classes: "",
-      sortable: true,
+      sortable: false,
     }
   }
 }
