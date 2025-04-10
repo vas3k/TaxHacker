@@ -6,7 +6,7 @@ export const NewsletterWelcomeEmail: React.FC = () => (
     <h2 style={{ color: "#4f46e5" }}>👋 Welcome to TaxHacker!</h2>
 
     <p style={{ fontSize: "16px", lineHeight: "1.5", color: "#333" }}>
-      Thank you for subscribing to our updates. We'll keep you updated about:
+      Thank you for subscribing to our updates. We&apos;ll keep you updated about:
     </p>
     <ul
       style={{

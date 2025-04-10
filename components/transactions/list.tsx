@@ -254,7 +254,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.map((transaction: any) => (
+          {transactions.map((transaction) => (
             <TableRow
               key={transaction.id}
               className={cn(selectedIds.includes(transaction.id) && "bg-muted", "cursor-pointer hover:bg-muted/50")}

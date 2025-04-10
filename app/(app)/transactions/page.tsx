@@ -70,7 +70,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         {transactions.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-2 h-full min-h-[400px]">
             <p className="text-muted-foreground">
-              You don't seem to have any transactions yet. Let's start and create the first one!
+              You don&apos;t seem to have any transactions yet. Let&apos;s start and create the first one!
             </p>
             <div className="flex flex-row gap-5 mt-8">
               <UploadButton>

@@ -270,7 +270,6 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
     </div>
   )
 }
-
 function itemDefaults<T>(columns: CrudColumn<T>[]) {
   return columns.reduce((acc, column) => {
     acc[column.key] = column.defaultValue as T[keyof T]

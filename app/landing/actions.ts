@@ -14,7 +14,7 @@ export async function subscribeToNewsletterAction(email: string) {
     })
 
     if (existingContacts.data) {
-      const existingContact = existingContacts.data.data.find((contact: any) => contact.email === email)
+      const existingContact = existingContacts.data.data.find((contact: { email: string }) => contact.email === email)
 
       if (existingContact) {
         return { success: false, error: "You are already subscribed to the newsletter" }

@@ -36,7 +36,7 @@ export function ImportCSVTable({ fields }: { fields: Field[] }) {
         setColumnMappings([])
       }
     }
-  }, [parseState])
+  }, [parseState, fields])
 
   useEffect(() => {
     if (saveState?.success) {

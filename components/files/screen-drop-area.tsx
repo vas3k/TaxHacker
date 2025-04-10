@@ -5,7 +5,7 @@ import { uploadFilesAction } from "@/app/(app)/files/actions"
 import { uploadTransactionFilesAction } from "@/app/(app)/transactions/actions"
 import { AlertCircle, CloudUpload, Loader2 } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
-import { startTransition, useEffect, useRef, useState } from "react"
+import { startTransition, useCallback, useEffect, useRef, useState } from "react"
 
 export default function ScreenDropArea({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -54,51 +54,54 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
     }
   }
 
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleDrop = useCallback(
+    async (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
 
-    // Reset counter and dragging state
-    dragCounter.current = 0
-    setIsDragging(false)
+      // Reset counter and dragging state
+      dragCounter.current = 0
+      setIsDragging(false)
 
-    const files = e.dataTransfer.files
-    if (files && files.length > 0) {
-      setIsUploading(true)
-      setUploadError("")
+      const files = e.dataTransfer.files
+      if (files && files.length > 0) {
+        setIsUploading(true)
+        setUploadError("")
 
-      try {
-        const formData = new FormData()
-        if (transactionId) {
-          formData.append("transactionId", transactionId as string)
-        }
-        for (let i = 0; i < files.length; i++) {
-          formData.append("files", files[i])
-        }
-
-        startTransition(async () => {
-          const result = transactionId
-            ? await uploadTransactionFilesAction(formData)
-            : await uploadFilesAction(formData)
-
-          if (result.success) {
-            showNotification({ code: "sidebar.unsorted", message: "new" })
-            setTimeout(() => showNotification({ code: "sidebar.unsorted", message: "" }), 3000)
-            if (!transactionId) {
-              router.push("/unsorted")
-            }
-          } else {
-            setUploadError(result.error ? result.error : "Something went wrong...")
+        try {
+          const formData = new FormData()
+          if (transactionId) {
+            formData.append("transactionId", transactionId as string)
           }
+          for (let i = 0; i < files.length; i++) {
+            formData.append("files", files[i])
+          }
+
+          startTransition(async () => {
+            const result = transactionId
+              ? await uploadTransactionFilesAction(formData)
+              : await uploadFilesAction(formData)
+
+            if (result.success) {
+              showNotification({ code: "sidebar.unsorted", message: "new" })
+              setTimeout(() => showNotification({ code: "sidebar.unsorted", message: "" }), 3000)
+              if (!transactionId) {
+                router.push("/unsorted")
+              }
+            } else {
+              setUploadError(result.error ? result.error : "Something went wrong...")
+            }
+            setIsUploading(false)
+          })
+        } catch (error) {
+          console.error("Upload error:", error)
           setIsUploading(false)
-        })
-      } catch (error) {
-        console.error("Upload error:", error)
-        setIsUploading(false)
-        setUploadError(error instanceof Error ? error.message : "Something went wrong...")
+          setUploadError(error instanceof Error ? error.message : "Something went wrong...")
+        }
       }
-    }
-  }
+    },
+    [transactionId, router, showNotification]
+  )
 
   // Add event listeners to document body
   useEffect(() => {

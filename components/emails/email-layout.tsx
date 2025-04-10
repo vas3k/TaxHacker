@@ -1,3 +1,4 @@
+import Head from "next/head"
 import React from "react"
 
 interface EmailLayoutProps {
@@ -7,7 +8,7 @@ interface EmailLayoutProps {
 
 export const EmailLayout: React.FC<EmailLayoutProps> = ({ children, preview = "" }) => (
   <html>
-    <head>
+    <Head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta name="color-scheme" content="light" />
@@ -49,7 +50,7 @@ export const EmailLayout: React.FC<EmailLayoutProps> = ({ children, preview = ""
       `,
         }}
       />
-    </head>
+    </Head>
     <body>
       <div className="container">{children}</div>
     </body>

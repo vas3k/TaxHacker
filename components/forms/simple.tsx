@@ -117,7 +117,7 @@ export const FormDate = ({
       if (!isNaN(newDate.getTime())) {
         setDate(newDate)
       }
-    } catch (_) {}
+    } catch {}
   }
 
   return (

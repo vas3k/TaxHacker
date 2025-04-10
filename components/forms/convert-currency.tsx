@@ -16,10 +16,6 @@ export const FormConvertCurrency = ({
   date?: Date | undefined
   onChange?: (value: number) => void
 }) => {
-  if (!originalTotal || !originalCurrencyCode || !targetCurrencyCode || originalCurrencyCode === targetCurrencyCode) {
-    return <></>
-  }
-
   const normalizedDate = startOfDay(date || new Date(Date.now() - 24 * 60 * 60 * 1000))
   const normalizedDateString = format(normalizedDate, "yyyy-MM-dd")
   const [exchangeRate, setExchangeRate] = useState(0)
@@ -53,6 +49,10 @@ export const FormConvertCurrency = ({
   useEffect(() => {
     onChange?.(convertedTotal)
   }, [convertedTotal])
+
+  if (!originalTotal || !originalCurrencyCode || !targetCurrencyCode || originalCurrencyCode === targetCurrencyCode) {
+    return <></>
+  }
 
   return (
     <div className="flex flex-row gap-2 items-center">

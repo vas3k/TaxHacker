@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { getSettings, updateSettings } from "@/models/settings"
 import { Banknote, ChartBarStacked, FolderOpenDot, Key, TextCursorInput, X } from "lucide-react"
 import { revalidatePath } from "next/cache"
+import Image from "next/image"
 import Link from "next/link"
 
 export async function WelcomeWidget() {
@@ -13,11 +14,11 @@ export async function WelcomeWidget() {
 
   return (
     <Card className="flex flex-col lg:flex-row items-start gap-10 p-10 w-full">
-      <img src="/logo/1024.png" alt="Logo" className="w-64 h-64" />
+      <Image src="/logo/1024.png" alt="Logo" width={256} height={256} className="w-64 h-64" />
       <div className="flex flex-col">
         <CardTitle className="flex items-center justify-between">
           <span className="text-2xl font-bold">
-            <ColoredText>Hey, I'm TaxHacker 👋</ColoredText>
+            <ColoredText>Hey, I&apos;m TaxHacker 👋</ColoredText>
           </span>
           <Button
             variant="outline"
@@ -33,8 +34,8 @@ export async function WelcomeWidget() {
         </CardTitle>
         <CardDescription className="mt-5">
           <p className="mb-3">
-            I'm a little accountant app that tries to help you deal with endless receipts, checks and invoices with (you
-            guessed it) GenAI. Here's what I can do:
+            I&apos;m a little accountant app that tries to help you deal with endless receipts, checks and invoices with
+            (you guessed it) GenAI. Here&apos;s what I can do:
           </p>
           <ul className="mb-5 list-disc pl-5 space-y-1">
             <li>
@@ -59,7 +60,7 @@ export async function WelcomeWidget() {
               CSV export for your tax advisor.
             </li>
             <li>
-              I'm still <strong>very young</strong> and can make mistakes. Use me at your own risk!
+              I&apos;m still <strong>very young</strong> and can make mistakes. Use me at your own risk!
             </li>
           </ul>
           <p className="mb-3">

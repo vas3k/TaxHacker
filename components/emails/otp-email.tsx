@@ -32,7 +32,7 @@ export const OTPEmail: React.FC<OTPEmailProps> = ({ otp }) => (
     </div>
     <p style={{ fontSize: "14px", color: "#666", textAlign: "center" }}>This code will expire in 10 minutes.</p>
     <p style={{ fontSize: "14px", color: "#666", textAlign: "center" }}>
-      If you didn't request this code, please ignore this email.
+      If you didn&apos;t request this code, please ignore this email.
     </p>
   </EmailLayout>
 )
