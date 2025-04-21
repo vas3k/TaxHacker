@@ -9,10 +9,10 @@ export const FormSelectType = ({
   ...props
 }: { title: string; emptyValue?: string; placeholder?: string; hideIfEmpty?: boolean } & SelectProps) => {
   const items = [
-    { code: "expense", name: "Expense" },
-    { code: "income", name: "Income" },
-    { code: "pending", name: "Pending" },
-    { code: "other", name: "Other" },
+    { code: "expense", name: "Expense", badge: "↓" },
+    { code: "income", name: "Income", badge: "↑" },
+    { code: "pending", name: "Pending", badge: "⏲︎" },
+    { code: "other", name: "Other", badge: "?" },
   ]
 
   return (

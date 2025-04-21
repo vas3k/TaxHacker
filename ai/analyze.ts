@@ -4,12 +4,17 @@ import { ActionState } from "@/lib/actions"
 import OpenAI from "openai"
 import { AnalyzeAttachment } from "./attachments"
 
+export type AnalysisResult = {
+  output: Record<string, string>
+  tokensUsed: number
+}
+
 export async function analyzeTransaction(
   prompt: string,
   schema: Record<string, unknown>,
   attachments: AnalyzeAttachment[],
   apiKey: string
-): Promise<ActionState<Record<string, string>>> {
+): Promise<ActionState<AnalysisResult>> {
   const openai = new OpenAI({
     apiKey,
   })
@@ -19,7 +24,7 @@ export async function analyzeTransaction(
 
   try {
     const response = await openai.responses.create({
-      model: "gpt-4o-mini-2024-07-18",
+      model: "gpt-4o-mini",
       input: [
         {
           role: "user",
@@ -48,7 +53,7 @@ export async function analyzeTransaction(
     console.log("ChatGPT tokens used:", response.usage)
 
     const result = JSON.parse(response.output_text)
-    return { success: true, data: result }
+    return { success: true, data: { output: result, tokensUsed: response.usage?.total_tokens || 0 } }
   } catch (error) {
     console.error("AI Analysis error:", error)
     return {

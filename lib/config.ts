@@ -13,6 +13,8 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().default("please-set-your-resend-api-key-here"),
   RESEND_FROM_EMAIL: z.string().default("TaxHacker <user@localhost>"),
   RESEND_AUDIENCE_ID: z.string().default(""),
+  STRIPE_SECRET_KEY: z.string().default(""),
+  STRIPE_WEBHOOK_SECRET: z.string().default(""),
 })
 
 const env = envSchema.parse(process.env)
@@ -39,6 +41,10 @@ const config = {
     secret: env.BETTER_AUTH_SECRET,
     loginUrl: "/enter",
     disableSignup: env.DISABLE_SIGNUP === "true" || env.SELF_HOSTED_MODE === "true",
+  },
+  stripe: {
+    secretKey: env.STRIPE_SECRET_KEY,
+    webhookSecret: env.STRIPE_WEBHOOK_SECRET,
   },
   email: {
     apiKey: env.RESEND_API_KEY,

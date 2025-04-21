@@ -1,5 +1,6 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -57,7 +58,7 @@ export const FormSelect = ({
   ...props
 }: {
   title: string
-  items: Array<{ code: string; name: string; color?: string }>
+  items: Array<{ code: string; name: string; color?: string; badge?: string }>
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean
@@ -78,7 +79,10 @@ export const FormSelect = ({
           {items.map((item) => (
             <SelectItem key={item.code} value={item.code}>
               <div className="flex items-center gap-2 text-base pr-2">
-                {item.color && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />}
+                {item.badge && <Badge className="px-2">{item.badge}</Badge>}
+                {!item.badge && item.color && (
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                )}
                 {item.name}
               </div>
             </SelectItem>

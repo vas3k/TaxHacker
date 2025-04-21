@@ -1,6 +1,7 @@
 import { File, Transaction, User } from "@prisma/client"
 import { access, constants, readdir, stat } from "fs/promises"
 import path from "path"
+import config from "./config"
 
 export const FILE_UPLOAD_PATH = path.resolve(process.env.UPLOAD_PATH || "./uploads")
 export const FILE_UNSORTED_DIRECTORY_NAME = "unsorted"
@@ -69,4 +70,11 @@ export async function getDirectorySize(directoryPath: string) {
   }
   await calculateSize(directoryPath)
   return totalSize
+}
+
+export function isEnoughStorageToUploadFile(user: User, fileSize: number) {
+  if (config.selfHosted.isEnabled || user.storageLimit < 0) {
+    return true
+  }
+  return user.storageUsed + fileSize <= user.storageLimit
 }

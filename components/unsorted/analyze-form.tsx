@@ -106,7 +106,7 @@ export default function AnalyzeForm({
         setAnalyzeError(results.error ? results.error : "Something went wrong...")
       } else {
         const nonEmptyFields = Object.fromEntries(
-          Object.entries(results.data || {}).filter(
+          Object.entries(results.data?.output || {}).filter(
             ([_, value]) => value !== null && value !== undefined && value !== ""
           )
         )

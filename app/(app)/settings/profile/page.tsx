@@ -1,4 +1,4 @@
-import ProfileSettingsForm from "@/components/settings/profile-settings-form copy"
+import ProfileSettingsForm from "@/components/settings/profile-settings-form"
 import { getCurrentUser } from "@/lib/auth"
 
 export default async function ProfileSettingsPage() {

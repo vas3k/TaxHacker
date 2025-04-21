@@ -2,7 +2,7 @@
 
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
-import { getDirectorySize, getUserUploadsDirectory, unsortedFilePath } from "@/lib/files"
+import { getDirectorySize, getUserUploadsDirectory, isEnoughStorageToUploadFile, unsortedFilePath } from "@/lib/files"
 import { createFile } from "@/models/files"
 import { updateUser } from "@/models/users"
 import { randomUUID } from "crypto"
@@ -22,6 +22,10 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
     files.map(async (file) => {
       if (!(file instanceof File)) {
         return { success: false, error: "Invalid file" }
+      }
+
+      if (!isEnoughStorageToUploadFile(user, file.size)) {
+        return { success: false, error: `Insufficient storage to upload this file: ${file.name}` }
       }
 
       // Save file to filesystem

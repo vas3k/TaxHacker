@@ -17,7 +17,12 @@ export const FormSelectCurrency = ({
   hideIfEmpty?: boolean
 } & SelectProps) => {
   const items = useMemo(
-    () => currencies.map((currency) => ({ code: currency.code, name: `${currency.code} - ${currency.name}` })),
+    () =>
+      currencies.map((currency) => ({
+        code: currency.code,
+        name: `${currency.code}`,
+        badge: currency.name,
+      })),
     [currencies]
   )
   return (

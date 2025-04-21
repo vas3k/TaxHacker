@@ -1,6 +1,6 @@
 "use server"
 
-import { analyzeTransaction } from "@/ai/analyze"
+import { AnalysisResult, analyzeTransaction } from "@/ai/analyze"
 import { AnalyzeAttachment, loadAttachmentsForAI } from "@/ai/attachments"
 import { buildLLMPrompt } from "@/ai/prompt"
 import { fieldsToJsonSchema } from "@/ai/schema"
@@ -12,6 +12,7 @@ import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/fil
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { deleteFile, getFileById, updateFile } from "@/models/files"
 import { createTransaction, updateTransactionFiles } from "@/models/transactions"
+import { updateUser } from "@/models/users"
 import { Category, Field, File, Project, Transaction } from "@prisma/client"
 import { mkdir, rename } from "fs/promises"
 import { revalidatePath } from "next/cache"
@@ -23,7 +24,7 @@ export async function analyzeFileAction(
   fields: Field[],
   categories: Category[],
   projects: Project[]
-): Promise<ActionState<Record<string, string>>> {
+): Promise<ActionState<AnalysisResult>> {
   const user = await getCurrentUser()
 
   if (!file || file.userId !== user.id) {
@@ -33,6 +34,10 @@ export async function analyzeFileAction(
   const apiKey = settings.openai_api_key || config.ai.openaiApiKey || ""
   if (!apiKey) {
     return { success: false, error: "OpenAI API key is not set" }
+  }
+
+  if (!config.selfHosted.isEnabled && user.tokenBalance < 0) {
+    return { success: false, error: "You used all your AI tokens, please upgrade your account" }
   }
 
   let attachments: AnalyzeAttachment[] = []
@@ -55,6 +60,10 @@ export async function analyzeFileAction(
   const results = await analyzeTransaction(prompt, schema, attachments, apiKey)
 
   console.log("Analysis results:", results)
+
+  if (results.data?.tokensUsed && results.data.tokensUsed > 0) {
+    await updateUser(user.id, { tokenBalance: { decrement: results.data.tokensUsed } })
+  }
 
   return results
 }

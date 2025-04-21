@@ -3,7 +3,12 @@
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
-import { getDirectorySize, getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
+import {
+  getDirectorySize,
+  getTransactionFileUploadPath,
+  getUserUploadsDirectory,
+  isEnoughStorageToUploadFile,
+} from "@/lib/files"
 import { updateField } from "@/models/fields"
 import { createFile, deleteFile } from "@/models/files"
 import {
@@ -132,6 +137,11 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
     }
 
     const userUploadsDirectory = await getUserUploadsDirectory(user)
+
+    const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
+    if (!isEnoughStorageToUploadFile(user, totalFileSize)) {
+      return { success: false, error: `Insufficient storage to upload new files` }
+    }
 
     const fileRecords = await Promise.all(
       files.map(async (file) => {

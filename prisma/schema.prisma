@@ -27,8 +27,9 @@ model User {
   membershipPlan      String?       @map("membership_plan")
   membershipExpiresAt DateTime?     @map("membership_expires_at")
   emailVerified       Boolean       @default(false) @map("is_email_verified")
-  storageUsed         Int?          @default(0) @map("storage_used")
-  tokenBalance        Int?          @default(0) @map("token_balance")
+  storageUsed         Int           @default(0) @map("storage_used")
+  storageLimit        Int           @default(-1) @map("storage_limit")
+  tokenBalance        Int           @default(0) @map("token_balance")
   accounts            Account[]
   sessions            Session[]
 

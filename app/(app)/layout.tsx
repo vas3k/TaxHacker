@@ -38,6 +38,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     email: user.email,
     avatar: user.avatar || undefined,
     storageUsed: user.storageUsed || 0,
+    storageLimit: user.storageLimit || -1,
+    tokenBalance: user.tokenBalance || 0,
   }
 
   return (
