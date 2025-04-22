@@ -12,20 +12,22 @@ import path from "path"
 
 export async function uploadFilesAction(formData: FormData): Promise<ActionState<null>> {
   const user = await getCurrentUser()
-  const files = formData.getAll("files")
+  const files = formData.getAll("files") as File[]
 
   // Make sure upload dir exists
   const userUploadsDirectory = await getUserUploadsDirectory(user)
+
+  // Check limits
+  const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
+  if (!isEnoughStorageToUploadFile(user, totalFileSize)) {
+    return { success: false, error: `Insufficient storage to upload these files` }
+  }
 
   // Process each file
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
       if (!(file instanceof File)) {
         return { success: false, error: "Invalid file" }
-      }
-
-      if (!isEnoughStorageToUploadFile(user, file.size)) {
-        return { success: false, error: `Insufficient storage to upload this file: ${file.name}` }
       }
 
       // Save file to filesystem
