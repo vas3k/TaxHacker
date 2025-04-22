@@ -1,6 +1,6 @@
 import config from "@/lib/config"
 import { createUserDefaults } from "@/models/defaults"
-import { getSelfHostedUser, getUserByEmail } from "@/models/users"
+import { getSelfHostedUser, getUserByEmail, getUserById } from "@/models/users"
 import { stripe } from "@better-auth/stripe"
 import { User } from "@prisma/client"
 import { betterAuth } from "better-auth"
@@ -19,8 +19,9 @@ export type UserProfile = {
   name: string
   email: string
   avatar?: string
-  storageUsed?: number
-  tokenBalance?: number
+  storageUsed: number
+  storageLimit: number
+  tokenBalance: number
 }
 
 export const auth = betterAuth({
@@ -91,13 +92,24 @@ export async function getSession() {
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const session = await getSession()
-  if (!session || !session.user) {
-    if (config.selfHosted.isEnabled) {
-      redirect(config.selfHosted.redirectUrl)
+  if (config.selfHosted.isEnabled) {
+    const user = await getSelfHostedUser()
+    if (user) {
+      return user
     } else {
-      redirect(config.auth.loginUrl)
+      redirect(config.selfHosted.redirectUrl)
     }
   }
-  return session.user as User
+
+  // Try to return user from session
+  const session = await getSession()
+  if (session && session.user) {
+    const user = await getUserById(session.user.id)
+    if (user) {
+      return user
+    }
+  }
+
+  // No session or user found
+  redirect(config.auth.loginUrl)
 }

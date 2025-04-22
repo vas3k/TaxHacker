@@ -34,10 +34,10 @@ export default function ProfileSettingsForm({ user }: { user: User }) {
       </form>
       <Card className="mt-4 p-4">
         <p>
-          Storage: {user.storageUsed ? formatBytes(user.storageUsed) : "N/A"} /{" "}
-          {user.storageLimit && user.storageLimit > 0 ? formatBytes(user.storageLimit) : "Unlimited"}
+          Storage Used: {formatBytes(user.storageUsed)} /{" "}
+          {user.storageLimit > 0 ? formatBytes(user.storageLimit) : "Unlimited"}
         </p>
-        <p>Tokens Balance: {user.tokenBalance ? formatNumber(user.tokenBalance) : "N/A"}</p>
+        <p>Tokens Balance: {formatNumber(user.tokenBalance)}</p>
       </Card>
     </div>
   )

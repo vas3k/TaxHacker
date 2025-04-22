@@ -21,6 +21,12 @@ export const createSelfHostedUser = cache(async () => {
   })
 })
 
+export const getUserById = cache(async (id: string) => {
+  return await prisma.user.findUnique({
+    where: { id },
+  })
+})
+
 export const getUserByEmail = cache(async (email: string) => {
   return await prisma.user.findUnique({
     where: { email },

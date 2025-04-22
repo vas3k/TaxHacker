@@ -64,7 +64,7 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
           <DropdownMenuItem asChild>
             <Link href="/settings/profile" className="flex items-center gap-2">
               <HardDrive className="h-4 w-4" />
-              Storage: {profile.storageUsed ? formatBytes(profile.storageUsed) : "N/A"}
+              Storage: {formatBytes(profile.storageUsed)}
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
