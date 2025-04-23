@@ -433,6 +433,25 @@ export default function LandingPage() {
             vas3k
           </Link>
         </div>
+
+        <section className="py-12 px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link href="/docs/terms" className="text-sm text-gray-600 hover:text-gray-900">
+                Terms of Service
+              </Link>
+              <Link href="/docs/privacy_policy" className="text-sm text-gray-600 hover:text-gray-900">
+                Privacy Policy
+              </Link>
+              <Link href="/docs/ai" className="text-sm text-gray-600 hover:text-gray-900">
+                AI Use Disclosure
+              </Link>
+              <Link href="/docs/cookie" className="text-sm text-gray-600 hover:text-gray-900">
+                Cookie Policy
+              </Link>
+            </div>
+          </div>
+        </section>
       </footer>
     </div>
   )
