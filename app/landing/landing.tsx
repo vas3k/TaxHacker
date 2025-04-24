@@ -1,5 +1,6 @@
 import { NewsletterForm } from "@/app/landing/newsletter"
 import { ColoredText } from "@/components/ui/colored-text"
+import config from "@/lib/config"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -437,6 +438,9 @@ export default function LandingPage() {
         <section className="py-12 px-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-wrap gap-4 justify-center">
+              <Link href={`mailto:${config.app.supportEmail}`} className="text-sm text-gray-600 hover:text-gray-900">
+                Contact Us
+              </Link>
               <Link href="/docs/terms" className="text-sm text-gray-600 hover:text-gray-900">
                 Terms of Service
               </Link>

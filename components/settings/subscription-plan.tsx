@@ -3,12 +3,14 @@ import { User } from "@prisma/client"
 import { PricingCard } from "@/components/auth/pricing-card"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import config from "@/lib/config"
 import { PLANS } from "@/lib/stripe"
 import { formatBytes, formatNumber } from "@/lib/utils"
 import { formatDate } from "date-fns"
 import { BrainCog, CalendarSync, HardDrive } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "../ui/badge"
+
 export function SubscriptionPlan({ user }: { user: User }) {
   const plan = PLANS[user.membershipPlan as keyof typeof PLANS] || PLANS.unlimited
 
@@ -44,13 +46,24 @@ export function SubscriptionPlan({ user }: { user: User }) {
               </span>
             </div>
           </div>
-          {user.stripeCustomerId && (
-            <div className="space-y-4 mt-6">
+
+          <div className="space-y-4 mt-6 text-center">
+            {user.stripeCustomerId && (
               <Button asChild className="w-full">
                 <Link href="/api/stripe/portal">Manage Subscription</Link>
               </Button>
-            </div>
-          )}
+            )}
+
+            {!user.stripeCustomerId && user.membershipExpiresAt && (
+              <Button asChild className="w-full">
+                <Link href="/cloud">Buy Subscription</Link>
+              </Button>
+            )}
+
+            <Link href={`mailto:${config.app.supportEmail}`} className="block text-sm text-muted-foreground">
+              Contact Us
+            </Link>
+          </div>
         </Card>
       </div>
     </div>

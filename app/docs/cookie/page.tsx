@@ -1,3 +1,5 @@
+import config from "@/lib/config"
+
 export default async function Cookie() {
   return (
     <div className="prose prose-slate max-w-none">
@@ -11,8 +13,8 @@ export default async function Cookie() {
         </a>
         <br />
         <strong className="text-slate-700">Contact:</strong>{" "}
-        <a href="mailto:me@vas3k.com" className="text-blue-600 hover:text-blue-800">
-          me@vas3k.com
+        <a href={`mailto:${config.app.supportEmail}`} className="text-blue-600 hover:text-blue-800">
+          {config.app.supportEmail}
         </a>
       </p>
 
@@ -132,8 +134,8 @@ export default async function Cookie() {
       <h2 className="text-2xl font-semibold text-slate-800 mb-4">6. Contact</h2>
       <p className="text-slate-700 mb-6 leading-relaxed">
         For questions about our cookie usage, please contact us at{" "}
-        <a href="mailto:me@vas3k.com" className="text-blue-600 hover:text-blue-800">
-          me@vas3k.com
+        <a href={`mailto:${config.app.supportEmail}`} className="text-blue-600 hover:text-blue-800">
+          {config.app.supportEmail}
         </a>
         .
       </p>

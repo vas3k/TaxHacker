@@ -1,3 +1,5 @@
+import config from "@/lib/config"
+
 export default async function Terms() {
   return (
     <div className="prose prose-slate max-w-none">
@@ -11,8 +13,8 @@ export default async function Terms() {
         </a>
         <br />
         <strong className="text-slate-700">Contact:</strong>{" "}
-        <a href="mailto:me@vas3k.com" className="text-blue-600 hover:text-blue-800">
-          me@vas3k.com
+        <a href={`mailto:${config.app.supportEmail}`} className="text-blue-600 hover:text-blue-800">
+          {config.app.supportEmail}
         </a>
       </p>
 

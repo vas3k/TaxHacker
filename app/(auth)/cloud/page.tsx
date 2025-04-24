@@ -33,7 +33,7 @@ export default async function ChoosePlanPage() {
           )}
         </CardContent>
         <div className="text-center text-muted-foreground">
-          <Link href="mailto:me@vas3k.com" className="hover:text-primary transition-colors">
+          <Link href={`mailto:${config.app.supportEmail}`} className="hover:text-primary transition-colors">
             Contact us for custom plans
           </Link>
         </div>

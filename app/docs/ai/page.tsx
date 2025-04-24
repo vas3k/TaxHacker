@@ -1,3 +1,5 @@
+import config from "@/lib/config"
+
 export default async function AI() {
   return (
     <div className="prose prose-slate max-w-none">
@@ -7,8 +9,8 @@ export default async function AI() {
         <strong className="text-slate-700">Effective Date</strong>: April 22, 2025
         <br />
         <strong className="text-slate-700">Contact Email</strong>:{" "}
-        <a href="mailto:me@vas3k.com" className="text-blue-600 hover:text-blue-800">
-          me@vas3k.com
+        <a href={`mailto:${config.app.supportEmail}`} className="text-blue-600 hover:text-blue-800">
+          {config.app.supportEmail}
         </a>
         <br />
         <strong className="text-slate-700">Domain</strong>:{" "}
