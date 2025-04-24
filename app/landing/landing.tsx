@@ -7,22 +7,22 @@ import Link from "next/link"
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="py-6 px-8 bg-white/80 backdrop-blur-md shadow-sm fixed w-full z-10">
+      <header className="py-6 px-4 md:px-8 bg-white/80 backdrop-blur-md shadow-sm fixed w-full z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo/256.png" alt="Logo" width={32} height={32} className="h-8" />
             <ColoredText className="text-2xl font-bold">TaxHacker</ColoredText>
           </Link>
-          <div className="flex gap-4">
+          <div className="flex gap-1 md:gap-4 text-xs md:text-sm">
             <Link
               href="/enter"
-              className="text-sm font-medium px-4 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition-all"
+              className="font-medium px-4 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition-all"
             >
               Log In
             </Link>
             <Link
               href="/cloud"
-              className="text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full hover:opacity-90 transition-all"
+              className="font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full hover:opacity-90 transition-all"
             >
               Sign Up
             </Link>
@@ -43,7 +43,7 @@ export default function LandingPage() {
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               A self-hosted accounting app crafted with love for freelancers and small businesses
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center text-sm md:text-lg">
               <Link
                 href="#start"
                 className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"

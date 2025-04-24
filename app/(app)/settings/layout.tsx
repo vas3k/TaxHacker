@@ -40,6 +40,10 @@ const settingsCategories = [
     title: "Backups",
     href: "/settings/backups",
   },
+  {
+    title: "Danger Zone",
+    href: "/settings/danger",
+  },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

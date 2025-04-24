@@ -19,7 +19,7 @@ export default async function ChoosePlanPage() {
           <ColoredText>TaxHacker Cloud Edition</ColoredText>
           <h2 className="mt-3 text-2xl font-semibold text-muted-foreground">Choose your plan</h2>
         </CardTitle>
-        <CardContent className="w-full">
+        <CardContent className="p-0 w-full">
           {config.auth.disableSignup ? (
             <div className="text-center text-md text-muted-foreground">
               Creating new account is disabled for now. Please use the self-hosted version.
