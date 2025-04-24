@@ -7,7 +7,6 @@ services:
     environment:
       - NODE_ENV=production
       - BASE_URL=https://taxhacker.app
-      - DISABLE_SIGNUP=true
       - SELF_HOSTED_MODE=false
       - UPLOAD_PATH=/app/data/uploads
     env_file:

@@ -29,6 +29,9 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "subscription",
+      automatic_tax: {
+        enabled: true,
+      },
       success_url: config.stripe.paymentSuccessUrl,
       cancel_url: config.stripe.paymentCancelUrl,
     })
