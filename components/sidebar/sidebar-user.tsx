@@ -51,16 +51,9 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
           <DropdownMenuItem asChild>
             <Link href="/settings/profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              Profile Settings
+              Profile & Plan
             </Link>
           </DropdownMenuItem>
-          {/* <DropdownMenuItem asChild>
-            <Link href="/settings/billing" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Your Subscription
-            </Link>
-          </DropdownMenuItem> */}
-
           <DropdownMenuItem asChild>
             <Link href="/settings/profile" className="flex items-center gap-2">
               <HardDrive className="h-4 w-4" />

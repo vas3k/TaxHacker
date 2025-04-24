@@ -34,8 +34,8 @@ export async function WelcomeWidget() {
         </CardTitle>
         <CardDescription className="mt-5">
           <p className="mb-3">
-            I&apos;m a little accountant app that tries to help you deal with endless receipts, checks and invoices with
-            (you guessed it) GenAI. Here&apos;s what I can do:
+            I&apos;m a little accountant app that helps you deal with endless receipts, checks and invoices with (you
+            guessed it) AI. Here&apos;s what I can do:
           </p>
           <ul className="mb-5 list-disc pl-5 space-y-1">
             <li>
@@ -50,7 +50,7 @@ export async function WelcomeWidget() {
             </li>
             <li>
               All <strong>LLM prompts are configurable</strong>: for fields, categories and projects. You can go to
-              settings and change them.
+              settings and change them however you want.
             </li>
             <li>
               I save data in a <strong>local SQLite database</strong> and can export it to CSV and ZIP archives.

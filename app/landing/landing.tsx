@@ -15,10 +15,16 @@ export default function LandingPage() {
           </Link>
           <div className="flex gap-4">
             <Link
-              href="#start"
+              href="/enter"
+              className="text-sm font-medium px-4 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition-all"
+            >
+              Log In
+            </Link>
+            <Link
+              href="/cloud"
               className="text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full hover:opacity-90 transition-all"
             >
-              Get Started
+              Sign Up
             </Link>
           </div>
         </div>
@@ -35,7 +41,7 @@ export default function LandingPage() {
               Let AI finally care about your taxes, scan your receipts and analyze your expenses
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              A self-hosted accounting app crafted with love for freelancers and small businesses.
+              A self-hosted accounting app crafted with love for freelancers and small businesses
             </p>
             <div className="flex gap-4 justify-center">
               <Link
@@ -237,42 +243,7 @@ export default function LandingPage() {
               Choose Your Version of TaxHacker
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Self-Hosted Version */}
-            <div className="bg-gradient-to-b from-white to-gray-50 p-8 rounded-2xl shadow-lg ring-1 ring-gray-100">
-              <div className="inline-block px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-sm font-medium mb-4">
-                Use Your Own Server
-              </div>
-              <h3 className="text-2xl font-semibold mb-4">
-                <ColoredText>Self-Hosted Edition</ColoredText>
-              </h3>
-              <ul className="space-y-3 text-gray-600 mb-8">
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Complete control over your data
-                </li>
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Use at your own infrastructure
-                </li>
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Free and open source
-                </li>
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Bring your own OpenAI keys
-                </li>
-              </ul>
-              <Link
-                href="https://github.com/vas3k/TaxHacker"
-                target="_blank"
-                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
-              >
-                Github + Docker Compose
-              </Link>
-            </div>
-
+          <div className="grid md:grid-cols-2 gap-16">
             {/* Cloud Version */}
             <div className="bg-gradient-to-b from-white to-gray-50 p-8 rounded-2xl shadow-lg ring-1 ring-gray-100">
               <div className="absolute top-4 right-4">
@@ -302,12 +273,47 @@ export default function LandingPage() {
                   Automatic updates and new features
                 </li>
               </ul>
-              <button
-                disabled
-                className="block w-full text-center px-6 py-3 bg-gray-100 text-gray-400 font-medium rounded-full cursor-not-allowed"
+              <Link
+                href="/cloud"
+                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
               >
-                Coming Soon
-              </button>
+                LET'S GO!
+              </Link>
+            </div>
+
+            {/* Self-Hosted Version */}
+            <div className="bg-gradient-to-b from-white to-gray-50 p-8 rounded-2xl shadow-lg ring-1 ring-gray-100">
+              <div className="inline-block px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-sm font-medium mb-4">
+                Use Your Own Server
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">
+                <ColoredText>Self-Hosted Edition</ColoredText>
+              </h3>
+              <ul className="space-y-3 text-gray-600 mb-8">
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Free and open source
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Complete control over your data
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Use at your own infrastructure
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Bring your own OpenAI keys
+                </li>
+              </ul>
+              <Link
+                href="https://github.com/vas3k/TaxHacker"
+                target="_blank"
+                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
+              >
+                Github + Docker Compose
+              </Link>
             </div>
           </div>
         </div>
@@ -431,7 +437,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto text-center text-sm text-gray-500">
           Made with ❤️ in Berlin by{" "}
           <Link href="https://github.com/vas3k" className="underline">
-            vas3k
+            @vas3k
           </Link>
         </div>
 
@@ -452,6 +458,13 @@ export default function LandingPage() {
               </Link>
               <Link href="/docs/cookie" className="text-sm text-gray-600 hover:text-gray-900">
                 Cookie Policy
+              </Link>
+              <Link
+                href="https://github.com/vas3k/TaxHacker"
+                target="_blank"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Source Code
               </Link>
             </div>
           </div>

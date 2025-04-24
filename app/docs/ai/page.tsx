@@ -45,7 +45,7 @@ export default async function AI() {
       </p>
       <ul className="list-disc pl-6 space-y-2 mb-6 text-gray-700">
         <li>
-          <strong>GPT-4o</strong> and <strong>GPT-4.1</strong>
+          <strong>gpt-4o-mini</strong> and <strong>gpt-4.1-mini</strong>
         </li>
       </ul>
       <p className="text-gray-700 leading-relaxed mb-6">
