@@ -10,7 +10,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@better-auth/stripe": "^1.2.5",
     "@fast-csv/format": "^5.0.2",
     "@fast-csv/parse": "^5.0.2",
     "@prisma/client": "^6.6.0",

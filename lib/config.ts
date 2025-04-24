@@ -36,6 +36,7 @@ const config = {
   },
   ai: {
     openaiApiKey: env.OPENAI_API_KEY,
+    modelName: "gpt-4o-mini",
   },
   auth: {
     secret: env.BETTER_AUTH_SECRET,
@@ -45,6 +46,8 @@ const config = {
   stripe: {
     secretKey: env.STRIPE_SECRET_KEY,
     webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+    paymentSuccessUrl: `${env.BASE_URL}/cloud/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    paymentCancelUrl: `${env.BASE_URL}/cloud`,
   },
   email: {
     apiKey: env.RESEND_API_KEY,

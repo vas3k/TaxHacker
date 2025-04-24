@@ -1,7 +1,7 @@
 "use server"
 
 import { ActionState } from "@/lib/actions"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import { getDirectorySize, getUserUploadsDirectory, isEnoughStorageToUploadFile, unsortedFilePath } from "@/lib/files"
 import { createFile } from "@/models/files"
 import { updateUser } from "@/models/users"
@@ -21,6 +21,13 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
   const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
   if (!isEnoughStorageToUploadFile(user, totalFileSize)) {
     return { success: false, error: `Insufficient storage to upload these files` }
+  }
+
+  if (isSubscriptionExpired(user)) {
+    return {
+      success: false,
+      error: "Your subscription has expired, please upgrade your account or buy new subscription plan",
+    }
   }
 
   // Process each file

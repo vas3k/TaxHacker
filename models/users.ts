@@ -5,6 +5,7 @@ import { cache } from "react"
 export const SELF_HOSTED_USER = {
   email: "taxhacker@localhost",
   name: "Self-Hosted Mode",
+  membershipPlan: "unlimited",
 }
 
 export const getSelfHostedUser = cache(async () => {
@@ -13,13 +14,21 @@ export const getSelfHostedUser = cache(async () => {
   })
 })
 
-export const createSelfHostedUser = cache(async () => {
+export const getOrCreateSelfHostedUser = cache(async () => {
   return await prisma.user.upsert({
     where: { email: SELF_HOSTED_USER.email },
     update: SELF_HOSTED_USER,
     create: SELF_HOSTED_USER,
   })
 })
+
+export function getOrCreateCloudUser(email: string, data: Prisma.UserCreateInput) {
+  return prisma.user.upsert({
+    where: { email },
+    update: data,
+    create: data,
+  })
+}
 
 export const getUserById = cache(async (id: string) => {
   return await prisma.user.findUnique({
@@ -30,6 +39,12 @@ export const getUserById = cache(async (id: string) => {
 export const getUserByEmail = cache(async (email: string) => {
   return await prisma.user.findUnique({
     where: { email },
+  })
+})
+
+export const getUserByStripeCustomerId = cache(async (customerId: string) => {
+  return await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
   })
 })
 

@@ -1,6 +1,7 @@
 "use server"
 
 import { ActionState } from "@/lib/actions"
+import config from "@/lib/config"
 import OpenAI from "openai"
 import { AnalyzeAttachment } from "./attachments"
 
@@ -24,7 +25,7 @@ export async function analyzeTransaction(
 
   try {
     const response = await openai.responses.create({
-      model: "gpt-4o-mini",
+      model: config.ai.modelName,
       input: [
         {
           role: "user",

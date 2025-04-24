@@ -7,8 +7,8 @@ import { authClient } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-export function LoginForm() {
-  const [email, setEmail] = useState("")
+export function LoginForm({ defaultEmail }: { defaultEmail?: string }) {
+  const [email, setEmail] = useState(defaultEmail || "")
   const [otp, setOtp] = useState("")
   const [isOtpSent, setIsOtpSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)

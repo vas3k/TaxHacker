@@ -1,4 +1,4 @@
-export default function Cookie() {
+export default async function Cookie() {
   return (
     <div className="prose prose-slate max-w-none">
       <h1 className="text-3xl font-bold mb-6 text-slate-900 border-b pb-2">Cookie Policy</h1>

@@ -2,7 +2,7 @@
 
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import {
   getDirectorySize,
   getTransactionFileUploadPath,
@@ -138,9 +138,17 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
 
     const userUploadsDirectory = await getUserUploadsDirectory(user)
 
+    // Check limits
     const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
     if (!isEnoughStorageToUploadFile(user, totalFileSize)) {
       return { success: false, error: `Insufficient storage to upload new files` }
+    }
+
+    if (isSubscriptionExpired(user)) {
+      return {
+        success: false,
+        error: "Your subscription has expired, please upgrade your account or buy new subscription plan",
+      }
     }
 
     const fileRecords = await Promise.all(

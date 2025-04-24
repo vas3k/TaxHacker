@@ -6,7 +6,7 @@ import { buildLLMPrompt } from "@/ai/prompt"
 import { fieldsToJsonSchema } from "@/ai/schema"
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import config from "@/lib/config"
 import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
@@ -36,8 +36,20 @@ export async function analyzeFileAction(
     return { success: false, error: "OpenAI API key is not set" }
   }
 
-  if (!config.selfHosted.isEnabled && user.tokenBalance < 0) {
-    return { success: false, error: "You used all your AI tokens, please upgrade your account" }
+  if (!config.selfHosted.isEnabled) {
+    if (user.aiBalance <= 0) {
+      return {
+        success: false,
+        error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
+      }
+    }
+
+    if (isSubscriptionExpired(user)) {
+      return {
+        success: false,
+        error: "Your subscription has expired, please upgrade your account or buy new subscription plan",
+      }
+    }
   }
 
   let attachments: AnalyzeAttachment[] = []
@@ -62,7 +74,7 @@ export async function analyzeFileAction(
   console.log("Analysis results:", results)
 
   if (results.data?.tokensUsed && results.data.tokensUsed > 0) {
-    await updateUser(user.id, { tokenBalance: { decrement: results.data.tokensUsed } })
+    await updateUser(user.id, { aiBalance: { decrement: 1 } })
   }
 
   return results

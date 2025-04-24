@@ -1,7 +1,5 @@
 import config from "@/lib/config"
-import { createUserDefaults } from "@/models/defaults"
 import { getSelfHostedUser, getUserByEmail, getUserById } from "@/models/users"
-import { stripe } from "@better-auth/stripe"
 import { User } from "@prisma/client"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
@@ -12,7 +10,6 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { prisma } from "./db"
 import { resend, sendOTPCodeEmail } from "./email"
-import { isStripeEnabled, stripeClient } from "./stripe"
 
 export type UserProfile = {
   id: string
@@ -21,7 +18,7 @@ export type UserProfile = {
   avatar?: string
   storageUsed: number
   storageLimit: number
-  tokenBalance: number
+  aiBalance: number
 }
 
 export const auth = betterAuth({
@@ -47,15 +44,6 @@ export const auth = betterAuth({
     generateId: false,
     cookiePrefix: "taxhacker",
   },
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          await createUserDefaults(user.id)
-        },
-      },
-    },
-  },
   plugins: [
     emailOTP({
       disableSignUp: config.auth.disableSignup,
@@ -69,13 +57,6 @@ export const auth = betterAuth({
         await sendOTPCodeEmail({ email, otp })
       },
     }),
-    isStripeEnabled(stripeClient)
-      ? stripe({
-          stripeClient: stripeClient!,
-          stripeWebhookSecret: config.stripe.webhookSecret,
-          createCustomerOnSignUp: true,
-        })
-      : { id: "stripe", endpoints: {} },
     nextCookies(), // make sure this is the last plugin in the array
   ],
 })
@@ -112,4 +93,11 @@ export async function getCurrentUser(): Promise<User> {
 
   // No session or user found
   redirect(config.auth.loginUrl)
+}
+
+export function isSubscriptionExpired(user: User) {
+  if (config.selfHosted.isEnabled) {
+    return false
+  }
+  return user.membershipExpiresAt && user.membershipExpiresAt < new Date()
 }

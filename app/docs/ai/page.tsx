@@ -1,4 +1,4 @@
-export default function AI() {
+export default async function AI() {
   return (
     <div className="prose prose-slate max-w-none">
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-6">AI Use Disclosure</h1>
@@ -18,8 +18,9 @@ export default function AI() {
       </p>
 
       <p className="text-gray-700 leading-relaxed mb-6">
-        At TaxHacker, we use artificial intelligence ("AI") to power the core features of our platform. This document
-        outlines how and why we use AI technologies, what data is processed, and how it may affect you as a user.
+        At TaxHacker, we use artificial intelligence (&quot;AI&quot;) to power the core features of our platform. This
+        document outlines how and why we use AI technologies, what data is processed, and how it may affect you as a
+        user.
       </p>
 
       <h2 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">1. Purpose of AI in TaxHacker</h2>
@@ -52,7 +53,7 @@ export default function AI() {
 
       <h2 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">3. Data Sent for AI Processing</h2>
       <p className="text-gray-700 leading-relaxed mb-3">
-        To deliver AI-powered features, we send selected user data to OpenAI's API, including:
+        To deliver AI-powered features, we send selected user data to OpenAI&apos;s API, including:
       </p>
       <ul className="list-disc pl-6 space-y-2 mb-6 text-gray-700">
         <li>Uploaded documents (e.g., receipts, invoices)</li>

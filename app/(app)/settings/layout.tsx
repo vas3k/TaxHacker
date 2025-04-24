@@ -13,7 +13,7 @@ const settingsCategories = [
     href: "/settings",
   },
   {
-    title: "My Profile",
+    title: "Profile & Plan",
     href: "/settings/profile",
   },
   {

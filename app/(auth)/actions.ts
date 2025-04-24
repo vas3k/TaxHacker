@@ -2,12 +2,12 @@
 
 import { createUserDefaults, isDatabaseEmpty } from "@/models/defaults"
 import { updateSettings } from "@/models/settings"
-import { createSelfHostedUser } from "@/models/users"
+import { getOrCreateSelfHostedUser } from "@/models/users"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 export async function selfHostedGetStartedAction(formData: FormData) {
-  const user = await createSelfHostedUser()
+  const user = await getOrCreateSelfHostedUser()
 
   if (await isDatabaseEmpty(user.id)) {
     await createUserDefaults(user.id)

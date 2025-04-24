@@ -7,7 +7,50 @@ export const stripeClient: Stripe | null = config.stripe.secretKey
     })
   : null
 
-// Type guard to check if Stripe is initialized
-export const isStripeEnabled = (client: Stripe | null): client is Stripe => {
-  return client !== null
+export type Plan = {
+  code: string
+  name: string
+  description: string
+  benefits: string[]
+  price: string
+  stripePriceId: string
+  limits: {
+    storage: number
+    ai: number
+  }
+  isAvailable: boolean
+}
+
+export const PLANS: Record<string, Plan> = {
+  unlimited: {
+    code: "unlimited",
+    name: "Unlimited",
+    description: "Special unlimited plan",
+    benefits: ["Unlimited storage", "Unlimited AI analysis", "Unlimited everything"],
+    price: "",
+    stripePriceId: "",
+    limits: {
+      storage: -1,
+      ai: -1,
+    },
+    isAvailable: false,
+  },
+  early: {
+    code: "early",
+    name: "Early Adopter",
+    description: "Special plan for our early users",
+    benefits: [
+      "512 Mb of storage",
+      "1000 AI file analysis",
+      "Unlimited transactions",
+      "Unlimited fields, categories and projects",
+    ],
+    price: "€50/year",
+    stripePriceId: "price_1RGzKUPKOUEUzVB3hVyo2n57",
+    limits: {
+      storage: 512 * 1024 * 1024,
+      ai: 1000,
+    },
+    isAvailable: true,
+  },
 }

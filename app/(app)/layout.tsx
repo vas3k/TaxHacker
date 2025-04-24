@@ -1,9 +1,10 @@
+import { SubscriptionExpired } from "@/components/auth/subscription-expired"
 import ScreenDropArea from "@/components/files/screen-drop-area"
 import MobileMenu from "@/components/sidebar/mobile-menu"
 import { AppSidebar } from "@/components/sidebar/sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import config from "@/lib/config"
 import { getUnsortedFilesCount } from "@/models/files"
 import type { Metadata, Viewport } from "next"
@@ -39,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     avatar: user.avatar || undefined,
     storageUsed: user.storageUsed || 0,
     storageLimit: user.storageLimit || -1,
-    tokenBalance: user.tokenBalance || 0,
+    aiBalance: user.aiBalance || 0,
   }
 
   return (
@@ -52,7 +53,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             unsortedFilesCount={unsortedFilesCount}
             isSelfHosted={config.selfHosted.isEnabled}
           />
-          <SidebarInset className="w-full h-full mt-[60px] md:mt-0 overflow-auto">{children}</SidebarInset>
+          <SidebarInset className="w-full h-full mt-[60px] md:mt-0 overflow-auto">
+            {isSubscriptionExpired(user) && <SubscriptionExpired />}
+            {children}
+          </SidebarInset>
         </SidebarProvider>
         <Toaster />
       </ScreenDropArea>

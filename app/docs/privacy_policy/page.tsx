@@ -1,4 +1,4 @@
-export default function PrivacyPolicy() {
+export default async function PrivacyPolicy() {
   return (
     <div className="prose prose-slate max-w-none">
       <h2 className="text-3xl font-bold mb-6 text-slate-900 border-b pb-2">
@@ -25,8 +25,8 @@ export default function PrivacyPolicy() {
       </p>
 
       <p className="text-slate-700 mb-6 leading-relaxed">
-        TaxHacker ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy describes how we
-        collect, use, store, and protect your personal data when you use our services at{" "}
+        TaxHacker (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is committed to protecting your privacy. This
+        Privacy Policy describes how we collect, use, store, and protect your personal data when you use our services at{" "}
         <a href="https://taxhacker.app" className="text-blue-600 hover:text-blue-800">
           taxhacker.app
         </a>
@@ -202,7 +202,7 @@ export default function PrivacyPolicy() {
       </h3>
       <p className="text-slate-700 mb-6 leading-relaxed">
         We may update this Privacy Policy from time to time. Any changes will be published on this page with an updated
-        "Effective Date." We encourage you to review the policy periodically.
+        &quot;Effective Date.&quot; We encourage you to review the policy periodically.
       </p>
     </div>
   )

@@ -24,12 +24,13 @@ model User {
   transactions        Transaction[]
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @updatedAt @map("updated_at")
+  stripeCustomerId    String?       @map("stripe_customer_id")
   membershipPlan      String?       @map("membership_plan")
   membershipExpiresAt DateTime?     @map("membership_expires_at")
   emailVerified       Boolean       @default(false) @map("is_email_verified")
   storageUsed         Int           @default(0) @map("storage_used")
   storageLimit        Int           @default(-1) @map("storage_limit")
-  tokenBalance        Int           @default(0) @map("token_balance")
+  aiBalance           Int           @default(0) @map("ai_balance")
   accounts            Account[]
   sessions            Session[]
 

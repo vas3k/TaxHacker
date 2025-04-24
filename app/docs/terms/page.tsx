@@ -1,4 +1,4 @@
-export default function Terms() {
+export default async function Terms() {
   return (
     <div className="prose prose-slate max-w-none">
       <h1 className="text-3xl font-bold mb-6 text-slate-900 border-b pb-2">Terms of Service</h1>
@@ -17,9 +17,9 @@ export default function Terms() {
       </p>
 
       <p className="text-slate-700 mb-6 leading-relaxed">
-        These Terms of Service ("Terms") govern your access to and use of TaxHacker, an automated invoice analyzer and
-        expense tracker powered by artificial intelligence (AI). By accessing or using our services, you agree to be
-        bound by these Terms.
+        These Terms of Service (&quot;Terms&quot;) govern your access to and use of TaxHacker, an automated invoice
+        analyzer and expense tracker powered by artificial intelligence (AI). By accessing or using our services, you
+        agree to be bound by these Terms.
       </p>
 
       <h2 className="text-2xl font-semibold text-slate-800 mb-4">1. Service Overview</h2>
@@ -118,7 +118,8 @@ export default function Terms() {
       <h2 className="text-2xl font-semibold text-slate-800 mb-4">7. Limitations of Liability</h2>
       <ul className="list-disc pl-6 mb-6 space-y-2 text-slate-700">
         <li>
-          TaxHacker is provided <strong className="text-slate-800">"as is"</strong>, without warranties of any kind.
+          TaxHacker is provided <strong className="text-slate-800">&quot;as is&quot;</strong>, without warranties of any
+          kind.
         </li>
         <li>
           We make <strong className="text-slate-800">no guarantees</strong> about the accuracy of AI-generated outputs
