@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       automatic_tax: {
         enabled: true,
       },
+      allow_promotion_codes: true,
       success_url: config.stripe.paymentSuccessUrl,
       cancel_url: config.stripe.paymentCancelUrl,
     })
