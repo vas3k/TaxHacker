@@ -3,8 +3,9 @@ import { z } from "zod"
 const envSchema = z.object({
   BASE_URL: z.string().url().default("http://localhost:7331"),
   PORT: z.string().default("7331"),
-  SELF_HOSTED_MODE: z.enum(["true", "false"]).default("false"),
+  SELF_HOSTED_MODE: z.enum(["true", "false"]).default("true"),
   OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL_NAME: z.string().default("gpt-4o-mini"),
   BETTER_AUTH_SECRET: z
     .string()
     .min(16, "Auth secret must be at least 16 characters")
@@ -22,7 +23,7 @@ const env = envSchema.parse(process.env)
 const config = {
   app: {
     title: "TaxHacker",
-    description: "Your personal AI helper for taxes",
+    description: "Your personal AI accountant",
     version: process.env.npm_package_version || "0.0.1",
     baseURL: env.BASE_URL || `http://localhost:${env.PORT || "7331"}`,
     supportEmail: "me@vas3k.com",
@@ -37,7 +38,7 @@ const config = {
   },
   ai: {
     openaiApiKey: env.OPENAI_API_KEY,
-    modelName: "gpt-4o-mini",
+    modelName: env.OPENAI_MODEL_NAME,
   },
   auth: {
     secret: env.BETTER_AUTH_SECRET,

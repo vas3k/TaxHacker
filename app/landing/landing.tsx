@@ -244,6 +244,41 @@ export default function LandingPage() {
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-16">
+            {/* Self-Hosted Version */}
+            <div className="bg-gradient-to-b from-white to-gray-50 p-8 rounded-2xl shadow-lg ring-1 ring-gray-100">
+              <div className="inline-block px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-sm font-medium mb-4">
+                Use Your Own Server
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">
+                <ColoredText>Self-Hosted Edition</ColoredText>
+              </h3>
+              <ul className="space-y-3 text-gray-600 mb-8">
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Free and open source
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Complete control over your data
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Use at your own infrastructure
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-2">✓</span>
+                  Bring your own OpenAI keys
+                </li>
+              </ul>
+              <Link
+                href="https://github.com/vas3k/TaxHacker"
+                target="_blank"
+                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
+              >
+                Github + Docker Compose
+              </Link>
+            </div>
+
             {/* Cloud Version */}
             <div className="bg-gradient-to-b from-white to-gray-50 p-8 rounded-2xl shadow-lg ring-1 ring-gray-100">
               <div className="absolute top-4 right-4">
@@ -278,41 +313,6 @@ export default function LandingPage() {
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
               >
                 LET'S GO!
-              </Link>
-            </div>
-
-            {/* Self-Hosted Version */}
-            <div className="bg-gradient-to-b from-white to-gray-50 p-8 rounded-2xl shadow-lg ring-1 ring-gray-100">
-              <div className="inline-block px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-sm font-medium mb-4">
-                Use Your Own Server
-              </div>
-              <h3 className="text-2xl font-semibold mb-4">
-                <ColoredText>Self-Hosted Edition</ColoredText>
-              </h3>
-              <ul className="space-y-3 text-gray-600 mb-8">
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Free and open source
-                </li>
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Complete control over your data
-                </li>
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Use at your own infrastructure
-                </li>
-                <li className="flex items-center">
-                  <span className="text-blue-600 mr-2">✓</span>
-                  Bring your own OpenAI keys
-                </li>
-              </ul>
-              <Link
-                href="https://github.com/vas3k/TaxHacker"
-                target="_blank"
-                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
-              >
-                Github + Docker Compose
               </Link>
             </div>
           </div>

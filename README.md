@@ -145,14 +145,15 @@ Configure TaxHacker to suit your needs with these environment variables:
 
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
-| `PORT` | No | Port to run the app on | `7331` (default) |
 | `UPLOAD_PATH` | Yes | Local directory for uploading files | `./data/uploads` |
 | `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://user@localhost:5432/taxhacker` |
-| `SELF_HOSTED_MODE` | No | Set it to "true" if you're self-hosting the app: it enables auto-login, custom API keys, and more | `false` |
+| `PORT` | No | Port to run the app on | `7331` (default) |
+| `BASE_URL` | No | Base URL for the application | `http://localhost:7331` |
+| `SELF_HOSTED_MODE` | No | Set it to "true" if you're self-hosting the app: it enables auto-login, custom API keys, and more | `true` |
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
+| `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (min 16 characters) | `random-secret-key` |
+| `OPENAI_MODEL_NAME` | No | OpenAI model to use for AI features | `gpt-4o-mini` |
 | `OPENAI_API_KEY` | No | OpenAI API key for AI features. In self-hosted mode you can set it up in settings too. | `sk-...` |
-| `RESEND_API_KEY` | No | Resend API key for email notifications | `re_...` |
-| `RESEND_FROM_EMAIL` | No | Email address to send from | `TaxHacker <hello@taxhacker.app>` |
 
 
 ## ⌨️ Local Development
