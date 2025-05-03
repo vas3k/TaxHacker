@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 7331 --turbopack",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "prisma migrate deploy && next start",
     "lint": "next lint"
   },
