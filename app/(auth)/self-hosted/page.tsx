@@ -5,10 +5,8 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { ColoredText } from "@/components/ui/colored-text"
 import config from "@/lib/config"
 import { DEFAULT_CURRENCIES, DEFAULT_SETTINGS } from "@/models/defaults"
-import { getSelfHostedUser } from "@/models/users"
 import { ShieldAlert } from "lucide-react"
 import Image from "next/image"
-import { redirect } from "next/navigation"
 import { selfHostedGetStartedAction } from "../actions"
 
 export default async function SelfHostedWelcomePage() {
@@ -30,10 +28,10 @@ export default async function SelfHostedWelcomePage() {
     )
   }
 
-  const user = await getSelfHostedUser()
-  if (user) {
-    redirect(config.selfHosted.redirectUrl)
-  }
+  // const user = await getSelfHostedUser()
+  // if (user) {
+  //   redirect(config.selfHosted.redirectUrl)
+  // }
 
   return (
     <Card className="w-full max-w-xl mx-auto p-8 flex flex-col items-center justify-center gap-4">
