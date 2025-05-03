@@ -30,6 +30,7 @@ FROM base
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
+    ca-certificates \
     ghostscript \
     graphicsmagick \
     openssl \

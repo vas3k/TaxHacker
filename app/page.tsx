@@ -14,3 +14,5 @@ export default async function Home() {
 
   redirect("/dashboard")
 }
+
+export const dynamic = "force-dynamic"
