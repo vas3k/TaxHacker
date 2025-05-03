@@ -323,9 +323,6 @@ export default function LandingPage() {
       <section className="py-20 px-8 bg-gradient-to-b from-white to-gray-50 mt-28">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-block px-4 py-2 rounded-full bg-purple-50 text-purple-600 text-sm font-medium mb-6">
-              🚀 Under Active Development
-            </div>
             <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
               Upcoming Features
             </h2>

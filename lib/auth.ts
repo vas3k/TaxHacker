@@ -1,5 +1,5 @@
 import config from "@/lib/config"
-import { getSelfHostedUser, getUserByEmail, getUserById } from "@/models/users"
+import { getSelfHostedUser, getUserByEmail, getUserById, SELF_HOSTED_USER } from "@/models/users"
 import { User } from "@prisma/client"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
@@ -100,4 +100,11 @@ export function isSubscriptionExpired(user: User) {
     return false
   }
   return user.membershipExpiresAt && user.membershipExpiresAt < new Date()
+}
+
+export function isAiBalanceExhausted(user: User) {
+  if (config.selfHosted.isEnabled || user.membershipPlan === SELF_HOSTED_USER.membershipPlan) {
+    return false
+  }
+  return user.aiBalance <= 0
 }
