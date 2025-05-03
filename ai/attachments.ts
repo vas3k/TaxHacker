@@ -1,6 +1,6 @@
 import { fileExists, fullPathForFile } from "@/lib/files"
 import { generateFilePreviews } from "@/lib/previews/generate"
-import { File, User } from "@prisma/client"
+import { File, User } from "@/prisma/client"
 import fs from "fs/promises"
 
 const MAX_PAGES_TO_ANALYZE = 4

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { isFiltered, useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { TransactionFilters } from "@/models/transactions"
-import { Category, Field, Project } from "@prisma/client"
+import { Category, Field, Project } from "@/prisma/client"
 import { X } from "lucide-react"
 
 export function TransactionSearchAndFilters({

@@ -1,7 +1,7 @@
 "use server"
 
 import { fileExists, getUserPreviewsDirectory } from "@/lib/files"
-import { User } from "@prisma/client"
+import { User } from "@/prisma/client"
 import fs from "fs/promises"
 import path from "path"
 import { fromPath } from "pdf2pic"

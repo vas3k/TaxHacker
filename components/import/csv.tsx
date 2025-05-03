@@ -3,7 +3,7 @@
 import { parseCSVAction, saveTransactionsAction } from "@/app/(app)/import/csv/actions"
 import { FormError } from "@/components/forms/error"
 import { Button } from "@/components/ui/button"
-import { Field } from "@prisma/client"
+import { Field } from "@/prisma/client"
 import { Loader2, Play, Upload } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useState } from "react"

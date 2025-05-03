@@ -4,8 +4,8 @@ import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { EXPORT_AND_IMPORT_FIELD_MAP } from "@/models/export_and_import"
 import { createTransaction } from "@/models/transactions"
+import { Transaction } from "@/prisma/client"
 import { parse } from "@fast-csv/parse"
-import { Transaction } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 
 export async function parseCSVAction(

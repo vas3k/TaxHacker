@@ -1,4 +1,4 @@
-import { Category, Field, Project } from "@prisma/client"
+import { Category, Field, Project } from "@/prisma/client"
 
 export function buildLLMPrompt(
   promptTemplate: string,

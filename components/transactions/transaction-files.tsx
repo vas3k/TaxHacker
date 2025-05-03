@@ -5,7 +5,7 @@ import { FilePreview } from "@/components/files/preview"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import config from "@/lib/config"
-import { File, Transaction } from "@prisma/client"
+import { File, Transaction } from "@/prisma/client"
 import { Loader2, Upload, X } from "lucide-react"
 import { useState } from "react"
 

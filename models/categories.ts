@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db"
 import { codeFromName } from "@/lib/utils"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/prisma/client"
 import { cache } from "react"
 
 export type CategoryData = {

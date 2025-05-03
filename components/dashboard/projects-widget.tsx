@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
 import { ProjectStats } from "@/models/stats"
-import { Project } from "@prisma/client"
+import { Project } from "@/prisma/client"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 

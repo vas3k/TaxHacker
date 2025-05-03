@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { useTransactionFilters } from "@/hooks/use-transaction-filters"
-import { Category, Field, Project } from "@prisma/client"
+import { Category, Field, Project } from "@/prisma/client"
 import { formatDate } from "date-fns"
 import { useRouter } from "next/navigation"
 import { useState } from "react"

@@ -1,7 +1,7 @@
 "use client"
 
 import { formatBytes } from "@/lib/utils"
-import { File } from "@prisma/client"
+import { File } from "@/prisma/client"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"

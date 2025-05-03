@@ -3,7 +3,7 @@ import { CrudTable } from "@/components/settings/crud"
 import { getCurrentUser } from "@/lib/auth"
 import { randomHexColor } from "@/lib/utils"
 import { getCategories } from "@/models/categories"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/prisma/client"
 
 export default async function CategoriesSettingsPage() {
   const user = await getCurrentUser()

@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { File } from "@prisma/client"
+import { File } from "@/prisma/client"
 import { Cake, FilePlus } from "lucide-react"
 import Link from "next/link"
 

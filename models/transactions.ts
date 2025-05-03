@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db"
-import { Field, Prisma, Transaction } from "@prisma/client"
+import { Field, Prisma, Transaction } from "@/prisma/client"
 import { cache } from "react"
 import { getFields } from "./fields"
 import { deleteFile } from "./files"

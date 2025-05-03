@@ -47,6 +47,7 @@ yarn-error.log*
 next-env.d.ts
 
 # databases
+prisma/client
 pgdata
 *.db
 *.sqlite

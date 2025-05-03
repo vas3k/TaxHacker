@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db"
 import { calcTotalPerCurrency } from "@/lib/stats"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/prisma/client"
 import { cache } from "react"
 import { TransactionFilters } from "./transactions"
 

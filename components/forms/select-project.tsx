@@ -1,4 +1,4 @@
-import { Project } from "@prisma/client"
+import { Project } from "@/prisma/client"
 import { SelectProps } from "@radix-ui/react-select"
 import { FormSelect } from "./simple"
 

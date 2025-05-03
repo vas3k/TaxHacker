@@ -17,7 +17,7 @@ import { createField, deleteField, updateField } from "@/models/fields"
 import { createProject, deleteProject, updateProject } from "@/models/projects"
 import { SettingsMap, updateSettings } from "@/models/settings"
 import { updateUser } from "@/models/users"
-import { Prisma, User } from "@prisma/client"
+import { Prisma, User } from "@/prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 

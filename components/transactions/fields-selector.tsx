@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Field } from "@prisma/client"
+import { Field } from "@/prisma/client"
 import { ColumnsIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"

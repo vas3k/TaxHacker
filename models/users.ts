@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/prisma/client"
 import { cache } from "react"
 
 export const SELF_HOSTED_USER = {

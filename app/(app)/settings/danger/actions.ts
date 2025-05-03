@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db"
 import { DEFAULT_CATEGORIES, DEFAULT_CURRENCIES, DEFAULT_FIELDS, DEFAULT_SETTINGS } from "@/models/defaults"
-import { User } from "@prisma/client"
+import { User } from "@/prisma/client"
 import { redirect } from "next/navigation"
 
 export async function resetLLMSettings(user: User) {

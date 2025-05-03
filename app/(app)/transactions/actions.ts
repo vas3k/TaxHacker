@@ -20,7 +20,7 @@ import {
   updateTransactionFiles,
 } from "@/models/transactions"
 import { updateUser } from "@/models/users"
-import { Transaction } from "@prisma/client"
+import { Transaction } from "@/prisma/client"
 import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"

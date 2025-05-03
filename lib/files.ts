@@ -1,4 +1,4 @@
-import { File, Transaction, User } from "@prisma/client"
+import { File, Transaction, User } from "@/prisma/client"
 import { access, constants, readdir, stat } from "fs/promises"
 import path from "path"
 import config from "./config"
