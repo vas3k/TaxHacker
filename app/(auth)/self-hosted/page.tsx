@@ -77,3 +77,5 @@ export default async function SelfHostedWelcomePage() {
     </Card>
   )
 }
+
+export const dynamic = "force-dynamic"
