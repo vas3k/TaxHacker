@@ -3,6 +3,7 @@ FROM node:23-slim AS base
 # Default environment variables
 ENV PORT=7331
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://localhost:5432/taxhacker"
 
 # Build stage
 FROM base AS builder
