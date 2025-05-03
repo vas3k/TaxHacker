@@ -9,6 +9,10 @@ export const SELF_HOSTED_USER = {
 }
 
 export const getSelfHostedUser = cache(async () => {
+  if (!process.env.DATABASE_URL) {
+    return null // fix for CI, do not remove
+  }
+
   return await prisma.user.findFirst({
     where: { email: SELF_HOSTED_USER.email },
   })
