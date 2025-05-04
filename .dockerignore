@@ -1,4 +1,9 @@
-data
-docs
 .git
+.github
+node_modules
 .next
+*.log
+.env*
+.DS_Store
+upload
+data
