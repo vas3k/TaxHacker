@@ -4,14 +4,16 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
 import { authClient } from "@/lib/auth-client"
+import { PLANS } from "@/lib/stripe"
 import { formatBytes } from "@/lib/utils"
-import { HardDrive, LogOut, MoreVertical, User } from "lucide-react"
+import { CreditCard, LogOut, MoreVertical, Settings, Sparkles, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -40,26 +42,50 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-        side={"top"}
+        side="top"
         align="center"
         sideOffset={4}
       >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={profile.avatar} alt={profile.name || ""} />
+              <AvatarFallback className="rounded-lg">
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{profile.name || profile.email}</span>
+              <span className="truncate text-xs">{profile.email}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {/* <DropdownMenuItem>
-            <ThemeToggle />
-          </DropdownMenuItem> */}
           <DropdownMenuItem asChild>
             <Link href="/settings/profile" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Profile & Plan
+              <Sparkles />
+              <span className="truncate">{PLANS[profile.membershipPlan as keyof typeof PLANS].name}</span>
+              <span className="ml-auto text-xs text-muted-foreground">{formatBytes(profile.storageUsed)} used</span>
             </Link>
           </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/settings/profile" className="flex items-center gap-2">
-              <HardDrive className="h-4 w-4" />
-              Storage: {formatBytes(profile.storageUsed)}
+            <Link href="/settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
             </Link>
           </DropdownMenuItem>
+          {!isSelfHosted && (
+            <DropdownMenuItem asChild>
+              <Link href="/api/stripe/portal" className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Billing
+              </Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         {!isSelfHosted && (
           <>

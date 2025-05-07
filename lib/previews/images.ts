@@ -1,27 +1,25 @@
 "use server"
 
-import { fileExists, getUserPreviewsDirectory } from "@/lib/files"
+import { fileExists, getUserPreviewsDirectory, safePathJoin } from "@/lib/files"
 import { User } from "@/prisma/client"
 import fs from "fs/promises"
 import path from "path"
 import sharp from "sharp"
-
-const MAX_WIDTH = 1800
-const MAX_HEIGHT = 1800
-const QUALITY = 90
+import config from "../config"
 
 export async function resizeImage(
   user: User,
   origFilePath: string,
-  maxWidth: number = MAX_WIDTH,
-  maxHeight: number = MAX_HEIGHT
+  maxWidth: number = config.upload.images.maxWidth,
+  maxHeight: number = config.upload.images.maxHeight,
+  quality: number = config.upload.images.quality
 ): Promise<{ contentType: string; resizedPath: string }> {
   try {
-    const userPreviewsDirectory = await getUserPreviewsDirectory(user)
+    const userPreviewsDirectory = getUserPreviewsDirectory(user)
     await fs.mkdir(userPreviewsDirectory, { recursive: true })
 
     const basename = path.basename(origFilePath, path.extname(origFilePath))
-    const outputPath = path.join(userPreviewsDirectory, `${basename}.webp`)
+    const outputPath = safePathJoin(userPreviewsDirectory, `${basename}.webp`)
 
     if (await fileExists(outputPath)) {
       const metadata = await sharp(outputPath).metadata()
@@ -37,7 +35,7 @@ export async function resizeImage(
         fit: "inside",
         withoutEnlargement: true,
       })
-      .webp({ quality: QUALITY })
+      .webp({ quality: quality })
       .toFile(outputPath)
 
     return {

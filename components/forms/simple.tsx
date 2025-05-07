@@ -10,11 +10,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { SelectProps } from "@radix-ui/react-select"
 import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { InputHTMLAttributes, TextareaHTMLAttributes, useState } from "react"
+import { CalendarIcon, Upload } from "lucide-react"
+import { InputHTMLAttributes, TextareaHTMLAttributes, useEffect, useRef, useState } from "react"
 
 type FormInputProps = InputHTMLAttributes<HTMLInputElement> & {
-  title: string
+  title?: string
   hideIfEmpty?: boolean
 }
 
@@ -25,40 +25,57 @@ export function FormInput({ title, hideIfEmpty = false, ...props }: FormInputPro
 
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{title}</span>
+      {title && <span className="text-sm font-medium">{title}</span>}
       <Input {...props} className={cn("bg-background", props.className)} />
     </label>
   )
 }
 
 type FormTextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  title: string
+  title?: string
   hideIfEmpty?: boolean
 }
 
 export function FormTextarea({ title, hideIfEmpty = false, ...props }: FormTextareaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const resize = () => {
+      textarea.style.height = "auto"
+      textarea.style.height = `${textarea.scrollHeight + 5}px`
+    }
+
+    resize() // initial resize
+
+    textarea.addEventListener("input", resize)
+    return () => textarea.removeEventListener("input", resize)
+  }, [props.value, props.defaultValue])
+
   if (hideIfEmpty && (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value) {
     return null
   }
 
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{title}</span>
-      <Textarea {...props} className={cn("bg-background", props.className)} />
+      {title && <span className="text-sm font-medium">{title}</span>}
+      <Textarea ref={textareaRef} {...props} className={cn("bg-background", props.className)} />
     </label>
   )
 }
 
 export const FormSelect = ({
-  title,
   items,
+  title,
   emptyValue,
   placeholder,
   hideIfEmpty = false,
   ...props
 }: {
-  title: string
   items: Array<{ code: string; name: string; color?: string; badge?: string }>
+  title?: string
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean
@@ -69,7 +86,7 @@ export const FormSelect = ({
 
   return (
     <span className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{title}</span>
+      {title && <span className="text-sm font-medium">{title}</span>}
       <Select {...props}>
         <SelectTrigger className="w-full min-w-[150px] bg-background">
           <SelectValue placeholder={placeholder} />
@@ -94,14 +111,14 @@ export const FormSelect = ({
 }
 
 export const FormDate = ({
-  title,
   name,
+  title,
   placeholder = "Select date",
   defaultValue,
   ...props
 }: {
-  title: string
   name: string
+  title?: string
   placeholder?: string
   defaultValue?: Date
 }) => {
@@ -126,7 +143,7 @@ export const FormDate = ({
 
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{title}</span>
+      {title && <span className="text-sm font-medium">{title}</span>}
       <div className="relative">
         <Popover>
           <PopoverTrigger asChild>
@@ -153,6 +170,64 @@ export const FormDate = ({
             <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus {...props} />
           </PopoverContent>
         </Popover>
+      </div>
+    </label>
+  )
+}
+
+export const FormAvatar = ({
+  title,
+  defaultValue,
+  className,
+  onChange,
+  ...props
+}: {
+  title?: string
+  defaultValue?: string
+  className?: string
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+} & InputHTMLAttributes<HTMLInputElement>) => {
+  const [preview, setPreview] = useState<string | null>(defaultValue || null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+
+    // Call the original onChange if provided
+    if (onChange) {
+      onChange(e)
+    }
+  }
+
+  return (
+    <label className="inline-block">
+      {title && <span className="text-sm font-medium">{title}</span>}
+      <div className={cn("relative group", className)}>
+        <div className="absolute inset-0 flex items-center justify-center bg-background rounded-lg overflow-hidden">
+          {preview ? (
+            <img src={preview} alt="Avatar preview" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground">No image</span>
+            </div>
+          )}
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+          <input
+            type="file"
+            accept="image/*"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={handleFileChange}
+            {...props}
+          />
+          <Upload className="z-10 bg-white/30 text-white p-1 rounded-sm h-7 w-8 cursor-pointer" />
+        </div>
       </div>
     </label>
   )

@@ -8,6 +8,7 @@ import {
   getTransactionFileUploadPath,
   getUserUploadsDirectory,
   isEnoughStorageToUploadFile,
+  safePathJoin,
 } from "@/lib/files"
 import { updateField } from "@/models/fields"
 import { createFile, deleteFile } from "@/models/files"
@@ -114,7 +115,7 @@ export async function deleteTransactionFileAction(
   await deleteFile(fileId, user.id)
 
   // Update user storage used
-  const storageUsed = await getDirectorySize(await getUserUploadsDirectory(user))
+  const storageUsed = await getDirectorySize(getUserUploadsDirectory(user))
   await updateUser(user.id, { storageUsed })
 
   revalidatePath(`/transactions/${transactionId}`)
@@ -136,7 +137,7 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
       return { success: false, error: "Transaction not found" }
     }
 
-    const userUploadsDirectory = await getUserUploadsDirectory(user)
+    const userUploadsDirectory = getUserUploadsDirectory(user)
 
     // Check limits
     const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
@@ -154,16 +155,12 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
     const fileRecords = await Promise.all(
       files.map(async (file) => {
         const fileUuid = randomUUID()
-        const relativeFilePath = await getTransactionFileUploadPath(fileUuid, file.name, transaction)
+        const relativeFilePath = getTransactionFileUploadPath(fileUuid, file.name, transaction)
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        const fullFilePath = path.join(userUploadsDirectory, relativeFilePath)
+        const fullFilePath = safePathJoin(userUploadsDirectory, relativeFilePath)
         await mkdir(path.dirname(fullFilePath), { recursive: true })
-
-        console.log("userUploadsDirectory", userUploadsDirectory)
-        console.log("relativeFilePath", relativeFilePath)
-        console.log("fullFilePath", fullFilePath)
 
         await writeFile(fullFilePath, buffer)
 
@@ -194,7 +191,7 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
     )
 
     // Update user storage used
-    const storageUsed = await getDirectorySize(await getUserUploadsDirectory(user))
+    const storageUsed = await getDirectorySize(getUserUploadsDirectory(user))
     await updateUser(user.id, { storageUsed })
 
     revalidatePath(`/transactions/${transactionId}`)

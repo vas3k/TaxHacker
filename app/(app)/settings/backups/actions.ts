@@ -3,7 +3,7 @@
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
-import { getUserUploadsDirectory } from "@/lib/files"
+import { getUserUploadsDirectory, safePathJoin } from "@/lib/files"
 import { MODEL_BACKUP, modelFromJSON } from "@/models/backups"
 import fs from "fs/promises"
 import JSZip from "jszip"
@@ -22,7 +22,7 @@ export async function restoreBackupAction(
   formData: FormData
 ): Promise<ActionState<BackupRestoreResult>> {
   const user = await getCurrentUser()
-  const userUploadsDirectory = await getUserUploadsDirectory(user)
+  const userUploadsDirectory = getUserUploadsDirectory(user)
   const file = formData.get("file") as File
 
   if (!file || file.size === 0) {
@@ -98,7 +98,7 @@ export async function restoreBackupAction(
         },
       })
 
-      const userUploadsDirectory = await getUserUploadsDirectory(user)
+      const userUploadsDirectory = getUserUploadsDirectory(user)
 
       for (const file of files) {
         const filePathWithoutPrefix = path.normalize(file.path.replace(/^.*\/uploads\//, ""))
@@ -110,7 +110,7 @@ export async function restoreBackupAction(
         }
 
         const fileContents = await zipFile.async("nodebuffer")
-        const fullFilePath = path.join(userUploadsDirectory, filePathWithoutPrefix)
+        const fullFilePath = safePathJoin(userUploadsDirectory, filePathWithoutPrefix)
         if (!fullFilePath.startsWith(path.normalize(userUploadsDirectory))) {
           console.error(`Attempted path traversal detected for file ${file.path}`)
           continue

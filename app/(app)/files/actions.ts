@@ -2,7 +2,13 @@
 
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
-import { getDirectorySize, getUserUploadsDirectory, isEnoughStorageToUploadFile, unsortedFilePath } from "@/lib/files"
+import {
+  getDirectorySize,
+  getUserUploadsDirectory,
+  isEnoughStorageToUploadFile,
+  safePathJoin,
+  unsortedFilePath,
+} from "@/lib/files"
 import { createFile } from "@/models/files"
 import { updateUser } from "@/models/users"
 import { randomUUID } from "crypto"
@@ -15,7 +21,7 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
   const files = formData.getAll("files") as File[]
 
   // Make sure upload dir exists
-  const userUploadsDirectory = await getUserUploadsDirectory(user)
+  const userUploadsDirectory = getUserUploadsDirectory(user)
 
   // Check limits
   const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
@@ -39,11 +45,11 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
 
       // Save file to filesystem
       const fileUuid = randomUUID()
-      const relativeFilePath = await unsortedFilePath(fileUuid, file.name)
+      const relativeFilePath = unsortedFilePath(fileUuid, file.name)
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
 
-      const fullFilePath = path.join(userUploadsDirectory, relativeFilePath)
+      const fullFilePath = safePathJoin(userUploadsDirectory, relativeFilePath)
       await mkdir(path.dirname(fullFilePath), { recursive: true })
 
       await writeFile(fullFilePath, buffer)
@@ -65,7 +71,7 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
   )
 
   // Update user storage used
-  const storageUsed = await getDirectorySize(await getUserUploadsDirectory(user))
+  const storageUsed = await getDirectorySize(getUserUploadsDirectory(user))
   await updateUser(user.id, { storageUsed })
 
   console.log("uploadedFiles", uploadedFiles)

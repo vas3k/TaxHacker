@@ -97,7 +97,7 @@ export async function GET(request: Request) {
       }
 
       for (const file of transactionFiles) {
-        const fullFilePath = await fullPathForFile(user, file)
+        const fullFilePath = fullPathForFile(user, file)
         if (await fileExists(fullFilePath)) {
           const fileData = await fs.readFile(fullFilePath)
           const fileExtension = path.extname(fullFilePath)

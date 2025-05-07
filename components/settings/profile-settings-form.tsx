@@ -2,7 +2,7 @@
 
 import { saveProfileAction } from "@/app/(app)/settings/actions"
 import { FormError } from "@/components/forms/error"
-import { FormInput } from "@/components/forms/simple"
+import { FormAvatar, FormInput } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { User } from "@/prisma/client"
 import { CircleCheckBig } from "lucide-react"
@@ -15,7 +15,9 @@ export default function ProfileSettingsForm({ user }: { user: User }) {
   return (
     <div>
       <form action={saveAction} className="space-y-4">
-        <FormInput title="Your Name" name="name" defaultValue={user.name || ""} />
+        <FormAvatar title="Avatar" name="avatar" className="w-24 h-24" defaultValue={user.avatar || ""} />
+
+        <FormInput title="Account Name" name="name" defaultValue={user.name || ""} />
 
         <div className="flex flex-row items-center gap-4">
           <Button type="submit" disabled={pending}>

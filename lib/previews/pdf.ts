@@ -1,26 +1,21 @@
 "use server"
 
-import { fileExists, getUserPreviewsDirectory } from "@/lib/files"
+import { fileExists, getUserPreviewsDirectory, safePathJoin } from "@/lib/files"
 import { User } from "@/prisma/client"
 import fs from "fs/promises"
 import path from "path"
 import { fromPath } from "pdf2pic"
-
-const MAX_PAGES = 10
-const DPI = 150
-const QUALITY = 90
-const MAX_WIDTH = 1500
-const MAX_HEIGHT = 1500
+import config from "../config"
 
 export async function pdfToImages(user: User, origFilePath: string): Promise<{ contentType: string; pages: string[] }> {
-  const userPreviewsDirectory = await getUserPreviewsDirectory(user)
+  const userPreviewsDirectory = getUserPreviewsDirectory(user)
   await fs.mkdir(userPreviewsDirectory, { recursive: true })
 
   const basename = path.basename(origFilePath, path.extname(origFilePath))
   // Check if converted pages already exist
   const existingPages: string[] = []
-  for (let i = 1; i <= MAX_PAGES; i++) {
-    const convertedFilePath = path.join(userPreviewsDirectory, `${basename}.${i}.webp`)
+  for (let i = 1; i <= config.upload.pdfs.maxPages; i++) {
+    const convertedFilePath = safePathJoin(userPreviewsDirectory, `${basename}.${i}.webp`)
     if (await fileExists(convertedFilePath)) {
       existingPages.push(convertedFilePath)
     } else {
@@ -34,13 +29,13 @@ export async function pdfToImages(user: User, origFilePath: string): Promise<{ c
 
   // If not — convert the file as store in previews folder
   const pdf2picOptions = {
-    density: DPI,
+    density: config.upload.pdfs.dpi,
     saveFilename: basename,
     savePath: userPreviewsDirectory,
     format: "webp",
-    quality: QUALITY,
-    width: MAX_WIDTH,
-    height: MAX_HEIGHT,
+    quality: config.upload.pdfs.quality,
+    width: config.upload.pdfs.maxWidth,
+    height: config.upload.pdfs.maxHeight,
     preserveAspectRatio: true,
   }
 

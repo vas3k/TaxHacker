@@ -46,7 +46,6 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
               <Card className="flex items-stretch p-2 max-w-6xl">
                 <div className="flex-1">
                   <FormTextarea
-                    title=""
                     name="text"
                     defaultValue={transaction.text || ""}
                     hideIfEmpty={true}

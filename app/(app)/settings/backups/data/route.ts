@@ -11,7 +11,7 @@ const BACKUP_VERSION = "1.0"
 
 export async function GET() {
   const user = await getCurrentUser()
-  const userUploadsDirectory = await getUserUploadsDirectory(user)
+  const userUploadsDirectory = getUserUploadsDirectory(user)
 
   try {
     const zip = new JSZip()

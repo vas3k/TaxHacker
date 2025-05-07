@@ -34,6 +34,7 @@ export function ExportTransactionsDialog({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
   const [exportFilters, setExportFilters] = useTransactionFilters()
   const [exportFields, setExportFields] = useState<string[]>(
     fields.map((field) => (deselectedFields.includes(field.code) ? "" : field.code))
@@ -41,6 +42,7 @@ export function ExportTransactionsDialog({
   const [includeAttachments, setIncludeAttachments] = useState(true)
 
   const handleSubmit = () => {
+    setIsLoading(true)
     router.push(
       `/export/transactions?${new URLSearchParams({
         search: exportFilters?.search || "",
@@ -53,6 +55,9 @@ export function ExportTransactionsDialog({
         includeAttachments: includeAttachments.toString(),
       }).toString()}`
     )
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 3000)
   }
 
   return (
@@ -155,8 +160,8 @@ export function ExportTransactionsDialog({
           </div>
         </div>
         <DialogFooter className="sm:justify-end">
-          <Button type="button" onClick={handleSubmit}>
-            Export Transactions
+          <Button type="button" onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? "Exporting..." : "Export Transactions"}
           </Button>
         </DialogFooter>
       </DialogContent>

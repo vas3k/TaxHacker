@@ -12,7 +12,7 @@ export type AnalyzeAttachment = {
 }
 
 export const loadAttachmentsForAI = async (user: User, file: File): Promise<AnalyzeAttachment[]> => {
-  const fullFilePath = await fullPathForFile(user, file)
+  const fullFilePath = fullPathForFile(user, file)
   const isFileExists = await fileExists(fullFilePath)
   if (!isFileExists) {
     throw new Error("File not found on disk")

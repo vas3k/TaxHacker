@@ -8,14 +8,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(total: number, currency: string) {
-  return new Intl.NumberFormat(LOCALE, {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    useGrouping: true,
-  }).format(total / 100)
+export function formatCurrency(total: number, currency: string, separator: string = "") {
+  try {
+    return new Intl.NumberFormat(LOCALE, {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      useGrouping: true,
+    }).format(total / 100)
+  } catch (error) {
+    // can happen with custom currencies and crypto
+    return `${currency} ${total / 100}`
+  }
 }
 
 export function formatBytes(bytes: number) {
@@ -48,4 +53,25 @@ export function codeFromName(name: string, maxLength: number = 16) {
 
 export function randomHexColor() {
   return "#" + Math.floor(Math.random() * 16777215).toString(16)
+}
+
+export async function fetchAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`)
+    }
+
+    const blob = await response.blob()
+
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch (error) {
+    console.error("Error fetching image as data URL:", error)
+    return null
+  }
 }

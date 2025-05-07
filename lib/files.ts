@@ -6,34 +6,39 @@ import config from "./config"
 export const FILE_UPLOAD_PATH = path.resolve(process.env.UPLOAD_PATH || "./uploads")
 export const FILE_UNSORTED_DIRECTORY_NAME = "unsorted"
 export const FILE_PREVIEWS_DIRECTORY_NAME = "previews"
+export const FILE_STATIC_DIRECTORY_NAME = "static"
 export const FILE_IMPORT_CSV_DIRECTORY_NAME = "csv"
 
-export async function getUserUploadsDirectory(user: User) {
-  return path.join(FILE_UPLOAD_PATH, user.email)
+export function getUserUploadsDirectory(user: User) {
+  return safePathJoin(FILE_UPLOAD_PATH, user.email)
 }
 
-export async function getUserPreviewsDirectory(user: User) {
-  return path.join(FILE_UPLOAD_PATH, user.email, FILE_PREVIEWS_DIRECTORY_NAME)
+export function getStaticDirectory(user: User) {
+  return safePathJoin(getUserUploadsDirectory(user), FILE_STATIC_DIRECTORY_NAME)
 }
 
-export async function unsortedFilePath(fileUuid: string, filename: string): Promise<string> {
+export function getUserPreviewsDirectory(user: User) {
+  return safePathJoin(getUserUploadsDirectory(user), FILE_PREVIEWS_DIRECTORY_NAME)
+}
+
+export function unsortedFilePath(fileUuid: string, filename: string) {
   const fileExtension = path.extname(filename)
-  return path.join(FILE_UNSORTED_DIRECTORY_NAME, `${fileUuid}${fileExtension}`)
+  return safePathJoin(FILE_UNSORTED_DIRECTORY_NAME, `${fileUuid}${fileExtension}`)
 }
 
-export async function previewFilePath(fileUuid: string, page: number): Promise<string> {
-  return path.join(FILE_PREVIEWS_DIRECTORY_NAME, `${fileUuid}.${page}.webp`)
+export function previewFilePath(fileUuid: string, page: number) {
+  return safePathJoin(FILE_PREVIEWS_DIRECTORY_NAME, `${fileUuid}.${page}.webp`)
 }
 
-export async function getTransactionFileUploadPath(fileUuid: string, filename: string, transaction: Transaction) {
+export function getTransactionFileUploadPath(fileUuid: string, filename: string, transaction: Transaction) {
   const fileExtension = path.extname(filename)
   const storedFileName = `${fileUuid}${fileExtension}`
   return formatFilePath(storedFileName, transaction.issuedAt || new Date())
 }
 
-export async function fullPathForFile(user: User, file: File) {
-  const userUploadsDirectory = await getUserUploadsDirectory(user)
-  return path.join(userUploadsDirectory, path.normalize(file.path))
+export function fullPathForFile(user: User, file: File) {
+  const userUploadsDirectory = getUserUploadsDirectory(user)
+  return safePathJoin(userUploadsDirectory, file.path)
 }
 
 function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{name}{ext}") {
@@ -43,6 +48,14 @@ function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{nam
   const name = path.basename(filename, ext)
 
   return format.replace("{YYYY}", String(year)).replace("{MM}", month).replace("{name}", name).replace("{ext}", ext)
+}
+
+export function safePathJoin(basePath: string, ...paths: string[]) {
+  const joinedPath = path.join(basePath, path.normalize(path.join(...paths)))
+  if (!joinedPath.startsWith(basePath)) {
+    throw new Error("Path traversal detected")
+  }
+  return joinedPath
 }
 
 export async function fileExists(filePath: string) {

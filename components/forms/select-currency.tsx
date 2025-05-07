@@ -3,15 +3,15 @@ import { useMemo } from "react"
 import { FormSelect } from "./simple"
 
 export const FormSelectCurrency = ({
-  title,
   currencies,
+  title,
   emptyValue,
   placeholder,
   hideIfEmpty = false,
   ...props
 }: {
-  title: string
   currencies: { code: string; name: string }[]
+  title?: string
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean

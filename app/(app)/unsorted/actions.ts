@@ -8,7 +8,7 @@ import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isAiBalanceExhausted, isSubscriptionExpired } from "@/lib/auth"
 import config from "@/lib/config"
-import { getTransactionFileUploadPath, getUserUploadsDirectory } from "@/lib/files"
+import { getTransactionFileUploadPath, getUserUploadsDirectory, safePathJoin } from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { deleteFile, getFileById, updateFile } from "@/models/files"
 import { createTransaction, updateTransactionFiles } from "@/models/transactions"
@@ -99,13 +99,13 @@ export async function saveFileAsTransactionAction(
     const transaction = await createTransaction(user.id, validatedForm.data)
 
     // Move file to processed location
-    const userUploadsDirectory = await getUserUploadsDirectory(user)
+    const userUploadsDirectory = getUserUploadsDirectory(user)
     const originalFileName = path.basename(file.path)
-    const newRelativeFilePath = await getTransactionFileUploadPath(file.id, originalFileName, transaction)
+    const newRelativeFilePath = getTransactionFileUploadPath(file.id, originalFileName, transaction)
 
     // Move file to new location and name
-    const oldFullFilePath = path.join(userUploadsDirectory, path.normalize(file.path))
-    const newFullFilePath = path.join(userUploadsDirectory, path.normalize(newRelativeFilePath))
+    const oldFullFilePath = safePathJoin(userUploadsDirectory, file.path)
+    const newFullFilePath = safePathJoin(userUploadsDirectory, newRelativeFilePath)
     await mkdir(path.dirname(newFullFilePath), { recursive: true })
     await rename(path.resolve(oldFullFilePath), path.resolve(newFullFilePath))
 

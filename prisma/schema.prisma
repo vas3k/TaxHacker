@@ -32,8 +32,13 @@ model User {
   storageUsed         Int           @default(0) @map("storage_used")
   storageLimit        Int           @default(-1) @map("storage_limit")
   aiBalance           Int           @default(0) @map("ai_balance")
+  businessName        String?       @map("business_name")
+  businessAddress     String?       @map("business_address")
+  businessBankDetails String?       @map("business_bank_details")
+  businessLogo        String?       @map("business_logo")
   accounts            Account[]
   sessions            Session[]
+  appData             AppData[]
 
   @@map("users")
 }
@@ -202,4 +207,15 @@ model Currency {
 
   @@unique([userId, code])
   @@map("currencies")
+}
+
+model AppData {
+  id     String @id @default(uuid()) @db.Uuid
+  app    String
+  userId String @map("user_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data   Json
+
+  @@unique([userId, app])
+  @@map("app_data")
 }

@@ -16,6 +16,7 @@ export type UserProfile = {
   name: string
   email: string
   avatar?: string
+  membershipPlan: string
   storageUsed: number
   storageLimit: number
   aiBalance: number
@@ -37,7 +38,7 @@ export const auth = betterAuth({
     updateAge: 24 * 60 * 60, // 24 hours
     cookieCache: {
       enabled: true,
-      maxAge: 24 * 60 * 60, // 24 hours
+      maxAge: 7 * 24 * 60 * 60, // 7 days
     },
   },
   advanced: {

@@ -17,6 +17,10 @@ const settingsCategories = [
     href: "/settings/profile",
   },
   {
+    title: "Business Details",
+    href: "/settings/business",
+  },
+  {
     title: "LLM settings",
     href: "/settings/llm",
   },

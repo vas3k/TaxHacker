@@ -10,6 +10,7 @@ import {
 import { userFormSchema } from "@/forms/users"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
+import { uploadStaticImage } from "@/lib/uploads"
 import { codeFromName, randomHexColor } from "@/lib/utils"
 import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
 import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
@@ -19,7 +20,7 @@ import { SettingsMap, updateSettings } from "@/models/settings"
 import { updateUser } from "@/models/users"
 import { Prisma, User } from "@/prisma/client"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
+import path from "path"
 
 export async function saveSettingsAction(
   _prevState: ActionState<SettingsMap> | null,
@@ -40,8 +41,7 @@ export async function saveSettingsAction(
   }
 
   revalidatePath("/settings")
-  redirect("/settings")
-  // return { success: true }
+  return { success: true }
 }
 
 export async function saveProfileAction(
@@ -55,12 +55,47 @@ export async function saveProfileAction(
     return { success: false, error: validatedForm.error.message }
   }
 
+  // Upload avatar
+  let avatarUrl = user.avatar
+  const avatarFile = formData.get("avatar") as File | null
+  if (avatarFile instanceof File && avatarFile.size > 0) {
+    try {
+      const uploadedAvatarPath = await uploadStaticImage(user, avatarFile, "avatar.webp", 500, 500)
+      avatarUrl = `/files/static/${path.basename(uploadedAvatarPath)}`
+    } catch (error) {
+      return { success: false, error: "Failed to upload avatar: " + error }
+    }
+  }
+
+  // Upload business logo
+  let businessLogoUrl = user.businessLogo
+  const businessLogoFile = formData.get("businessLogo") as File | null
+  if (businessLogoFile instanceof File && businessLogoFile.size > 0) {
+    try {
+      const uploadedBusinessLogoPath = await uploadStaticImage(user, businessLogoFile, "businessLogo.png", 500, 500)
+      businessLogoUrl = `/files/static/${path.basename(uploadedBusinessLogoPath)}`
+    } catch (error) {
+      return { success: false, error: "Failed to upload business logo: " + error }
+    }
+  }
+
+  // Update user
   await updateUser(user.id, {
-    name: validatedForm.data.name,
+    name: validatedForm.data.name !== undefined ? validatedForm.data.name : user.name,
+    avatar: avatarUrl,
+    businessName: validatedForm.data.businessName !== undefined ? validatedForm.data.businessName : user.businessName,
+    businessAddress:
+      validatedForm.data.businessAddress !== undefined ? validatedForm.data.businessAddress : user.businessAddress,
+    businessBankDetails:
+      validatedForm.data.businessBankDetails !== undefined
+        ? validatedForm.data.businessBankDetails
+        : user.businessBankDetails,
+    businessLogo: businessLogoUrl,
   })
 
   revalidatePath("/settings/profile")
-  redirect("/settings/profile")
+  revalidatePath("/settings/business")
+  return { success: true }
 }
 
 export async function addProjectAction(userId: string, data: Prisma.ProjectCreateInput) {

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
 import config from "@/lib/config"
-import { ClockArrowUp, FileText, Import, LayoutDashboard, Settings, Sparkles, Upload } from "lucide-react"
+import { ClockArrowUp, FileText, Gift, House, Import, LayoutDashboard, Settings, Upload } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -72,7 +72,7 @@ export function AppSidebar({
                 <SidebarMenuItemWithHighlight href="/dashboard">
                   <SidebarMenuButton asChild>
                     <Link href="/dashboard">
-                      <LayoutDashboard />
+                      <House />
                       <span>Home</span>
                     </Link>
                   </SidebarMenuButton>
@@ -106,7 +106,14 @@ export function AppSidebar({
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItemWithHighlight>
-
+                <SidebarMenuItemWithHighlight href="/apps">
+                  <SidebarMenuButton asChild>
+                    <Link href="/apps">
+                      <LayoutDashboard />
+                      <span>Apps</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItemWithHighlight>
                 <SidebarMenuItemWithHighlight href="/settings">
                   <SidebarMenuButton asChild>
                     <Link href="/settings">
@@ -136,7 +143,7 @@ export function AppSidebar({
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <Link href="https://vas3k.com/donate/" target="_blank">
-                        <Sparkles />
+                        <Gift />
                         Thank the author
                       </Link>
                     </SidebarMenuButton>
