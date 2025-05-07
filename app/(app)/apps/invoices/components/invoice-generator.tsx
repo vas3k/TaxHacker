@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { fetchAsBase64 } from "@/lib/utils"
 import { SettingsMap } from "@/models/settings"
 import { Currency, User } from "@/prisma/client"
-import { FileDown, Save, TextSelect, X } from "lucide-react"
+import { FileDown, Loader2, Save, TextSelect, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useMemo, useReducer, useState } from "react"
 import {
@@ -83,6 +83,8 @@ export function InvoiceGenerator({
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState("")
   const [formData, dispatch] = useReducer(invoiceFormReducer, templates[0].formData)
+  const [isPdfLoading, setIsPdfLoading] = useState(false)
+  const [isSavingTransaction, setIsSavingTransaction] = useState(false)
 
   const router = useRouter()
 
@@ -97,12 +99,13 @@ export function InvoiceGenerator({
 
   const handleGeneratePDF = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (formData.businessLogo) {
-      formData.businessLogo = await fetchAsBase64(formData.businessLogo)
-    }
+    setIsPdfLoading(true)
 
     try {
+      if (formData.businessLogo) {
+        formData.businessLogo = await fetchAsBase64(formData.businessLogo)
+      }
+
       const pdfBuffer = await generateInvoicePDF(formData)
 
       // Create a blob from the buffer
@@ -126,6 +129,8 @@ export function InvoiceGenerator({
     } catch (error) {
       console.error("Error generating PDF:", error)
       alert("Failed to generate PDF. Please try again.")
+    } finally {
+      setIsPdfLoading(false)
     }
   }
 
@@ -179,12 +184,13 @@ export function InvoiceGenerator({
   // Accept optional event, prevent default only if present
   const handleSaveAsTransaction = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
-
-    if (formData.businessLogo) {
-      formData.businessLogo = await fetchAsBase64(formData.businessLogo)
-    }
+    setIsSavingTransaction(true)
 
     try {
+      if (formData.businessLogo) {
+        formData.businessLogo = await fetchAsBase64(formData.businessLogo)
+      }
+
       const result = await saveInvoiceAsTransactionAction(formData)
       if (result.success && result.data?.id) {
         console.log("SUCCESS! REDIRECTING TO TRANSACTION", result.data?.id)
@@ -197,6 +203,8 @@ export function InvoiceGenerator({
     } catch (error) {
       console.error("Error saving as transaction:", error)
       alert("Failed to save as transaction. Please try again.")
+    } finally {
+      setIsSavingTransaction(false)
     }
   }
 
@@ -235,17 +243,35 @@ export function InvoiceGenerator({
 
         {/* Generate PDF Button */}
         <div className="flex flex-col gap-4">
-          <Button onClick={handleGeneratePDF}>
-            <FileDown />
-            Download PDF
+          <Button onClick={handleGeneratePDF} disabled={isPdfLoading}>
+            {isPdfLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FileDown className="mr-2" />
+                Download PDF
+              </>
+            )}
           </Button>
           <Button variant="secondary" onClick={() => setIsTemplateDialogOpen(true)}>
             <TextSelect />
             Make a Template
           </Button>
-          <Button variant="secondary" onClick={handleSaveAsTransaction}>
-            <Save />
-            Save as Transaction
+          <Button variant="secondary" onClick={handleSaveAsTransaction} disabled={isSavingTransaction}>
+            {isSavingTransaction ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2" />
+                Save as Transaction
+              </>
+            )}
           </Button>
         </div>
       </div>
