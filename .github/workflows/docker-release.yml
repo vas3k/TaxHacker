@@ -44,9 +44,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/taxhacker:latest
-            type=gha
-          cache-to: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/taxhacker:latest,mode=max
-            type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
