@@ -49,6 +49,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/app ./app
 COPY --from=builder /app/next.config.ts ./
 
 # Copy and set up entrypoint script
