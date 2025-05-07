@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db"
-import { User } from "@prisma/client"
+import { User } from "@/prisma/client"
 
 export const getAppData = async (user: User, app: string) => {
   const appData = await prisma.appData.findUnique({
