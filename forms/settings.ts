@@ -34,4 +34,5 @@ export const fieldFormSchema = z.object({
   llm_prompt: z.string().max(512).nullable().optional(),
   isVisibleInList: z.boolean().optional(),
   isVisibleInAnalysis: z.boolean().optional(),
+  isRequired: z.boolean().optional(),
 })

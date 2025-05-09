@@ -8,6 +8,7 @@ export const FormSelectProject = ({
   emptyValue,
   placeholder,
   hideIfEmpty = false,
+  isRequired = false,
   ...props
 }: {
   title: string
@@ -15,6 +16,7 @@ export const FormSelectProject = ({
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean
+  isRequired?: boolean
 } & SelectProps) => {
   return (
     <FormSelect
@@ -23,6 +25,7 @@ export const FormSelectProject = ({
       emptyValue={emptyValue}
       placeholder={placeholder}
       hideIfEmpty={hideIfEmpty}
+      isRequired={isRequired}
       {...props}
     />
   )

@@ -6,8 +6,15 @@ export const FormSelectType = ({
   emptyValue,
   placeholder,
   hideIfEmpty = false,
+  isRequired = false,
   ...props
-}: { title: string; emptyValue?: string; placeholder?: string; hideIfEmpty?: boolean } & SelectProps) => {
+}: {
+  title: string
+  emptyValue?: string
+  placeholder?: string
+  hideIfEmpty?: boolean
+  isRequired?: boolean
+} & SelectProps) => {
   const items = [
     { code: "expense", name: "Expense", badge: "↓" },
     { code: "income", name: "Income", badge: "↑" },
@@ -22,6 +29,7 @@ export const FormSelectType = ({
       emptyValue={emptyValue}
       placeholder={placeholder}
       hideIfEmpty={hideIfEmpty}
+      isRequired={isRequired}
       {...props}
     />
   )

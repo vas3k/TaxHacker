@@ -85,11 +85,26 @@ export default function TransactionEditForm({
     <form action={saveAction} className="space-y-4">
       <input type="hidden" name="transactionId" value={transaction.id} />
 
-      <FormInput title={fieldMap.name.name} name="name" defaultValue={formData.name} />
+      <FormInput
+        title={fieldMap.name.name}
+        name="name"
+        defaultValue={formData.name}
+        isRequired={fieldMap.name.isRequired}
+      />
 
-      <FormInput title={fieldMap.merchant.name} name="merchant" defaultValue={formData.merchant} />
+      <FormInput
+        title={fieldMap.merchant.name}
+        name="merchant"
+        defaultValue={formData.merchant}
+        isRequired={fieldMap.merchant.isRequired}
+      />
 
-      <FormInput title={fieldMap.description.name} name="description" defaultValue={formData.description} />
+      <FormInput
+        title={fieldMap.description.name}
+        name="description"
+        defaultValue={formData.description}
+        isRequired={fieldMap.description.isRequired}
+      />
 
       <div className="flex flex-row gap-4">
         <FormInput
@@ -99,6 +114,7 @@ export default function TransactionEditForm({
           name="total"
           defaultValue={formData.total.toFixed(2)}
           className="w-32"
+          isRequired={fieldMap.total.isRequired}
         />
 
         <FormSelectCurrency
@@ -109,9 +125,15 @@ export default function TransactionEditForm({
             setFormData({ ...formData, currencyCode: value })
           }}
           currencies={currencies}
+          isRequired={fieldMap.currencyCode.isRequired}
         />
 
-        <FormSelectType title={fieldMap.type.name} name="type" defaultValue={formData.type} />
+        <FormSelectType
+          title={fieldMap.type.name}
+          name="type"
+          defaultValue={formData.type}
+          isRequired={fieldMap.type.isRequired}
+        />
       </div>
 
       {formData.currencyCode !== settings.default_currency || formData.convertedTotal !== 0 ? (
@@ -122,6 +144,7 @@ export default function TransactionEditForm({
             step="0.01"
             name="convertedTotal"
             defaultValue={formData.convertedTotal.toFixed(2)}
+            isRequired={fieldMap.convertedTotal.isRequired}
           />
           {(!formData.convertedCurrencyCode || formData.convertedCurrencyCode !== settings.default_currency) && (
             <FormSelectCurrency
@@ -129,6 +152,7 @@ export default function TransactionEditForm({
               name="convertedCurrencyCode"
               defaultValue={formData.convertedCurrencyCode || settings.default_currency}
               currencies={currencies}
+              isRequired={fieldMap.convertedCurrencyCode.isRequired}
             />
           )}
         </div>
@@ -137,7 +161,13 @@ export default function TransactionEditForm({
       )}
 
       <div className="flex flex-row flex-grow gap-4">
-        <FormInput title={fieldMap.issuedAt.name} type="date" name="issuedAt" defaultValue={formData.issuedAt} />
+        <FormInput
+          title={fieldMap.issuedAt.name}
+          type="date"
+          name="issuedAt"
+          defaultValue={formData.issuedAt}
+          isRequired={fieldMap.issuedAt.isRequired}
+        />
       </div>
 
       <div className="flex flex-row gap-4">
@@ -146,6 +176,7 @@ export default function TransactionEditForm({
           categories={categories}
           name="categoryCode"
           defaultValue={formData.categoryCode}
+          isRequired={fieldMap.categoryCode.isRequired}
         />
 
         <FormSelectProject
@@ -153,10 +184,17 @@ export default function TransactionEditForm({
           projects={projects}
           name="projectCode"
           defaultValue={formData.projectCode}
+          isRequired={fieldMap.projectCode.isRequired}
         />
       </div>
 
-      <FormTextarea title={fieldMap.note.name} name="note" defaultValue={formData.note} className="h-24" />
+      <FormTextarea
+        title={fieldMap.note.name}
+        name="note"
+        defaultValue={formData.note}
+        className="h-24"
+        isRequired={fieldMap.note.isRequired}
+      />
       {extraFields.map((field) => (
         <FormInput
           key={field.code}
@@ -164,6 +202,7 @@ export default function TransactionEditForm({
           title={field.name}
           name={field.code}
           defaultValue={formData[field.code as keyof typeof formData] || ""}
+          isRequired={field.isRequired}
         />
       ))}
 

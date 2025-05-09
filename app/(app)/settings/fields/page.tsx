@@ -48,6 +48,13 @@ export default async function FieldsSettingsPage() {
             defaultValue: false,
             editable: true,
           },
+          {
+            key: "isRequired",
+            label: "Is required",
+            type: "checkbox",
+            defaultValue: false,
+            editable: true,
+          },
         ]}
         onDelete={async (code) => {
           "use server"

@@ -11,6 +11,7 @@ export const FormSelectCategory = ({
   emptyValue,
   placeholder,
   hideIfEmpty = false,
+  isRequired = false,
   ...props
 }: {
   title: string
@@ -18,6 +19,7 @@ export const FormSelectCategory = ({
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean
+  isRequired?: boolean
 } & SelectProps) => {
   const items = useMemo(
     () => categories.map((category) => ({ code: category.code, name: category.name, color: category.color })),
@@ -30,6 +32,7 @@ export const FormSelectCategory = ({
       emptyValue={emptyValue}
       placeholder={placeholder}
       hideIfEmpty={hideIfEmpty}
+      isRequired={isRequired}
       {...props}
     />
   )

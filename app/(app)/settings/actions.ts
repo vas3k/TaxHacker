@@ -240,6 +240,7 @@ export async function addFieldAction(userId: string, data: Prisma.FieldCreateInp
     llm_prompt: validatedForm.data.llm_prompt,
     isVisibleInList: validatedForm.data.isVisibleInList,
     isVisibleInAnalysis: validatedForm.data.isVisibleInAnalysis,
+    isRequired: validatedForm.data.isRequired,
     isExtra: true,
   })
   revalidatePath("/settings/fields")
@@ -260,6 +261,7 @@ export async function editFieldAction(userId: string, code: string, data: Prisma
     llm_prompt: validatedForm.data.llm_prompt,
     isVisibleInList: validatedForm.data.isVisibleInList,
     isVisibleInAnalysis: validatedForm.data.isVisibleInAnalysis,
+    isRequired: validatedForm.data.isRequired,
   })
   revalidatePath("/settings/fields")
 

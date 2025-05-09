@@ -230,6 +230,19 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
     ) : null
   }
 
+  // Function to check if a transaction is incomplete
+  const isTransactionIncomplete = (transaction: Transaction): boolean => {
+    const requiredFields = fields.filter((field) => field.isRequired)
+
+    return requiredFields.some((field) => {
+      const value = field.isExtra
+        ? (transaction.extra as Record<string, any>)?.[field.code]
+        : transaction[field.code as keyof Transaction]
+
+      return value === undefined || value === null || value === "" || value === 0
+    })
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -257,7 +270,11 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
           {transactions.map((transaction) => (
             <TableRow
               key={transaction.id}
-              className={cn(selectedIds.includes(transaction.id) && "bg-muted", "cursor-pointer hover:bg-muted/50")}
+              className={cn(
+                isTransactionIncomplete(transaction) && "bg-yellow-50",
+                selectedIds.includes(transaction.id) && "bg-muted",
+                "cursor-pointer hover:bg-muted/50"
+              )}
               onClick={() => handleRowClick(transaction.id)}
             >
               <TableCell onClick={(e) => e.stopPropagation()}>

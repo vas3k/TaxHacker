@@ -16,17 +16,20 @@ import { InputHTMLAttributes, TextareaHTMLAttributes, useEffect, useRef, useStat
 type FormInputProps = InputHTMLAttributes<HTMLInputElement> & {
   title?: string
   hideIfEmpty?: boolean
+  isRequired?: boolean
 }
 
-export function FormInput({ title, hideIfEmpty = false, ...props }: FormInputProps) {
-  if (hideIfEmpty && (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value) {
+export function FormInput({ title, hideIfEmpty = false, isRequired = false, ...props }: FormInputProps) {
+  const isEmpty = (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value
+
+  if (hideIfEmpty && isEmpty) {
     return null
   }
 
   return (
     <label className="flex flex-col gap-1">
       {title && <span className="text-sm font-medium">{title}</span>}
-      <Input {...props} className={cn("bg-background", props.className)} />
+      <Input {...props} className={cn("bg-background", isRequired && isEmpty && "bg-yellow-50", props.className)} />
     </label>
   )
 }
@@ -34,10 +37,12 @@ export function FormInput({ title, hideIfEmpty = false, ...props }: FormInputPro
 type FormTextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   title?: string
   hideIfEmpty?: boolean
+  isRequired?: boolean
 }
 
-export function FormTextarea({ title, hideIfEmpty = false, ...props }: FormTextareaProps) {
+export function FormTextarea({ title, hideIfEmpty = false, isRequired = false, ...props }: FormTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const isEmpty = (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value
 
   useEffect(() => {
     const textarea = textareaRef.current
@@ -54,14 +59,18 @@ export function FormTextarea({ title, hideIfEmpty = false, ...props }: FormTexta
     return () => textarea.removeEventListener("input", resize)
   }, [props.value, props.defaultValue])
 
-  if (hideIfEmpty && (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value) {
+  if (hideIfEmpty && isEmpty) {
     return null
   }
 
   return (
     <label className="flex flex-col gap-1">
       {title && <span className="text-sm font-medium">{title}</span>}
-      <Textarea ref={textareaRef} {...props} className={cn("bg-background", props.className)} />
+      <Textarea
+        ref={textareaRef}
+        {...props}
+        className={cn("bg-background", isRequired && isEmpty && "bg-yellow-50", props.className)}
+      />
     </label>
   )
 }
@@ -72,6 +81,7 @@ export const FormSelect = ({
   emptyValue,
   placeholder,
   hideIfEmpty = false,
+  isRequired = false,
   ...props
 }: {
   items: Array<{ code: string; name: string; color?: string; badge?: string }>
@@ -79,8 +89,11 @@ export const FormSelect = ({
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean
+  isRequired?: boolean
 } & SelectProps) => {
-  if (hideIfEmpty && (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value) {
+  const isEmpty = (!props.defaultValue || props.defaultValue.toString().trim() === "") && !props.value
+
+  if (hideIfEmpty && isEmpty) {
     return null
   }
 
@@ -88,7 +101,7 @@ export const FormSelect = ({
     <span className="flex flex-col gap-1">
       {title && <span className="text-sm font-medium">{title}</span>}
       <Select {...props}>
-        <SelectTrigger className="w-full min-w-[150px] bg-background">
+        <SelectTrigger className={cn("w-full min-w-[150px] bg-background", isRequired && isEmpty && "bg-yellow-50")}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

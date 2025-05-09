@@ -8,6 +8,7 @@ export const FormSelectCurrency = ({
   emptyValue,
   placeholder,
   hideIfEmpty = false,
+  isRequired = false,
   ...props
 }: {
   currencies: { code: string; name: string }[]
@@ -15,6 +16,7 @@ export const FormSelectCurrency = ({
   emptyValue?: string
   placeholder?: string
   hideIfEmpty?: boolean
+  isRequired?: boolean
 } & SelectProps) => {
   const items = useMemo(
     () =>
@@ -32,6 +34,7 @@ export const FormSelectCurrency = ({
       emptyValue={emptyValue}
       placeholder={placeholder}
       hideIfEmpty={hideIfEmpty}
+      isRequired={isRequired}
       {...props}
     />
   )

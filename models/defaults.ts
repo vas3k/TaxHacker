@@ -317,7 +317,7 @@ export const DEFAULT_FIELDS = [
     llm_prompt: "issued at date (YYYY-MM-DD format)",
     isVisibleInList: true,
     isVisibleInAnalysis: true,
-    isRequired: false,
+    isRequired: true,
     isExtra: false,
   },
   {
@@ -357,7 +357,7 @@ export const DEFAULT_FIELDS = [
     llm_prompt: "total total of the transaction",
     isVisibleInList: true,
     isVisibleInAnalysis: true,
-    isRequired: false,
+    isRequired: true,
     isExtra: false,
   },
   {
