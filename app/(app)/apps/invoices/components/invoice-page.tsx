@@ -7,7 +7,9 @@ import { X } from "lucide-react"
 import { InputHTMLAttributes, memo, useCallback, useMemo } from "react"
 
 export interface InvoiceItem {
-  description: string
+  name: string
+  subtitle: string
+  showSubtitle: boolean
   quantity: number
   unitPrice: number
   subtotal: number
@@ -67,49 +69,92 @@ const ItemRow = memo(function ItemRow({
 }: {
   item: InvoiceItem
   index: number
-  onChange: (index: number, field: keyof InvoiceItem, value: string | number) => void
+  onChange: (index: number, field: keyof InvoiceItem, value: string | number | boolean) => void
   onRemove: (index: number) => void
   currency: string
 }) {
   return (
-    <tr>
-      <td className="px-4 py-2">
-        <FormInput
-          type="text"
-          value={item.description}
-          onChange={(e) => onChange(index, "description", e.target.value)}
-          className="w-full min-w-64"
-          placeholder="Item description"
-          required
-        />
-      </td>
-      <td className="px-4 py-2">
-        <FormInput
-          type="number"
-          min="1"
-          value={item.quantity}
-          onChange={(e) => onChange(index, "quantity", Number(e.target.value))}
-          className="w-20 text-right"
-          required
-        />
-      </td>
-      <td className="px-4 py-2">
-        <FormInput
-          type="number"
-          step="0.01"
-          value={item.unitPrice}
-          onChange={(e) => onChange(index, "unitPrice", Number(e.target.value))}
-          className="w-24 text-right"
-          required
-        />
-      </td>
-      <td className="px-4 py-2 text-right">{formatCurrency(item.subtotal * 100, currency)}</td>
-      <td className="px-4 py-2">
+    <div className="flex flex-col sm:flex-row items-start py-3 px-4 bg-white hover:bg-gray-50">
+      {/* Mobile view label (visible only on small screens) */}
+      <div className="flex justify-between sm:hidden mb-2">
+        <span className="text-xs font-medium text-gray-500 uppercase">Item</span>
         <Button variant="destructive" className="rounded-full p-1 h-5 w-5" onClick={() => onRemove(index)}>
           <X />
         </Button>
-      </td>
-    </tr>
+      </div>
+
+      {/* Item name and subtitle */}
+      <div className="flex-1 sm:px-0">
+        <div className="flex flex-col">
+          <FormInput
+            type="text"
+            value={item.name}
+            onChange={(e) => onChange(index, "name", e.target.value)}
+            className="w-full min-w-0 font-semibold"
+            placeholder="Item name"
+            required
+          />
+          <div>
+            {!item.showSubtitle ? (
+              <button
+                type="button"
+                className="text-xs text-gray-400 hover:text-gray-800 mt-1 ml-1"
+                onClick={() => onChange(index, "showSubtitle", true)}
+              >
+                + Add Description
+              </button>
+            ) : (
+              <FormInput
+                type="text"
+                value={item.subtitle}
+                onChange={(e) => onChange(index, "subtitle", e.target.value)}
+                className="w-full mt-1 text-xs text-muted-foreground"
+                placeholder="Detailed description (optional)"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile labels for small screens */}
+      <div className="grid grid-cols-3 gap-2 mt-2 sm:hidden">
+        <div className="text-xs font-medium text-gray-500 uppercase">Quantity</div>
+        <div className="text-xs font-medium text-gray-500 uppercase">Unit Price</div>
+        <div className="text-xs font-medium text-gray-500 uppercase">Subtotal</div>
+      </div>
+
+      {/* Quantity, Unit Price, Subtotal, and Remove button */}
+      <div className="grid grid-cols-3 sm:flex gap-2 mt-1 sm:mt-0">
+        <div className="sm:w-20 sm:px-4">
+          <FormInput
+            type="number"
+            min="1"
+            value={item.quantity}
+            onChange={(e) => onChange(index, "quantity", Number(e.target.value))}
+            className="w-full text-right"
+            required
+          />
+        </div>
+        <div className="sm:w-28 sm:px-4">
+          <FormInput
+            type="number"
+            step="0.01"
+            value={item.unitPrice}
+            onChange={(e) => onChange(index, "unitPrice", Number(e.target.value))}
+            className="w-full text-right"
+            required
+          />
+        </div>
+        <div className="sm:w-28 sm:px-4 flex items-center justify-end">
+          <span className="text-sm text-right">{formatCurrency(item.subtotal * 100, currency)}</span>
+        </div>
+        <div className="hidden sm:flex sm:w-10 sm:px-2 items-center justify-center">
+          <Button variant="destructive" className="rounded-full p-1 h-5 w-5" onClick={() => onRemove(index)}>
+            <X />
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 })
 
@@ -196,7 +241,7 @@ export function InvoicePage({ invoiceData, dispatch, currencies }: InvoicePagePr
   const addItem = useCallback(() => dispatch({ type: "ADD_ITEM" }), [dispatch])
   const removeItem = useCallback((index: number) => dispatch({ type: "REMOVE_ITEM", index }), [dispatch])
   const updateItem = useCallback(
-    (index: number, field: keyof InvoiceItem, value: string | number) =>
+    (index: number, field: keyof InvoiceItem, value: string | number | boolean) =>
       dispatch({ type: "UPDATE_ITEM", index, field, value }),
     [dispatch]
   )
@@ -350,125 +395,60 @@ export function InvoicePage({ invoiceData, dispatch, currencies }: InvoicePagePr
         </div>
       </div>
 
-      {/* Items Table */}
+      {/* Items Section - Refactored to use only flex divs */}
       <div className="mb-8">
         <div className="border rounded-lg overflow-hidden">
-          {/* Table for desktop/tablet */}
-          <div className="overflow-x-auto sm:block hidden">
-            <table className="min-w-[600px] w-full divide-y divide-gray-200 text-xs sm:text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <ShadyFormInput
-                      type="text"
-                      value={invoiceData.itemLabel}
-                      onChange={(e) => dispatch({ type: "UPDATE_FIELD", field: "itemLabel", value: e.target.value })}
-                      className="text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    />
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <ShadyFormInput
-                      type="text"
-                      value={invoiceData.quantityLabel}
-                      onChange={(e) =>
-                        dispatch({ type: "UPDATE_FIELD", field: "quantityLabel", value: e.target.value })
-                      }
-                      className="text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    />
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <ShadyFormInput
-                      type="text"
-                      value={invoiceData.unitPriceLabel}
-                      onChange={(e) =>
-                        dispatch({ type: "UPDATE_FIELD", field: "unitPriceLabel", value: e.target.value })
-                      }
-                      className="text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    />
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <ShadyFormInput
-                      type="text"
-                      value={invoiceData.subtotalLabel}
-                      onChange={(e) =>
-                        dispatch({ type: "UPDATE_FIELD", field: "subtotalLabel", value: e.target.value })
-                      }
-                      className="text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    />
-                  </th>
-                  <th className="px-2 sm:px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {invoiceData.items.map((item, index) => (
-                  <ItemRow
-                    key={index}
-                    item={item}
-                    index={index}
-                    onChange={updateItem}
-                    onRemove={removeItem}
-                    currency={invoiceData.currency}
-                  />
-                ))}
-              </tbody>
-            </table>
+          {/* Header row for column titles */}
+          <div className="hidden sm:flex bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+            <div className="flex-1 px-4 py-3">
+              <ShadyFormInput
+                type="text"
+                value={invoiceData.itemLabel}
+                onChange={(e) => dispatch({ type: "UPDATE_FIELD", field: "itemLabel", value: e.target.value })}
+                className="text-xs font-medium text-gray-500 uppercase tracking-wider"
+              />
+            </div>
+            <div className="w-20 px-4 py-3 text-right">
+              <ShadyFormInput
+                type="text"
+                value={invoiceData.quantityLabel}
+                onChange={(e) => dispatch({ type: "UPDATE_FIELD", field: "quantityLabel", value: e.target.value })}
+                className="text-xs font-medium text-gray-500 uppercase tracking-wider text-right w-full"
+              />
+            </div>
+            <div className="w-28 px-4 py-3 text-right">
+              <ShadyFormInput
+                type="text"
+                value={invoiceData.unitPriceLabel}
+                onChange={(e) => dispatch({ type: "UPDATE_FIELD", field: "unitPriceLabel", value: e.target.value })}
+                className="text-xs font-medium text-gray-500 uppercase tracking-wider text-right w-full"
+              />
+            </div>
+            <div className="w-28 px-4 py-3 text-right">
+              <ShadyFormInput
+                type="text"
+                value={invoiceData.subtotalLabel}
+                onChange={(e) => dispatch({ type: "UPDATE_FIELD", field: "subtotalLabel", value: e.target.value })}
+                className="text-xs font-medium text-gray-500 uppercase tracking-wider text-right w-full"
+              />
+            </div>
+            <div className="w-10 px-2 py-3"></div>
           </div>
-          {/* Flex list for mobile */}
-          <div className="sm:hidden flex flex-col gap-2 p-2">
+
+          {/* Invoice items */}
+          <div className="flex flex-col divide-y divide-gray-200">
             {invoiceData.items.map((item, index) => (
-              <div key={index} className="flex flex-col gap-1 border rounded-lg p-3 bg-gray-50 relative">
-                <button
-                  type="button"
-                  className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                  onClick={() => removeItem(index)}
-                  aria-label="Remove item"
-                >
-                  <X size={18} />
-                </button>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-gray-500 font-medium">{invoiceData.itemLabel}</label>
-                  <FormInput
-                    type="text"
-                    value={item.description}
-                    onChange={(e) => updateItem(index, "description", e.target.value)}
-                    className="w-full min-w-0"
-                    placeholder="Item description"
-                    required
-                  />
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <div className="flex-1 flex flex-col">
-                    <label className="text-xs text-gray-500 font-medium">{invoiceData.quantityLabel}</label>
-                    <FormInput
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
-                      className="w-full text-right"
-                      required
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col">
-                    <label className="text-xs text-gray-500 font-medium">{invoiceData.unitPriceLabel}</label>
-                    <FormInput
-                      type="number"
-                      step="0.01"
-                      value={item.unitPrice}
-                      onChange={(e) => updateItem(index, "unitPrice", Number(e.target.value))}
-                      className="w-full text-right"
-                      required
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col items-end">
-                    <label className="text-xs text-gray-500 font-medium">{invoiceData.subtotalLabel}</label>
-                    <span className="text-sm font-semibold mt-2">
-                      {formatCurrency(item.subtotal * 100, invoiceData.currency)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <ItemRow
+                key={index}
+                item={item}
+                index={index}
+                onChange={updateItem}
+                onRemove={removeItem}
+                currency={invoiceData.currency}
+              />
             ))}
           </div>
+
           <Button onClick={addItem} className="m-2 sm:m-3 w-full sm:w-auto">
             + Add Item
           </Button>

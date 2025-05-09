@@ -25,7 +25,13 @@ function invoiceFormReducer(state: InvoiceFormData, action: any): InvoiceFormDat
     case "UPDATE_FIELD":
       return { ...state, [action.field]: action.value }
     case "ADD_ITEM":
-      return { ...state, items: [...state.items, { description: "", quantity: 1, unitPrice: 0, subtotal: 0 }] }
+      return {
+        ...state,
+        items: [
+          ...state.items,
+          { name: "", subtitle: "", showSubtitle: false, quantity: 1, unitPrice: 0, subtotal: 0 },
+        ],
+      }
     case "UPDATE_ITEM": {
       const items = [...state.items]
       items[action.index] = { ...items[action.index], [action.field]: action.value }
@@ -146,7 +152,6 @@ export function InvoiceGenerator({
     }
 
     try {
-      // Get existing templates
       const result = await addNewTemplateAction(user, {
         id: `tmpl_${Math.random().toString(36).substring(2, 15)}`,
         name: newTemplateName,

@@ -210,6 +210,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#000000",
   },
+  colName: {
+    fontWeight: "semibold",
+  },
+  itemSubtitle: {
+    fontSize: 10,
+    color: "#6B7280",
+    marginTop: 2,
+  },
   notes: {
     marginBottom: 30,
     fontSize: 12,
@@ -342,7 +350,10 @@ export function InvoicePDF({ data }: { data: InvoiceFormData }): ReactElement {
 
           {data.items.map((item: InvoiceItem, index: number) => (
             <View key={index} style={styles.tableRow}>
-              <Text style={[styles.colValue, styles.colDescription]}>{item.description}</Text>
+              <View style={styles.colDescription}>
+                <Text style={[styles.colValue, styles.colName]}>{item.name}</Text>
+                {item.showSubtitle && item.subtitle && <Text style={styles.itemSubtitle}>{item.subtitle}</Text>}
+              </View>
               <Text style={[styles.colValue, styles.colQuantity]}>{item.quantity}</Text>
               <Text style={[styles.colValue, styles.colPrice]}>
                 {formatCurrency(item.unitPrice * 100, data.currency)}
