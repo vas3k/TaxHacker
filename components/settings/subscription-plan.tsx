@@ -34,8 +34,8 @@ export function SubscriptionPlan({ user }: { user: User }) {
             <div className="flex items-center gap-2">
               <BrainCog className="h-4 w-4" />
               <span>
-                <strong className="font-semibold">AI Scans:</strong> {formatNumber(plan.limits.ai - user.aiBalance)} /{" "}
-                {plan.limits.ai > 0 ? formatNumber(plan.limits.ai) : "Unlimited"}
+                <strong className="font-semibold">AI Analyses:</strong> {formatNumber(plan.limits.ai - user.aiBalance)}{" "}
+                / {plan.limits.ai > 0 ? formatNumber(plan.limits.ai) : "Unlimited"}
               </span>
             </div>
             <div className="flex items-center gap-2">

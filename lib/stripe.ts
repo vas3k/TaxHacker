@@ -42,7 +42,7 @@ export const PLANS: Record<string, Plan> = {
     benefits: [
       "Special price for early adopters",
       "512 Mb of storage",
-      "1000 AI file analysis",
+      "1000 AI file analyses",
       "Unlimited transactions",
       "Unlimited fields, categories and projects",
     ],
