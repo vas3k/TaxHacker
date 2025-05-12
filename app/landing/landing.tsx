@@ -275,7 +275,7 @@ export default function LandingPage() {
                 target="_blank"
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
               >
-                Github + Docker Compose
+                Free: Github + Docker Compose
               </Link>
             </div>
 
@@ -312,7 +312,7 @@ export default function LandingPage() {
                 href="/cloud"
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
               >
-                LET'S GO!
+                Early Access: from €35/year
               </Link>
             </div>
           </div>
