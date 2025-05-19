@@ -46,7 +46,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
           <span className="text-3xl tracking-tight opacity-20">{total}</span>
         </h2>
         <div className="flex gap-2">
-          <ExportTransactionsDialog fields={fields} categories={categories} projects={projects}>
+          <ExportTransactionsDialog fields={fields} categories={categories} projects={projects} total={total}>
             <Button variant="outline">
               <Download />
               <span className="hidden md:block">Export</span>
