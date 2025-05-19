@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 export function SidebarQRCode({ ip }: { ip: string }) {
     const port = parseInt(process.env.PORT || "7331")
     const url = `http://${ip}:${port}`
-    
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -25,7 +25,7 @@ export function SidebarQRCode({ ip }: { ip: string }) {
                         level="H"
                         includeMargin={true}
                         className="rounded-lg" />
-                    <p className="text-sm text-muted-foreground">{url}</p>
+                    <p className="text-sm text-muted-foreground">Scanning this QR will open next address: {url} which leads to TaxHacker app on local network.</p>
                 </div>
             </DialogContent>
         </Dialog>
