@@ -28,8 +28,6 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     logging:
       driver: "local"
       options:

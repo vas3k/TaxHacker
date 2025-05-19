@@ -17,7 +17,6 @@ import { Separator } from "@/components/ui/separator"
 import { useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { Category, Field, Project } from "@/prisma/client"
 import { formatDate } from "date-fns"
-import { Download, Loader2 } from "lucide-react"
 import { useState } from "react"
 
 const deselectedFields = ["files", "text"]
@@ -42,49 +41,34 @@ export function ExportTransactionsDialog({
   )
   const [includeAttachments, setIncludeAttachments] = useState(true)
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     setIsLoading(true)
+    const exportWindow = window.open(
+      `/export/transactions?${new URLSearchParams({
+        search: exportFilters?.search || "",
+        dateFrom: exportFilters?.dateFrom || "",
+        dateTo: exportFilters?.dateTo || "",
+        ordering: exportFilters?.ordering || "",
+        categoryCode: exportFilters?.categoryCode || "",
+        projectCode: exportFilters?.projectCode || "",
+        fields: exportFields.join(","),
+        includeAttachments: includeAttachments.toString(),
+      }).toString()}`
+    )
 
-    try {
-      const response = await fetch(
-        `/export/transactions?${new URLSearchParams({
-          search: exportFilters?.search || "",
-          dateFrom: exportFilters?.dateFrom || "",
-          dateTo: exportFilters?.dateTo || "",
-          ordering: exportFilters?.ordering || "",
-          categoryCode: exportFilters?.categoryCode || "",
-          projectCode: exportFilters?.projectCode || "",
-          fields: exportFields.join(","),
-          includeAttachments: includeAttachments.toString(),
-        }).toString()}`
-      )
-
-      if (!response.ok) {
-        throw new Error("Export failed")
-      }
-
-      // Get the filename from the Content-Disposition header
-      const contentDisposition = response.headers.get("Content-Disposition")
-      const filename = contentDisposition?.split("filename=")[1]?.replace(/"/g, "") || "transactions.zip"
-
-      // Create a blob from the response
-      const blob = await response.blob()
-
-      // Create a download link and trigger it
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (error) {
-      console.error("Export failed:", error)
-      // You might want to show an error message to the user here
-    } finally {
+    // Check if window was opened successfully
+    if (!exportWindow) {
       setIsLoading(false)
+      return
     }
+
+    // Monitor the export window
+    const checkWindow = setInterval(() => {
+      if (exportWindow.closed) {
+        clearInterval(checkWindow)
+        setIsLoading(false)
+      }
+    }, 1000)
   }
 
   return (
@@ -92,9 +76,7 @@ export function ExportTransactionsDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
-            Export {total} Transaction{total !== 1 ? "s" : ""}
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Export {total} Transactions</DialogTitle>
           <DialogDescription>Export selected transactions and files as a CSV file or a ZIP archive</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -190,17 +172,7 @@ export function ExportTransactionsDialog({
         </div>
         <DialogFooter className="sm:justify-end">
           <Button type="button" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Exporting...</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                <span>Export Transactions</span>
-              </div>
-            )}
+            {isLoading ? "Exporting..." : "Export Transactions"}
           </Button>
         </DialogFooter>
       </DialogContent>
