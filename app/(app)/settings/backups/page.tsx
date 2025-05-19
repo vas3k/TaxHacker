@@ -3,24 +3,57 @@
 import { FormError } from "@/components/forms/error"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { useDownload } from "@/hooks/use-download"
+import { useProgress } from "@/hooks/use-progress"
 import { Download, Loader2 } from "lucide-react"
-import Link from "next/link"
 import { useActionState } from "react"
 import { restoreBackupAction } from "./actions"
 
 export default function BackupSettingsPage() {
   const [restoreState, restoreBackup, restorePending] = useActionState(restoreBackupAction, null)
 
+  const { isLoading, startProgress, progress } = useProgress({
+    onError: (error) => {
+      console.error("Backup progress error:", error)
+    },
+  })
+
+  const { download, isDownloading } = useDownload({
+    onError: (error) => {
+      console.error("Download error:", error)
+    },
+  })
+
+  const handleDownload = async () => {
+    try {
+      const progressId = await startProgress("backup")
+      const downloadUrl = `/settings/backups/data?progressId=${progressId || ""}`
+      await download(downloadUrl, "taxhacker-backup.zip")
+    } catch (error) {
+      console.error("Failed to start backup:", error)
+    }
+  }
+
   return (
     <div className="container flex flex-col gap-4">
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold">Download backup</h1>
         <div className="flex flex-row gap-4">
-          <Link href="/settings/backups/data">
-            <Button>
-              <Download /> Download Data Archive
-            </Button>
-          </Link>
+          <Button onClick={handleDownload} disabled={isLoading || isDownloading}>
+            {isLoading ? (
+              progress?.current ? (
+                `Archiving ${progress.current}/${progress.total} files`
+              ) : (
+                "Preparing backup..."
+              )
+            ) : isDownloading ? (
+              "Archive is created. Downloading..."
+            ) : (
+              <>
+                <Download className="mr-2" /> Download Data Archive
+              </>
+            )}
+          </Button>
         </div>
         <div className="text-sm text-muted-foreground max-w-xl">
           Inside the archive you will find all the uploaded files, as well as JSON files for transactions, categories,

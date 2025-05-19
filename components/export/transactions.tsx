@@ -14,6 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
+import { useDownload } from "@/hooks/use-download"
+import { useProgress } from "@/hooks/use-progress"
 import { useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { Category, Field, Project } from "@/prisma/client"
 import { formatDate } from "date-fns"
@@ -34,17 +36,28 @@ export function ExportTransactionsDialog({
   total: number
   children: React.ReactNode
 }) {
-  const [isLoading, setIsLoading] = useState(false)
   const [exportFilters, setExportFilters] = useTransactionFilters()
   const [exportFields, setExportFields] = useState<string[]>(
     fields.map((field) => (deselectedFields.includes(field.code) ? "" : field.code))
   )
   const [includeAttachments, setIncludeAttachments] = useState(true)
+  const { isLoading, startProgress, progress } = useProgress({
+    onError: (error) => {
+      console.error("Export progress error:", error)
+    },
+  })
 
-  const handleSubmit = () => {
-    setIsLoading(true)
-    const exportWindow = window.open(
-      `/export/transactions?${new URLSearchParams({
+  const { download, isDownloading } = useDownload({
+    onError: (error) => {
+      console.error("Download error:", error)
+    },
+  })
+
+  const handleSubmit = async () => {
+    try {
+      const progressId = await startProgress("transactions-export")
+
+      const exportUrl = `/export/transactions?${new URLSearchParams({
         search: exportFilters?.search || "",
         dateFrom: exportFilters?.dateFrom || "",
         dateTo: exportFilters?.dateTo || "",
@@ -53,22 +66,12 @@ export function ExportTransactionsDialog({
         projectCode: exportFilters?.projectCode || "",
         fields: exportFields.join(","),
         includeAttachments: includeAttachments.toString(),
+        progressId: progressId || "",
       }).toString()}`
-    )
-
-    // Check if window was opened successfully
-    if (!exportWindow) {
-      setIsLoading(false)
-      return
+      await download(exportUrl, "transactions.zip")
+    } catch (error) {
+      console.error("Failed to start export:", error)
     }
-
-    // Monitor the export window
-    const checkWindow = setInterval(() => {
-      if (exportWindow.closed) {
-        clearInterval(checkWindow)
-        setIsLoading(false)
-      }
-    }, 1000)
   }
 
   return (
@@ -171,8 +174,14 @@ export function ExportTransactionsDialog({
           </div>
         </div>
         <DialogFooter className="sm:justify-end">
-          <Button type="button" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Exporting..." : "Export Transactions"}
+          <Button type="button" onClick={handleSubmit} disabled={isLoading || isDownloading}>
+            {isLoading
+              ? progress?.current
+                ? `Archiving ${progress.current}/${progress.total} files`
+                : "Exporting..."
+              : isDownloading
+                ? "Archive is created. Downloading..."
+                : "Export Transactions"}
           </Button>
         </DialogFooter>
       </DialogContent>

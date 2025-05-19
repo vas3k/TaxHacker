@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth"
 import { fileExists, getUserUploadsDirectory } from "@/lib/files"
 import { MODEL_BACKUP, modelToJSON } from "@/models/backups"
+import { incrementProgress, updateProgress } from "@/models/progress"
 import fs from "fs/promises"
 import JSZip from "jszip"
 import { NextResponse } from "next/server"
@@ -8,10 +9,13 @@ import path from "path"
 
 const MAX_FILE_SIZE = 64 * 1024 * 1024 // 64MB
 const BACKUP_VERSION = "1.0"
+const PROGRESS_UPDATE_INTERVAL = 10 // files
 
-export async function GET() {
+export async function GET(request: Request) {
   const user = await getCurrentUser()
   const userUploadsDirectory = getUserUploadsDirectory(user)
+  const url = new URL(request.url)
+  const progressId = url.searchParams.get("progressId")
 
   try {
     const zip = new JSZip()
@@ -52,6 +56,13 @@ export async function GET() {
     }
 
     const uploadedFiles = await getAllFilePaths(userUploadsDirectory)
+
+    // Update progress with total files if progressId is provided
+    if (progressId) {
+      await updateProgress(user.id, progressId, { total: uploadedFiles.length })
+    }
+
+    let processedFiles = 0
     for (const file of uploadedFiles) {
       try {
         // Check file size before reading
@@ -62,14 +73,25 @@ export async function GET() {
               MAX_FILE_SIZE / 1024 / 1024
             }MB limit)`
           )
-          return
+          continue
         }
 
         const fileContent = await fs.readFile(file)
         uploadsFolder.file(file.replace(userUploadsDirectory, ""), fileContent)
+
+        processedFiles++
+        // Update progress every PROGRESS_UPDATE_INTERVAL files
+        if (progressId && processedFiles % PROGRESS_UPDATE_INTERVAL === 0) {
+          await incrementProgress(user.id, progressId)
+        }
       } catch (error) {
         console.error(`Error reading file ${file}:`, error)
       }
+    }
+
+    // Final progress update
+    if (progressId) {
+      await updateProgress(user.id, progressId, { current: uploadedFiles.length })
     }
 
     const archive = await zip.generateAsync({ type: "blob" })
@@ -77,7 +99,7 @@ export async function GET() {
     return new NextResponse(archive, {
       headers: {
         "Content-Type": "application/octet-stream",
-        "Content-Disposition": `attachment; filename="data.zip"`,
+        "Content-Disposition": `attachment; filename="taxhacker-backup.zip"`,
       },
     })
   } catch (error) {

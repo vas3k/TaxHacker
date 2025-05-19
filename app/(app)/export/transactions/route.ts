@@ -3,6 +3,7 @@ import { fileExists, fullPathForFile } from "@/lib/files"
 import { EXPORT_AND_IMPORT_FIELD_MAP, ExportFields, ExportFilters } from "@/models/export_and_import"
 import { getFields } from "@/models/fields"
 import { getFilesByTransactionId } from "@/models/files"
+import { incrementProgress, updateProgress } from "@/models/progress"
 import { getTransactions } from "@/models/transactions"
 import { format } from "@fast-csv/format"
 import { formatDate } from "date-fns"
@@ -14,12 +15,14 @@ import { Readable } from "stream"
 
 const TRANSACTIONS_CHUNK_SIZE = 300
 const FILES_CHUNK_SIZE = 50
+const PROGRESS_UPDATE_INTERVAL = 10 // files
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const filters = Object.fromEntries(url.searchParams.entries()) as ExportFilters
   const fields = (url.searchParams.get("fields")?.split(",") ?? []) as ExportFields
   const includeAttachments = url.searchParams.get("includeAttachments") === "true"
+  const progressId = url.searchParams.get("progressId")
 
   const user = await getCurrentUser()
   const { transactions } = await getTransactions(user.id, filters)
@@ -102,6 +105,11 @@ export async function GET(request: Request) {
       totalFilesToProcess += transactionFiles.length
     }
 
+    // Update progress with total files if progressId is provided
+    if (progressId) {
+      await updateProgress(user.id, progressId, { total: totalFilesToProcess })
+    }
+
     console.log(`Starting to process ${totalFilesToProcess} files in total`)
 
     for (let i = 0; i < transactions.length; i += FILES_CHUNK_SIZE) {
@@ -136,11 +144,21 @@ export async function GET(request: Request) {
               }${fileExtension}`,
               fileData
             )
+
+            // Update progress every PROGRESS_UPDATE_INTERVAL files
+            if (progressId && totalFilesProcessed % PROGRESS_UPDATE_INTERVAL === 0) {
+              await incrementProgress(user.id, progressId)
+            }
           } else {
             console.log(`Skipping missing file: ${file.filename} for transaction ${transaction.id}`)
           }
         }
       }
+    }
+
+    // Final progress update
+    if (progressId) {
+      await updateProgress(user.id, progressId, { current: totalFilesToProcess })
     }
 
     console.log(`Finished processing all ${totalFilesProcessed} files`)

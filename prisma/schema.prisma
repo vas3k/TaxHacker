@@ -39,6 +39,7 @@ model User {
   accounts            Account[]
   sessions            Session[]
   appData             AppData[]
+  progress            Progress[]
 
   @@map("users")
 }
@@ -218,4 +219,18 @@ model AppData {
 
   @@unique([userId, app])
   @@map("app_data")
+}
+
+model Progress {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  data      Json?
+  current   Int      @default(0)
+  total     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("progress")
 }
