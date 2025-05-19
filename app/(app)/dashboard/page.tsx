@@ -2,7 +2,6 @@ import DashboardDropZoneWidget from "@/components/dashboard/drop-zone-widget"
 import { StatsWidget } from "@/components/dashboard/stats-widget"
 import DashboardUnsortedWidget from "@/components/dashboard/unsorted-widget"
 import { WelcomeWidget } from "@/components/dashboard/welcome-widget"
-import { QRCodeContainer } from "@/components/dashboard/qr-code-container"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
@@ -27,11 +26,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <div className="flex flex-col sm:flex-row gap-5 items-stretch h-full">
         <DashboardDropZoneWidget />
         <DashboardUnsortedWidget files={unsortedFiles} />
-        {config.selfHosted.isEnabled && (
-          <div className="hidden md:block">
-            <QRCodeContainer />
-          </div>
-        )}
       </div>
 
       {settings.is_welcome_message_hidden !== "true" && <WelcomeWidget />}
