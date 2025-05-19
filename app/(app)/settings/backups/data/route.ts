@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/lib/auth"
 import { fileExists, getUserUploadsDirectory } from "@/lib/files"
 import { MODEL_BACKUP, modelToJSON } from "@/models/backups"
-import { incrementProgress, updateProgress } from "@/models/progress"
+import { updateProgress } from "@/models/progress"
 import fs from "fs/promises"
 import JSZip from "jszip"
 import { NextResponse } from "next/server"
@@ -9,7 +9,7 @@ import path from "path"
 
 const MAX_FILE_SIZE = 64 * 1024 * 1024 // 64MB
 const BACKUP_VERSION = "1.0"
-const PROGRESS_UPDATE_INTERVAL = 10 // files
+const PROGRESS_UPDATE_INTERVAL_MS = 2000 // 2 seconds
 
 export async function GET(request: Request) {
   const user = await getCurrentUser()
@@ -63,6 +63,8 @@ export async function GET(request: Request) {
     }
 
     let processedFiles = 0
+    let lastProgressUpdate = Date.now()
+
     for (const file of uploadedFiles) {
       try {
         // Check file size before reading
@@ -80,9 +82,12 @@ export async function GET(request: Request) {
         uploadsFolder.file(file.replace(userUploadsDirectory, ""), fileContent)
 
         processedFiles++
-        // Update progress every PROGRESS_UPDATE_INTERVAL files
-        if (progressId && processedFiles % PROGRESS_UPDATE_INTERVAL === 0) {
-          await incrementProgress(user.id, progressId)
+
+        // Update progress every PROGRESS_UPDATE_INTERVAL_MS milliseconds
+        const now = Date.now()
+        if (progressId && now - lastProgressUpdate >= PROGRESS_UPDATE_INTERVAL_MS) {
+          await updateProgress(user.id, progressId, { current: processedFiles })
+          lastProgressUpdate = now
         }
       } catch (error) {
         console.error(`Error reading file ${file}:`, error)

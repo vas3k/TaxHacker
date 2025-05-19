@@ -3,7 +3,7 @@ import { fileExists, fullPathForFile } from "@/lib/files"
 import { EXPORT_AND_IMPORT_FIELD_MAP, ExportFields, ExportFilters } from "@/models/export_and_import"
 import { getFields } from "@/models/fields"
 import { getFilesByTransactionId } from "@/models/files"
-import { incrementProgress, updateProgress } from "@/models/progress"
+import { updateProgress } from "@/models/progress"
 import { getTransactions } from "@/models/transactions"
 import { format } from "@fast-csv/format"
 import { formatDate } from "date-fns"
@@ -15,7 +15,7 @@ import { Readable } from "stream"
 
 const TRANSACTIONS_CHUNK_SIZE = 300
 const FILES_CHUNK_SIZE = 50
-const PROGRESS_UPDATE_INTERVAL = 10 // files
+const PROGRESS_UPDATE_INTERVAL_MS = 2000 // 2 seconds
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -98,6 +98,7 @@ export async function GET(request: Request) {
 
     let totalFilesProcessed = 0
     let totalFilesToProcess = 0
+    let lastProgressUpdate = Date.now()
 
     // First count total files to process
     for (const transaction of transactions) {
@@ -145,9 +146,11 @@ export async function GET(request: Request) {
               fileData
             )
 
-            // Update progress every PROGRESS_UPDATE_INTERVAL files
-            if (progressId && totalFilesProcessed % PROGRESS_UPDATE_INTERVAL === 0) {
-              await incrementProgress(user.id, progressId)
+            // Update progress every PROGRESS_UPDATE_INTERVAL_MS milliseconds
+            const now = Date.now()
+            if (progressId && now - lastProgressUpdate >= PROGRESS_UPDATE_INTERVAL_MS) {
+              await updateProgress(user.id, progressId, { current: totalFilesProcessed })
+              lastProgressUpdate = now
             }
           } else {
             console.log(`Skipping missing file: ${file.filename} for transaction ${transaction.id}`)
