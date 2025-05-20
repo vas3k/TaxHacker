@@ -4,6 +4,7 @@ import { ActionState } from "@/lib/actions"
 import config from "@/lib/config"
 import OpenAI from "openai"
 import { AnalyzeAttachment } from "./attachments"
+import { updateFile } from "@/models/files"
 
 export type AnalysisResult = {
   output: Record<string, string>
@@ -14,7 +15,9 @@ export async function analyzeTransaction(
   prompt: string,
   schema: Record<string, unknown>,
   attachments: AnalyzeAttachment[],
-  apiKey: string
+  apiKey: string,
+  fileId: string,
+  userId: string
 ): Promise<ActionState<AnalysisResult>> {
   const openai = new OpenAI({
     apiKey,
@@ -54,6 +57,9 @@ export async function analyzeTransaction(
     console.log("ChatGPT tokens used:", response.usage)
 
     const result = JSON.parse(response.output_text)
+    
+    await updateFile(fileId, userId, { cachedParseResult: result })
+
     return { success: true, data: { output: result, tokensUsed: response.usage?.total_tokens || 0 } }
   } catch (error) {
     console.error("AI Analysis error:", error)

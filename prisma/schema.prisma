@@ -152,15 +152,16 @@ model Field {
 }
 
 model File {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @map("user_id") @db.Uuid
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  filename   String
-  path       String
-  mimetype   String
-  metadata   Json?
-  isReviewed Boolean  @default(false) @map("is_reviewed")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename          String
+  path              String
+  mimetype          String
+  metadata          Json?
+  isReviewed        Boolean  @default(false) @map("is_reviewed")
+  cachedParseResult Json?    @map("cached_parse_result")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   @@map("files")
 }

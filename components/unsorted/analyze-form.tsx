@@ -12,7 +12,7 @@ import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
-import { Brain, Loader2 } from "lucide-react"
+import { Brain, Loader2, Trash2, ArrowDownToLine } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
 import ToolWindow from "../agents/tool-window"
 
@@ -50,8 +50,8 @@ export default function AnalyzeForm({
   }, [fields])
 
   const extraFields = useMemo(() => fields.filter((field) => field.isExtra), [fields])
-  const initialFormState = useMemo(
-    () => ({
+  const initialFormState = useMemo(() => {
+    const baseState = {
       name: file.filename,
       merchant: "",
       description: "",
@@ -65,16 +65,32 @@ export default function AnalyzeForm({
       issuedAt: "",
       note: "",
       text: "",
-      ...extraFields.reduce(
-        (acc, field) => {
-          acc[field.code] = ""
-          return acc
-        },
-        {} as Record<string, string>
-      ),
-    }),
-    [file.filename, settings, extraFields]
-  )
+    }
+
+    // Add extra fields
+    const extraFieldsState = extraFields.reduce(
+      (acc, field) => {
+        acc[field.code] = ""
+        return acc
+      },
+      {} as Record<string, string>
+    )
+
+    // Load cached results if they exist
+    const cachedResults = file.cachedParseResult
+      ? Object.fromEntries(
+          Object.entries(file.cachedParseResult as Record<string, string>).filter(
+            ([_, value]) => value !== null && value !== undefined && value !== ""
+          )
+        )
+      : {}
+
+    return {
+      ...baseState,
+      ...extraFieldsState,
+      ...cachedResults,
+    }
+  }, [file.filename, settings, extraFields, file.cachedParseResult])
   const [formData, setFormData] = useState(initialFormState)
 
   async function saveAsTransaction(formData: FormData) {
@@ -85,10 +101,12 @@ export default function AnalyzeForm({
       setIsSaving(false)
 
       if (result.success) {
+        showNotification({ code: "global.banner", message: "Saved!", type: "success" })
         showNotification({ code: "sidebar.transactions", message: "new" })
         setTimeout(() => showNotification({ code: "sidebar.transactions", message: "" }), 3000)
       } else {
         setSaveError(result.error ? result.error : "Something went wrong...")
+        showNotification({ code: "global.banner", message: "Failed to save", type: "failed" })
       }
     })
   }
@@ -126,12 +144,12 @@ export default function AnalyzeForm({
       <Button className="w-full mb-6 py-6 text-lg" onClick={startAnalyze} disabled={isAnalyzing}>
         {isAnalyzing ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
             <span>{analyzeStep}</span>
           </>
         ) : (
           <>
-            <Brain className="mr-2 h-4 w-4" />
+            <Brain className="mr-1 h-4 w-4" />
             <span>Analyze with AI</span>
           </>
         )}
@@ -146,7 +164,7 @@ export default function AnalyzeForm({
           name="name"
           value={formData.name}
           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-          required={true}
+          required={fieldMap.name.isRequired}
         />
 
         <FormInput
@@ -155,6 +173,7 @@ export default function AnalyzeForm({
           value={formData.merchant}
           onChange={(e) => setFormData((prev) => ({ ...prev, merchant: e.target.value }))}
           hideIfEmpty={!fieldMap.merchant.isVisibleInAnalysis}
+          required={fieldMap.merchant.isRequired}
         />
 
         <FormInput
@@ -163,6 +182,7 @@ export default function AnalyzeForm({
           value={formData.description}
           onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
           hideIfEmpty={!fieldMap.description.isVisibleInAnalysis}
+          required={fieldMap.description.isRequired}
         />
 
         <div className="flex flex-wrap gap-4">
@@ -177,7 +197,7 @@ export default function AnalyzeForm({
               !isNaN(newValue) && setFormData((prev) => ({ ...prev, total: newValue }))
             }}
             className="w-32"
-            required={true}
+            required={fieldMap.total.isRequired}
           />
 
           <FormSelectCurrency
@@ -187,6 +207,7 @@ export default function AnalyzeForm({
             value={formData.currencyCode}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, currencyCode: value }))}
             hideIfEmpty={!fieldMap.currencyCode.isVisibleInAnalysis}
+            required={fieldMap.currencyCode.isRequired}
           />
 
           <FormSelectType
@@ -195,6 +216,7 @@ export default function AnalyzeForm({
             value={formData.type}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
             hideIfEmpty={!fieldMap.type.isVisibleInAnalysis}
+            required={fieldMap.type.isRequired}
           />
         </div>
 
@@ -219,6 +241,7 @@ export default function AnalyzeForm({
             value={formData.issuedAt}
             onChange={(e) => setFormData((prev) => ({ ...prev, issuedAt: e.target.value }))}
             hideIfEmpty={!fieldMap.issuedAt.isVisibleInAnalysis}
+            required={fieldMap.issuedAt.isRequired}
           />
         </div>
 
@@ -231,6 +254,7 @@ export default function AnalyzeForm({
             onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryCode: value }))}
             placeholder="Select Category"
             hideIfEmpty={!fieldMap.categoryCode.isVisibleInAnalysis}
+            required={fieldMap.categoryCode.isRequired}
           />
 
           {projects.length > 0 && (
@@ -242,6 +266,7 @@ export default function AnalyzeForm({
               onValueChange={(value) => setFormData((prev) => ({ ...prev, projectCode: value }))}
               placeholder="Select Project"
               hideIfEmpty={!fieldMap.projectCode.isVisibleInAnalysis}
+              required={fieldMap.projectCode.isRequired}
             />
           )}
         </div>
@@ -252,6 +277,7 @@ export default function AnalyzeForm({
           value={formData.note}
           onChange={(e) => setFormData((prev) => ({ ...prev, note: e.target.value }))}
           hideIfEmpty={!fieldMap.note.isVisibleInAnalysis}
+          required={fieldMap.note.isRequired}
         />
 
         {extraFields.map((field) => (
@@ -263,6 +289,7 @@ export default function AnalyzeForm({
             value={formData[field.code as keyof typeof formData]}
             onChange={(e) => setFormData((prev) => ({ ...prev, [field.code]: e.target.value }))}
             hideIfEmpty={!field.isVisibleInAnalysis}
+            required={field.isRequired}
           />
         ))}
 
@@ -276,13 +303,14 @@ export default function AnalyzeForm({
           />
         </div>
 
-        <div className="flex justify-end space-x-4 pt-6">
+        <div className="flex justify-between gap-4 pt-6">
           <Button
             type="button"
             onClick={() => startTransition(() => deleteAction(file.id))}
-            variant="outline"
+            variant="destructive"
             disabled={isDeleting}
           >
+            <Trash2 className="h-4 w-4" />
             {isDeleting ? "⏳ Deleting..." : "Delete"}
           </Button>
 
@@ -293,7 +321,10 @@ export default function AnalyzeForm({
                 Saving...
               </>
             ) : (
-              "Save as Transaction"
+              <>
+                <ArrowDownToLine className="h-4 w-4" />
+                Save as Transaction
+              </>
             )}
           </Button>
 

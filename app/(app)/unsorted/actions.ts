@@ -67,7 +67,7 @@ export async function analyzeFileAction(
 
   const schema = fieldsToJsonSchema(fields)
 
-  const results = await analyzeTransaction(prompt, schema, attachments, apiKey)
+  const results = await analyzeTransaction(prompt, schema, attachments, apiKey, file.id, user.id)
 
   console.log("Analysis results:", results)
 

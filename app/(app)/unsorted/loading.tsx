@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react"
 
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-4 p-4 w-full max-w-6xl">
+    <div className="flex flex-col gap-6 p-4 w-full max-w-6xl">
       <header className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight flex flex-row gap-2">
           <span>Loading unsorted files...</span>

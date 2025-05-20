@@ -10,7 +10,7 @@ import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, Project, Transaction } from "@/prisma/client"
 import { format } from "date-fns"
-import { Loader2 } from "lucide-react"
+import { Loader2, Save, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react"
 
@@ -212,17 +212,23 @@ export default function TransactionEditForm({
 
       <div className="flex justify-between space-x-4 pt-6">
         <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
-          {isDeleting ? "⏳ Deleting..." : "Delete "}
+          <>
+            <Trash2 className="h-4 w-4" />
+            {isDeleting ? "⏳ Deleting..." : "Delete "}
+          </>
         </Button>
 
         <Button type="submit" disabled={isSaving}>
           {isSaving ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : (
-            "Save Transaction"
+            <>
+              <Save className="h-4 w-4" />
+              Save Transaction
+            </>
           )}
         </Button>
 
