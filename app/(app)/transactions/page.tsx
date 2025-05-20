@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "Manage your transactions",
 }
 
-const TRANSACTIONS_PER_PAGE = 1000
+const TRANSACTIONS_PER_PAGE = 500
 
 export default async function TransactionsPage({ searchParams }: { searchParams: Promise<TransactionFilters> }) {
   const { page, ...filters } = await searchParams

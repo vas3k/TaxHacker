@@ -4,7 +4,7 @@ import { BulkActionsMenu } from "@/components/transactions/bulk-actions"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { calcTotalPerCurrency } from "@/lib/stats"
+import { calcTotalPerCurrency, isTransactionIncomplete } from "@/lib/stats"
 import { cn, formatCurrency } from "@/lib/utils"
 import { Category, Field, Project, Transaction } from "@/prisma/client"
 import { formatDate } from "date-fns"
@@ -230,19 +230,6 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
     ) : null
   }
 
-  // Function to check if a transaction is incomplete
-  const isTransactionIncomplete = (transaction: Transaction): boolean => {
-    const requiredFields = fields.filter((field) => field.isRequired)
-
-    return requiredFields.some((field) => {
-      const value = field.isExtra
-        ? (transaction.extra as Record<string, any>)?.[field.code]
-        : transaction[field.code as keyof Transaction]
-
-      return value === undefined || value === null || value === "" || value === 0
-    })
-  }
-
   return (
     <div className="rounded-md border">
       <Table>
@@ -271,7 +258,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
             <TableRow
               key={transaction.id}
               className={cn(
-                isTransactionIncomplete(transaction) && "bg-yellow-50",
+                isTransactionIncomplete(fields, transaction) && "bg-yellow-50",
                 selectedIds.includes(transaction.id) && "bg-muted",
                 "cursor-pointer hover:bg-muted/50"
               )}

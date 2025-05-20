@@ -14,7 +14,7 @@ import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
 import { Brain, Loader2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
-import AgentWindow from "../agents/agent-window"
+import ToolWindow from "../agents/tool-window"
 
 export default function AnalyzeForm({
   file,
@@ -199,7 +199,7 @@ export default function AnalyzeForm({
         </div>
 
         {formData.total != 0 && formData.currencyCode && formData.currencyCode !== settings.default_currency && (
-          <AgentWindow title={`Exchange rate on ${format(new Date(formData.issuedAt || Date.now()), "LLLL dd, yyyy")}`}>
+          <ToolWindow title={`Exchange rate on ${format(new Date(formData.issuedAt || Date.now()), "LLLL dd, yyyy")}`}>
             <FormConvertCurrency
               originalTotal={formData.total}
               originalCurrencyCode={formData.currencyCode}
@@ -208,7 +208,7 @@ export default function AnalyzeForm({
               onChange={(value) => setFormData((prev) => ({ ...prev, convertedTotal: value }))}
             />
             <input type="hidden" name="convertedCurrencyCode" value={settings.default_currency} />
-          </AgentWindow>
+          </ToolWindow>
         )}
 
         <div className="flex flex-row gap-4">

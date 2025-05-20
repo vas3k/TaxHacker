@@ -29,7 +29,11 @@ export function FormInput({ title, hideIfEmpty = false, isRequired = false, ...p
   return (
     <label className="flex flex-col gap-1">
       {title && <span className="text-sm font-medium">{title}</span>}
-      <Input {...props} className={cn("bg-background", isRequired && isEmpty && "bg-yellow-50", props.className)} />
+      <Input
+        {...props}
+        className={cn("bg-background", isRequired && isEmpty && "bg-yellow-50", props.className)}
+        data-1p-ignore
+      />
     </label>
   )
 }
@@ -70,6 +74,7 @@ export function FormTextarea({ title, hideIfEmpty = false, isRequired = false, .
         ref={textareaRef}
         {...props}
         className={cn("bg-background", isRequired && isEmpty && "bg-yellow-50", props.className)}
+        data-1p-ignore
       />
     </label>
   )

@@ -24,10 +24,13 @@ export async function resetFieldsAndCategories(user: User) {
   for (const category of DEFAULT_CATEGORIES) {
     await prisma.category.upsert({
       where: { userId_code: { code: category.code, userId: user.id } },
-      update: { name: category.name, color: category.color, llm_prompt: category.llm_prompt },
-      create: { ...category, userId: user.id },
+      update: { name: category.name, color: category.color, llm_prompt: category.llm_prompt, createdAt: new Date() },
+      create: { ...category, userId: user.id, createdAt: new Date() },
     })
   }
+  await prisma.category.deleteMany({
+    where: { userId: user.id, code: { notIn: DEFAULT_CATEGORIES.map((category) => category.code) } },
+  })
 
   // Reset currencies
   for (const currency of DEFAULT_CURRENCIES) {
@@ -37,6 +40,9 @@ export async function resetFieldsAndCategories(user: User) {
       create: { ...currency, userId: user.id },
     })
   }
+  await prisma.currency.deleteMany({
+    where: { userId: user.id, code: { notIn: DEFAULT_CURRENCIES.map((currency) => currency.code) } },
+  })
 
   // Reset fields
   for (const field of DEFAULT_FIELDS) {
@@ -46,14 +52,18 @@ export async function resetFieldsAndCategories(user: User) {
         name: field.name,
         type: field.type,
         llm_prompt: field.llm_prompt,
+        createdAt: new Date(),
         isVisibleInList: field.isVisibleInList,
         isVisibleInAnalysis: field.isVisibleInAnalysis,
         isRequired: field.isRequired,
         isExtra: field.isExtra,
       },
-      create: { ...field, userId: user.id },
+      create: { ...field, userId: user.id, createdAt: new Date() },
     })
   }
+  await prisma.field.deleteMany({
+    where: { userId: user.id, code: { notIn: DEFAULT_FIELDS.map((field) => field.code) } },
+  })
 
   redirect("/settings/fields")
 }

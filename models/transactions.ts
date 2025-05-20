@@ -38,11 +38,11 @@ export const getTransactions = cache(
     if (filters) {
       if (filters.search) {
         where.OR = [
-          { name: { contains: filters.search } },
-          { merchant: { contains: filters.search } },
-          { description: { contains: filters.search } },
-          { note: { contains: filters.search } },
-          { text: { contains: filters.search } },
+          { name: { contains: filters.search, mode: 'insensitive' } },
+          { merchant: { contains: filters.search, mode: 'insensitive' } },
+          { description: { contains: filters.search, mode: 'insensitive' } },
+          { note: { contains: filters.search, mode: 'insensitive' } },
+          { text: { contains: filters.search, mode: 'insensitive' } },
         ]
       }
 

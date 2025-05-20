@@ -1,4 +1,4 @@
-import { Transaction } from "@/prisma/client"
+import { Field, Transaction } from "@/prisma/client"
 
 export function calcTotalPerCurrency(transactions: Transaction[]): Record<string, number> {
   return transactions.reduce(
@@ -14,4 +14,22 @@ export function calcTotalPerCurrency(transactions: Transaction[]): Record<string
     },
     {} as Record<string, number>
   )
+}
+
+export const isTransactionIncomplete = (fields: Field[], transaction: Transaction): boolean => {
+  const incompleteFields = incompleteTransactionFields(fields, transaction)
+
+  return incompleteFields.length > 0
+}
+
+export const incompleteTransactionFields = (fields: Field[], transaction: Transaction): Field[] => {
+  const requiredFields = fields.filter((field) => field.isRequired)
+
+  return requiredFields.filter((field) => {
+    const value = field.isExtra
+      ? (transaction.extra as Record<string, any>)?.[field.code]
+      : transaction[field.code as keyof Transaction]
+
+    return value === undefined || value === null || value === ""
+  })
 }

@@ -136,30 +136,6 @@ export default function TransactionEditForm({
         />
       </div>
 
-      {formData.currencyCode !== settings.default_currency || formData.convertedTotal !== 0 ? (
-        <div className="flex flex-row gap-4">
-          <FormInput
-            title={`Total converted to ${formData.convertedCurrencyCode || "UNKNOWN CURRENCY"}`}
-            type="number"
-            step="0.01"
-            name="convertedTotal"
-            defaultValue={formData.convertedTotal.toFixed(2)}
-            isRequired={fieldMap.convertedTotal.isRequired}
-          />
-          {(!formData.convertedCurrencyCode || formData.convertedCurrencyCode !== settings.default_currency) && (
-            <FormSelectCurrency
-              title="Convert to"
-              name="convertedCurrencyCode"
-              defaultValue={formData.convertedCurrencyCode || settings.default_currency}
-              currencies={currencies}
-              isRequired={fieldMap.convertedCurrencyCode.isRequired}
-            />
-          )}
-        </div>
-      ) : (
-        <></>
-      )}
-
       <div className="flex flex-row flex-grow gap-4">
         <FormInput
           title={fieldMap.issuedAt.name}
@@ -168,6 +144,30 @@ export default function TransactionEditForm({
           defaultValue={formData.issuedAt}
           isRequired={fieldMap.issuedAt.isRequired}
         />
+        {formData.currencyCode !== settings.default_currency || formData.convertedTotal !== 0 ? (
+          <>
+            <FormInput
+              title={`Total converted to ${formData.convertedCurrencyCode || "UNKNOWN CURRENCY"}`}
+              type="number"
+              step="0.01"
+              name="convertedTotal"
+              defaultValue={formData.convertedTotal.toFixed(2)}
+              isRequired={fieldMap.convertedTotal.isRequired}
+              className="max-w-36"
+            />
+            {(!formData.convertedCurrencyCode || formData.convertedCurrencyCode !== settings.default_currency) && (
+              <FormSelectCurrency
+                title="Convert to"
+                name="convertedCurrencyCode"
+                defaultValue={formData.convertedCurrencyCode || settings.default_currency}
+                currencies={currencies}
+                isRequired={fieldMap.convertedCurrencyCode.isRequired}
+              />
+            )}
+          </>
+        ) : (
+          <></>
+        )}
       </div>
 
       <div className="flex flex-row gap-4">
@@ -195,16 +195,20 @@ export default function TransactionEditForm({
         className="h-24"
         isRequired={fieldMap.note.isRequired}
       />
-      {extraFields.map((field) => (
-        <FormInput
-          key={field.code}
-          type="text"
-          title={field.name}
-          name={field.code}
-          defaultValue={formData[field.code as keyof typeof formData] || ""}
-          isRequired={field.isRequired}
-        />
-      ))}
+
+      <div className="flex flex-wrap gap-4">
+        {extraFields.map((field) => (
+          <FormInput
+            key={field.code}
+            type="text"
+            title={field.name}
+            name={field.code}
+            defaultValue={formData[field.code as keyof typeof formData] || ""}
+            isRequired={field.isRequired}
+            className={field.type === "number" ? "max-w-36" : "max-w-full"}
+          />
+        ))}
+      </div>
 
       <div className="flex justify-between space-x-4 pt-6">
         <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>

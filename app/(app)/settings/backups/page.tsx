@@ -44,7 +44,7 @@ export default function BackupSettingsPage() {
               progress?.current ? (
                 `Archiving ${progress.current}/${progress.total} files`
               ) : (
-                "Preparing backup..."
+                "Preparing backup. Don't close the page..."
               )
             ) : isDownloading ? (
               "Archive is created. Downloading..."

@@ -3,10 +3,11 @@ import { Loader2 } from "lucide-react"
 
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 p-4 w-full max-w-6xl">
       <header className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight flex flex-row gap-2">
-          <Loader2 className="h-10 w-10 animate-spin" /> <span>Loading unsorted files...</span>
+          <span>Loading unsorted files...</span>
+          <Loader2 className="h-10 w-10 animate-spin" />
         </h2>
       </header>
 

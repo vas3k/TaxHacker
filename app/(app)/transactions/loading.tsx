@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Download, Plus } from "lucide-react"
+import { Download, Loader2, Plus } from "lucide-react"
 
 export default function Loading() {
   return (
@@ -8,7 +8,7 @@ export default function Loading() {
       <header className="flex items-center justify-between mb-12">
         <h2 className="flex flex-row gap-3 md:gap-5">
           <span className="text-3xl font-bold tracking-tight">Transactions</span>
-          <Skeleton className="h-10 w-16" />
+          <Loader2 className="h-10 w-10 animate-spin" />
         </h2>
         <div className="flex gap-2">
           <Button variant="outline">
