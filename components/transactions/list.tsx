@@ -124,6 +124,30 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
       )
     },
   },
+  convertedTotal: {
+    name: "Converted Total",
+    code: "convertedTotal",
+    classes: "text-right",
+    sortable: true,
+    formatValue: (transaction: Transaction) => (
+      <div
+        className={cn(
+          { income: "text-green-500", expense: "text-red-500", other: "text-black" }[transaction.type || "other"],
+          "flex flex-col justify-end text-right text-lg"
+        )}
+      >
+        {transaction.convertedTotal && transaction.convertedCurrencyCode
+          ? formatCurrency(transaction.convertedTotal, transaction.convertedCurrencyCode)
+          : transaction.convertedTotal}
+      </div>
+    ),
+  },
+  currencyCode: {
+    name: "Currency",
+    code: "currencyCode",
+    classes: "text-right",
+    sortable: true,
+  },
 }
 
 const getFieldRenderer = (field: Field): FieldRenderer => {

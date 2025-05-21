@@ -2,7 +2,7 @@
 
 import { format, startOfMonth, startOfQuarter, subMonths, subWeeks } from "date-fns"
 import { CalendarIcon } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
@@ -65,6 +65,13 @@ export function DateRangePicker({
 
   const [rangeName, setRangeName] = useState<string>(defaultDate?.from ? "custom" : defaultRange)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(defaultDate)
+
+  useEffect(() => {
+    if (!defaultDate?.from) {
+      setRangeName(defaultRange)
+      setDateRange(undefined)
+    }
+  }, [defaultDate, defaultRange])
 
   const getDisplayText = () => {
     if (rangeName === "custom") {
