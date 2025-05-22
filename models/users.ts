@@ -28,7 +28,7 @@ export const getOrCreateSelfHostedUser = cache(async () => {
 
 export function getOrCreateCloudUser(email: string, data: Prisma.UserCreateInput) {
   return prisma.user.upsert({
-    where: { email },
+    where: { email: email.toLowerCase() },
     update: data,
     create: data,
   })
@@ -42,7 +42,7 @@ export const getUserById = cache(async (id: string) => {
 
 export const getUserByEmail = cache(async (email: string) => {
   return await prisma.user.findUnique({
-    where: { email },
+    where: { email: email.toLowerCase() },
   })
 })
 

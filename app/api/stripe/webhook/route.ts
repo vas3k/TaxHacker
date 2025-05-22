@@ -71,6 +71,8 @@ async function handleUserSubscriptionUpdate(
   customerId: string,
   item: Stripe.SubscriptionItem
 ) {
+  console.log(`Updating subscription for customer ${customerId}`)
+
   if (!stripeClient) {
     return new NextResponse("Stripe client is not initialized", { status: 500 })
   }
@@ -83,6 +85,8 @@ async function handleUserSubscriptionUpdate(
   let user = await getUserByStripeCustomerId(customerId)
   if (!user) {
     const customer = (await stripeClient.customers.retrieve(customerId)) as Stripe.Customer
+    console.log(`User not found for customer ${customerId}, creating new user with email ${customer.email}`)
+    
     user = await getOrCreateCloudUser(customer.email as string, {
       email: customer.email as string,
       name: customer.name as string,
