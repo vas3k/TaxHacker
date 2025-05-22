@@ -41,10 +41,6 @@ export default async function CloudPaymentSuccessPage({
       aiBalance: plan?.limits.ai,
     })
 
-    if (await isDatabaseEmpty(user.id)) {
-      await createUserDefaults(user.id)
-    }
-
     return (
       <Card className="w-full max-w-xl mx-auto p-8 flex flex-col items-center justify-center gap-4">
         <Cake className="w-36 h-36" />

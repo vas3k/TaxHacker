@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db"
 import { Prisma } from "@/prisma/client"
 import { cache } from "react"
+import { isDatabaseEmpty } from "./defaults"
+import { createUserDefaults } from "./defaults"
 
 export const SELF_HOSTED_USER = {
   email: "taxhacker@localhost",
@@ -26,12 +28,18 @@ export const getOrCreateSelfHostedUser = cache(async () => {
   })
 })
 
-export function getOrCreateCloudUser(email: string, data: Prisma.UserCreateInput) {
-  return prisma.user.upsert({
+export async function getOrCreateCloudUser(email: string, data: Prisma.UserCreateInput) {
+  const user = await prisma.user.upsert({
     where: { email: email.toLowerCase() },
     update: data,
     create: data,
   })
+
+  if (await isDatabaseEmpty(user.id)) {
+    await createUserDefaults(user.id)
+  }
+  
+  return user
 }
 
 export const getUserById = cache(async (id: string) => {

@@ -86,16 +86,12 @@ async function handleUserSubscriptionUpdate(
   if (!user) {
     const customer = (await stripeClient.customers.retrieve(customerId)) as Stripe.Customer
     console.log(`User not found for customer ${customerId}, creating new user with email ${customer.email}`)
-    
+
     user = await getOrCreateCloudUser(customer.email as string, {
       email: customer.email as string,
       name: customer.name as string,
       stripeCustomerId: customer.id,
     })
-
-    if (await isDatabaseEmpty(user.id)) {
-      await createUserDefaults(user.id)
-    }
   }
 
   const newMembershipExpiresAt = new Date(item.current_period_end * 1000)
