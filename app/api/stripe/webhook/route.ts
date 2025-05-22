@@ -31,45 +31,30 @@ export async function POST(request: Request) {
   // Handle the event
   try {
     switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session
+        const customerId = session.customer as string
+        const subscriptionId = session.subscription as string
+        const subscription = await stripeClient.subscriptions.retrieve(subscriptionId)
+        const item = subscription.items.data[0]
+
+        await handleUserSubscriptionUpdate(customerId, item)
+        break
+      }
+
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
         const item = subscription.items.data[0]
 
-        // Get the plan from our plans configuration
-        const plan = Object.values(PLANS).find((p) => p.stripePriceId === item.price.id)
-        if (!plan) {
-          throw new Error(`Plan not found for price ID: ${item.price.id}`)
-        }
-
-        let user = await getUserByStripeCustomerId(customerId)
-        if (!user) {
-          const customer = (await stripeClient.customers.retrieve(customerId)) as Stripe.Customer
-          user = await getOrCreateCloudUser(customer.email as string, {
-            email: customer.email as string,
-            name: customer.name as string,
-            stripeCustomerId: customer.id,
-          })
-
-          if (await isDatabaseEmpty(user.id)) {
-            await createUserDefaults(user.id)
-          }
-        }
-
-        await updateUser(user.id, {
-          membershipPlan: plan.code,
-          membershipExpiresAt: new Date(item.current_period_end * 1000),
-          storageLimit: plan.limits.storage,
-          aiBalance: plan.limits.ai,
-          updatedAt: new Date(),
-        })
-
+        await handleUserSubscriptionUpdate(customerId, item)
         break
       }
 
       default:
         console.log(`Unhandled event type ${event.type}`)
+        return new NextResponse("No handler for event type", { status: 200 })
     }
 
     return new NextResponse("Webhook processed successfully", { status: 200 })
@@ -77,4 +62,40 @@ export async function POST(request: Request) {
     console.error("Error processing webhook:", error)
     return new NextResponse("Webhook processing failed", { status: 500 })
   }
+}
+
+async function handleUserSubscriptionUpdate(
+  customerId: string,
+  item: Stripe.SubscriptionItem
+) {
+  if (!stripeClient) {
+    return new NextResponse("Stripe client is not initialized", { status: 500 })
+  }
+
+  const plan = Object.values(PLANS).find((p) => p.stripePriceId === item.price.id)
+  if (!plan) {
+    throw new Error(`Plan not found for price ID: ${item.price.id}`)
+  }
+
+  let user = await getUserByStripeCustomerId(customerId)
+  if (!user) {
+    const customer = (await stripeClient.customers.retrieve(customerId)) as Stripe.Customer
+    user = await getOrCreateCloudUser(customer.email as string, {
+      email: customer.email as string,
+      name: customer.name as string,
+      stripeCustomerId: customer.id,
+    })
+
+    if (await isDatabaseEmpty(user.id)) {
+      await createUserDefaults(user.id)
+    }
+  }
+
+  await updateUser(user.id, {
+    membershipPlan: plan.code,
+    membershipExpiresAt: new Date(item.current_period_end * 1000),
+    storageLimit: plan.limits.storage,
+    aiBalance: plan.limits.ai,
+    updatedAt: new Date(),
+  })
 }
