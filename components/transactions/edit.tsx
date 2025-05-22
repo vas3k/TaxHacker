@@ -146,15 +146,17 @@ export default function TransactionEditForm({
         />
         {formData.currencyCode !== settings.default_currency || formData.convertedTotal !== 0 ? (
           <>
-            <FormInput
-              title={`Total converted to ${formData.convertedCurrencyCode || "UNKNOWN CURRENCY"}`}
-              type="number"
-              step="0.01"
-              name="convertedTotal"
-              defaultValue={formData.convertedTotal.toFixed(2)}
-              isRequired={fieldMap.convertedTotal.isRequired}
-              className="max-w-36"
-            />
+            {formData.convertedTotal !== null && (
+              <FormInput
+                title={`Total converted to ${formData.convertedCurrencyCode || "UNKNOWN CURRENCY"}`}
+                type="number"
+                step="0.01"
+                name="convertedTotal"
+                defaultValue={formData.convertedTotal.toFixed(2)}
+                isRequired={fieldMap.convertedTotal.isRequired}
+                className="max-w-36"
+              />
+            )}
             {(!formData.convertedCurrencyCode || formData.convertedCurrencyCode !== settings.default_currency) && (
               <FormSelectCurrency
                 title="Convert to"

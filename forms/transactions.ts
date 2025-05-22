@@ -8,18 +8,21 @@ export const transactionFormSchema = z
     type: z.string().optional(),
     total: z
       .string()
+      .optional()
       .transform((val) => {
+        if (!val || val.trim() === '') return null
         const num = parseFloat(val)
         if (isNaN(num)) {
           throw new z.ZodError([{ message: "Invalid total", path: ["total"], code: z.ZodIssueCode.custom }])
         }
         return Math.round(num * 100) // convert to cents
-      })
-      .optional(),
+      }),
     currencyCode: z.string().max(5).optional(),
     convertedTotal: z
       .string()
+      .optional()
       .transform((val) => {
+        if (!val || val.trim() === '') return null
         const num = parseFloat(val)
         if (isNaN(num)) {
           throw new z.ZodError([
@@ -27,8 +30,7 @@ export const transactionFormSchema = z
           ])
         }
         return Math.round(num * 100) // convert to cents
-      })
-      .optional(),
+      }),
     convertedCurrencyCode: z.string().max(5).optional(),
     categoryCode: z.string().optional(),
     projectCode: z.string().optional(),

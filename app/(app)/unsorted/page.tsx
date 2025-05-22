@@ -13,7 +13,7 @@ import { getFields } from "@/models/fields"
 import { getUnsortedFiles } from "@/models/files"
 import { getProjects } from "@/models/projects"
 import { getSettings } from "@/models/settings"
-import { FileText, PartyPopper, Settings, Upload, Brain } from "lucide-react"
+import { FileText, PartyPopper, Settings, Upload } from "lucide-react"
 import { Metadata } from "next"
 import Link from "next/link"
 
