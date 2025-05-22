@@ -3,6 +3,7 @@ import { UploadButton } from "@/components/files/upload-button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { AnalyzeAllButton } from "@/components/unsorted/analyze-all-button"
 import AnalyzeForm from "@/components/unsorted/analyze-form"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
@@ -12,7 +13,7 @@ import { getFields } from "@/models/fields"
 import { getUnsortedFiles } from "@/models/files"
 import { getProjects } from "@/models/projects"
 import { getSettings } from "@/models/settings"
-import { FileText, PartyPopper, Settings, Upload } from "lucide-react"
+import { FileText, PartyPopper, Settings, Upload, Brain } from "lucide-react"
 import { Metadata } from "next"
 import Link from "next/link"
 
@@ -34,6 +35,7 @@ export default async function UnsortedPage() {
     <div className="flex flex-col gap-6 p-4 w-full max-w-6xl">
       <header className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">You have {files.length} unsorted files</h2>
+        {files.length > 1 && <AnalyzeAllButton />}
       </header>
 
       {config.selfHosted.isEnabled && !settings.openai_api_key && (

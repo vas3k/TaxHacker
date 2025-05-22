@@ -141,7 +141,7 @@ export default function AnalyzeForm({
 
   return (
     <>
-      <Button className="w-full mb-6 py-6 text-lg" onClick={startAnalyze} disabled={isAnalyzing}>
+      <Button className="w-full mb-6 py-6 text-lg" onClick={startAnalyze} disabled={isAnalyzing} data-analyze-button>
         {isAnalyzing ? (
           <>
             <Loader2 className="mr-1 h-4 w-4 animate-spin" />

@@ -75,3 +75,8 @@ export async function fetchAsBase64(url: string): Promise<string | null> {
     return null
   }
 }
+
+export function encodeFilename(filename: string): string {
+  const encoded = encodeURIComponent(filename)
+  return `UTF-8''${encoded}`
+}

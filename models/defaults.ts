@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db"
 
-export const DEFAULT_PROMPT_ANALYSE_NEW_FILE = `You are an accountant and invoice analysis assistant. 
-Extract the following information from the given invoice: 
+export const DEFAULT_PROMPT_ANALYSE_NEW_FILE = `You are an accountant and invoice analysis assistant. Extract following information from the given invoice: 
 
 {fields}
 
@@ -13,7 +12,10 @@ And projects are:
 
 {projects}
 
-If you can't find something leave it blank. Return only one object. Do not include any other text in your response!`
+IMPORTANT RULES:
+- Do not include any other text in your response!
+- If you can't find something leave it blank, NEVER make up information
+- Return only one object`
 
 export const DEFAULT_SETTINGS = [
   {
@@ -284,7 +286,7 @@ export const DEFAULT_FIELDS = [
     code: "name",
     name: "Name",
     type: "string",
-    llm_prompt: "human readable name, summarize what is bought in the invoice",
+    llm_prompt: "human readable name, summarize what is bought or paid for in the invoice",
     isVisibleInList: true,
     isVisibleInAnalysis: true,
     isRequired: true,

@@ -5,6 +5,7 @@ import { getFileById } from "@/models/files"
 import fs from "fs/promises"
 import { NextResponse } from "next/server"
 import path from "path"
+import { encodeFilename } from "@/lib/utils"
 
 export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
   const { fileId } = await params
@@ -46,7 +47,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     return new NextResponse(fileBuffer, {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `inline; filename="${path.basename(previewPath)}"`,
+        "Content-Disposition": `inline; filename*=${encodeFilename(path.basename(previewPath))}`,
       },
     })
   } catch (error) {
