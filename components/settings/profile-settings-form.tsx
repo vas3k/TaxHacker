@@ -15,7 +15,12 @@ export default function ProfileSettingsForm({ user }: { user: User }) {
   return (
     <div>
       <form action={saveAction} className="space-y-4">
-        <FormAvatar title="Avatar" name="avatar" className="w-24 h-24" defaultValue={user.avatar || ""} />
+        <FormAvatar
+          title="Avatar"
+          name="avatar"
+          className="w-24 h-24"
+          defaultValue={user.avatar ? user.avatar + "?" + user.id : ""}
+        />
 
         <FormInput title="Account Name" name="name" defaultValue={user.name || ""} />
 

@@ -36,25 +36,28 @@ export async function POST(request: Request) {
         const customerId = session.customer as string
         const subscriptionId = session.subscription as string
         const subscription = await stripeClient.subscriptions.retrieve(subscriptionId)
-        const item = subscription.items.data[0]
 
-        await handleUserSubscriptionUpdate(customerId, item)
+        for (const item of subscription.items.data) {
+          await handleUserSubscriptionUpdate(customerId, item)
+        }
         break
       }
 
       case "customer.subscription.created":
-      case "customer.subscription.updated": {
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
-        const item = subscription.items.data[0]
 
-        await handleUserSubscriptionUpdate(customerId, item)
+        for (const item of subscription.items.data) {
+          await handleUserSubscriptionUpdate(customerId, item)
+        }
         break
       }
 
       default:
         console.log(`Unhandled event type ${event.type}`)
-        return new NextResponse("No handler for event type", { status: 200 })
+        return new NextResponse("No handler for event type", { status: 400 })
     }
 
     return new NextResponse("Webhook processed successfully", { status: 200 })
@@ -91,11 +94,18 @@ async function handleUserSubscriptionUpdate(
     }
   }
 
+  const newMembershipExpiresAt = new Date(item.current_period_end * 1000)
+
   await updateUser(user.id, {
     membershipPlan: plan.code,
-    membershipExpiresAt: new Date(item.current_period_end * 1000),
+    membershipExpiresAt:
+      user.membershipExpiresAt && user.membershipExpiresAt > newMembershipExpiresAt
+        ? user.membershipExpiresAt
+        : newMembershipExpiresAt,
     storageLimit: plan.limits.storage,
     aiBalance: plan.limits.ai,
     updatedAt: new Date(),
   })
+
+  console.log(`Updated user ${user.id} with plan ${plan.code} and expires at ${newMembershipExpiresAt}`)
 }

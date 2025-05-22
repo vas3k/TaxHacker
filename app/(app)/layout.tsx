@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     id: user.id,
     name: user.name || "",
     email: user.email,
-    avatar: user.avatar || undefined,
+    avatar: user.avatar ? user.avatar + "?" + user.id : undefined,
     membershipPlan: user.membershipPlan || "unlimited",
     storageUsed: user.storageUsed || 0,
     storageLimit: user.storageLimit || -1,
