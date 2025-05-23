@@ -5,7 +5,7 @@ import { uploadFilesAction } from "@/app/(app)/files/actions"
 import { uploadTransactionFilesAction } from "@/app/(app)/transactions/actions"
 import { AlertCircle, CloudUpload, Loader2 } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
-import { startTransition, useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 export default function ScreenDropArea({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -77,26 +77,24 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
             formData.append("files", files[i])
           }
 
-          startTransition(async () => {
-            const result = transactionId
-              ? await uploadTransactionFilesAction(formData)
-              : await uploadFilesAction(formData)
+          const result = transactionId
+            ? await uploadTransactionFilesAction(formData)
+            : await uploadFilesAction(formData)
 
-            if (result.success) {
-              showNotification({ code: "sidebar.unsorted", message: "new" })
-              setTimeout(() => showNotification({ code: "sidebar.unsorted", message: "" }), 3000)
-              if (!transactionId) {
-                router.push("/unsorted")
-              }
-            } else {
-              setUploadError(result.error ? result.error : "Something went wrong...")
+          if (result.success) {
+            showNotification({ code: "sidebar.unsorted", message: "new" })
+            setTimeout(() => showNotification({ code: "sidebar.unsorted", message: "" }), 3000)
+            if (!transactionId) {
+              router.push("/unsorted")
             }
-            setIsUploading(false)
-          })
+          } else {
+            setUploadError(result.error ? result.error : "Something went wrong...")
+          }
         } catch (error) {
           console.error("Upload error:", error)
-          setIsUploading(false)
           setUploadError(error instanceof Error ? error.message : "Something went wrong...")
+        } finally {
+          setIsUploading(false)
         }
       }
     },

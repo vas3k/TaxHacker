@@ -13,9 +13,9 @@ export type TransactionData = {
   convertedTotal?: number | null
   convertedCurrencyCode?: string | null
   type?: string | null
-  items?: TransactionData[] | null
+  items?: TransactionData[] | undefined
   note?: string | null
-  files?: string[] | null
+  files?: string[] | undefined
   extra?: Record<string, unknown>
   categoryCode?: string | null
   projectCode?: string | null
@@ -135,10 +135,8 @@ export const createTransaction = async (userId: string, data: TransactionData): 
       ...standard,
       extra: extra,
       items: data.items as Prisma.InputJsonValue,
-      user: {
-        connect: { id: userId }
-      }
-    } as Prisma.TransactionCreateInput,
+      userId,
+    },
   })
 }
 
@@ -151,7 +149,7 @@ export const updateTransaction = async (id: string, userId: string, data: Transa
       ...standard,
       extra: extra,
       items: data.items ? data.items as Prisma.InputJsonValue : [],
-    } as Prisma.TransactionUpdateInput,
+    },
   })
 }
 
