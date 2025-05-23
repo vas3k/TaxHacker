@@ -5,6 +5,22 @@ import { getFields } from "./fields"
 import { deleteFile } from "./files"
 
 export type TransactionData = {
+  name?: string | null
+  description?: string | null
+  merchant?: string | null
+  total?: number | null
+  currencyCode?: string | null
+  convertedTotal?: number | null
+  convertedCurrencyCode?: string | null
+  type?: string | null
+  items?: TransactionData[] | null
+  note?: string | null
+  files?: string[] | null
+  extra?: Record<string, unknown>
+  categoryCode?: string | null
+  projectCode?: string | null
+  issuedAt?: Date | string | null
+  text?: string | null
   [key: string]: unknown
 }
 
@@ -105,6 +121,12 @@ export const getTransactionById = cache(async (id: string, userId: string): Prom
   })
 })
 
+export const getTransactionsByFileId = cache(async (fileId: string, userId: string): Promise<Transaction[]> => {
+  return await prisma.transaction.findMany({
+    where: { files: { array_contains: [fileId] }, userId },
+  })
+})
+
 export const createTransaction = async (userId: string, data: TransactionData): Promise<Transaction> => {
   const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
 
@@ -112,8 +134,11 @@ export const createTransaction = async (userId: string, data: TransactionData): 
     data: {
       ...standard,
       extra: extra,
-      userId,
-    },
+      items: data.items as Prisma.InputJsonValue,
+      user: {
+        connect: { id: userId }
+      }
+    } as Prisma.TransactionCreateInput,
   })
 }
 
@@ -125,7 +150,8 @@ export const updateTransaction = async (id: string, userId: string, data: Transa
     data: {
       ...standard,
       extra: extra,
-    },
+      items: data.items ? data.items as Prisma.InputJsonValue : [],
+    } as Prisma.TransactionUpdateInput,
   })
 }
 
@@ -143,7 +169,9 @@ export const deleteTransaction = async (id: string, userId: string): Promise<Tra
     const files = Array.isArray(transaction.files) ? transaction.files : []
 
     for (const fileId of files as string[]) {
-      await deleteFile(fileId, userId)
+      if ((await getTransactionsByFileId(fileId, userId)).length <= 1) {
+        await deleteFile(fileId, userId)
+      }
     }
 
     return await prisma.transaction.delete({
@@ -171,7 +199,7 @@ const splitTransactionDataExtraFields = async (
     {} as Record<string, Field>
   )
 
-  const standard: Omit<Partial<Transaction>, "extra"> = {}
+  const standard: TransactionData = {}
   const extra: Record<string, unknown> = {}
 
   Object.entries(data).forEach(([key, value]) => {
@@ -180,7 +208,7 @@ const splitTransactionDataExtraFields = async (
       if (fieldDef.isExtra) {
         extra[key] = value
       } else {
-        standard[key as keyof Omit<Transaction, "extra">] = value as any
+        standard[key] = value
       }
     }
   })

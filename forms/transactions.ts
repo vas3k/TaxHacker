@@ -47,5 +47,16 @@ export const transactionFormSchema = z
       .optional(),
     text: z.string().optional(),
     note: z.string().optional(),
+    items: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (!val || val.trim() === '') return []
+        try {
+          return JSON.parse(val)
+        } catch (e) {
+          throw new z.ZodError([{ message: "Invalid items JSON", path: ["items"], code: z.ZodIssueCode.custom }])
+        }
+      }),
   })
   .catchall(z.string())

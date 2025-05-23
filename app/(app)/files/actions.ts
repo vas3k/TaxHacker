@@ -70,7 +70,6 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
     })
   )
 
-  // Update user storage used
   const storageUsed = await getDirectorySize(getUserUploadsDirectory(user))
   await updateUser(user.id, { storageUsed })
 

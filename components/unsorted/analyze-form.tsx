@@ -2,7 +2,7 @@
 
 import { useNotification } from "@/app/(app)/context"
 import { analyzeFileAction, deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/(app)/unsorted/actions"
-import { FormConvertCurrency } from "@/components/forms/convert-currency"
+import { CurrencyConverterTool } from "@/components/agents/currency-converter"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
@@ -14,7 +14,9 @@ import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
 import { Brain, Loader2, Trash2, ArrowDownToLine } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
-import ToolWindow from "../agents/tool-window"
+import ToolWindow from "@/components/agents/tool-window"
+import { ItemsDetectTool } from "@/components/agents/items-detect"
+import { Badge } from "@/components/ui/badge"
 
 export default function AnalyzeForm({
   file,
@@ -65,6 +67,7 @@ export default function AnalyzeForm({
       issuedAt: "",
       note: "",
       text: "",
+      items: [],
     }
 
     // Add extra fields
@@ -141,21 +144,27 @@ export default function AnalyzeForm({
 
   return (
     <>
-      <Button className="w-full mb-6 py-6 text-lg" onClick={startAnalyze} disabled={isAnalyzing} data-analyze-button>
-        {isAnalyzing ? (
-          <>
-            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-            <span>{analyzeStep}</span>
-          </>
-        ) : (
-          <>
-            <Brain className="mr-1 h-4 w-4" />
-            <span>Analyze with AI</span>
-          </>
-        )}
-      </Button>
+      {file.isSplitted ? (
+        <div className="flex justify-end">
+          <Badge variant="outline">This file has been split</Badge>
+        </div>
+      ) : (
+        <Button className="w-full mb-6 py-6 text-lg" onClick={startAnalyze} disabled={isAnalyzing} data-analyze-button>
+          {isAnalyzing ? (
+            <>
+              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              <span>{analyzeStep}</span>
+            </>
+          ) : (
+            <>
+              <Brain className="mr-1 h-4 w-4" />
+              <span>Analyze with AI</span>
+            </>
+          )}
+        </Button>
+      )}
 
-      {analyzeError && <FormError>⚠️ {analyzeError}</FormError>}
+      <div>{analyzeError && <FormError>{analyzeError}</FormError>}</div>
 
       <form className="space-y-4" action={saveAsTransaction}>
         <input type="hidden" name="fileId" value={file.id} />
@@ -222,7 +231,7 @@ export default function AnalyzeForm({
 
         {formData.total != 0 && formData.currencyCode && formData.currencyCode !== settings.default_currency && (
           <ToolWindow title={`Exchange rate on ${format(new Date(formData.issuedAt || Date.now()), "LLLL dd, yyyy")}`}>
-            <FormConvertCurrency
+            <CurrencyConverterTool
               originalTotal={formData.total}
               originalCurrencyCode={formData.currencyCode}
               targetCurrencyCode={settings.default_currency}
@@ -293,7 +302,14 @@ export default function AnalyzeForm({
           />
         ))}
 
+        {formData.items && formData.items.length > 0 && (
+          <ToolWindow title="Items or products detected">
+            <ItemsDetectTool file={file} data={formData} />
+          </ToolWindow>
+        )}
+
         <div className="hidden">
+          <input type="text" name="items" defaultValue={JSON.stringify(formData.items)} />
           <FormTextarea
             title={fieldMap.text.name}
             name="text"
@@ -314,7 +330,7 @@ export default function AnalyzeForm({
             {isDeleting ? "⏳ Deleting..." : "Delete"}
           </Button>
 
-          <Button type="submit" disabled={isSaving}>
+          <Button type="submit" disabled={isSaving} data-save-button>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -327,9 +343,11 @@ export default function AnalyzeForm({
               </>
             )}
           </Button>
+        </div>
 
-          {deleteState?.error && <FormError>⚠️ {deleteState.error}</FormError>}
-          {saveError && <FormError>⚠️ {saveError}</FormError>}
+        <div>
+          {deleteState?.error && <FormError>{deleteState.error}</FormError>}
+          {saveError && <FormError>{saveError}</FormError>}
         </div>
       </form>
     </>

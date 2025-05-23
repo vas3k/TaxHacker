@@ -7,6 +7,7 @@ import config from "@/lib/config"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ComponentProps, startTransition, useRef, useState } from "react"
+import { FormError } from "../forms/error"
 
 export function UploadButton({ children, ...props }: { children: React.ReactNode } & ComponentProps<typeof Button>) {
   const router = useRouter()
@@ -69,7 +70,7 @@ export function UploadButton({ children, ...props }: { children: React.ReactNode
         )}
       </Button>
 
-      {uploadError && <span className="text-red-500">⚠️ {uploadError}</span>}
+      {uploadError && <FormError>{uploadError}</FormError>}
     </div>
   )
 }

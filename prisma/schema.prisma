@@ -160,6 +160,7 @@ model File {
   mimetype          String
   metadata          Json?
   isReviewed        Boolean  @default(false) @map("is_reviewed")
+  isSplitted        Boolean  @default(false) @map("is_splitted")
   cachedParseResult Json?    @map("cached_parse_result")
   createdAt         DateTime @default(now()) @map("created_at")
 
@@ -178,6 +179,7 @@ model Transaction {
   convertedTotal        Int?      @map("converted_total")
   convertedCurrencyCode String?   @map("converted_currency_code")
   type                  String?   @default("expense")
+  items                 Json      @default("[]")
   note                  String?
   files                 Json      @default("[]")
   extra                 Json?

@@ -129,9 +129,9 @@ export default function TransactionCreateForm({
             "Create and Add Files"
           )}
         </Button>
-
-        {createState?.error && <FormError>⚠️ {createState.error}</FormError>}
       </div>
+
+      {createState?.error && <FormError>{createState.error}</FormError>}
     </form>
   )
 }

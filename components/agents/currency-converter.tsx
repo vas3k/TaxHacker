@@ -19,7 +19,7 @@ async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string,
   return data.rate
 }
 
-export const FormConvertCurrency = ({
+export const CurrencyConverterTool = ({
   originalTotal,
   originalCurrencyCode,
   targetCurrencyCode,

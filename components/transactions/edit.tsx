@@ -13,6 +13,9 @@ import { format } from "date-fns"
 import { Loader2, Save, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react"
+import ToolWindow from "@/components/agents/tool-window"
+import { ItemsDetectTool } from "@/components/agents/items-detect"
+import { TransactionData } from "@/models/transactions"
 
 export default function TransactionEditForm({
   transaction,
@@ -47,6 +50,7 @@ export default function TransactionEditForm({
     projectCode: transaction.projectCode || settings.default_project,
     issuedAt: transaction.issuedAt ? format(transaction.issuedAt, "yyyy-MM-dd") : "",
     note: transaction.note || "",
+    items: transaction.items || [],
     ...extraFields.reduce(
       (acc, field) => {
         acc[field.code] = transaction.extra?.[field.code as keyof typeof transaction.extra] || ""
@@ -205,12 +209,18 @@ export default function TransactionEditForm({
             type="text"
             title={field.name}
             name={field.code}
-            defaultValue={formData[field.code as keyof typeof formData] || ""}
+            defaultValue={(formData[field.code as keyof typeof formData] as string) || ""}
             isRequired={field.isRequired}
             className={field.type === "number" ? "max-w-36" : "max-w-full"}
           />
         ))}
       </div>
+
+      {formData.items && Array.isArray(formData.items) && formData.items.length > 0 && (
+        <ToolWindow title="Items or products detected">
+          <ItemsDetectTool data={formData as TransactionData} />
+        </ToolWindow>
+      )}
 
       <div className="flex justify-between space-x-4 pt-6">
         <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
@@ -233,9 +243,11 @@ export default function TransactionEditForm({
             </>
           )}
         </Button>
+      </div>
 
-        {deleteState?.error && <FormError>⚠️ {deleteState.error}</FormError>}
-        {saveState?.error && <FormError>⚠️ {saveState.error}</FormError>}
+      <div>
+        {deleteState?.error && <FormError>{deleteState.error}</FormError>}
+        {saveState?.error && <FormError>{saveState.error}</FormError>}
       </div>
     </form>
   )

@@ -8,15 +8,18 @@ import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isAiBalanceExhausted, isSubscriptionExpired } from "@/lib/auth"
 import config from "@/lib/config"
-import { getTransactionFileUploadPath, getUserUploadsDirectory, safePathJoin } from "@/lib/files"
+import { getTransactionFileUploadPath, getUserUploadsDirectory, safePathJoin, unsortedFilePath } from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
-import { deleteFile, getFileById, updateFile } from "@/models/files"
-import { createTransaction, updateTransactionFiles } from "@/models/transactions"
+import { createFile, deleteFile, getFileById, updateFile } from "@/models/files"
+import { createTransaction, updateTransactionFiles, TransactionData } from "@/models/transactions"
 import { updateUser } from "@/models/users"
 import { Category, Field, File, Project, Transaction } from "@/prisma/client"
 import { mkdir, rename } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
+import { randomUUID } from "crypto"
+import { readFile, writeFile } from "fs/promises"
+import { getDirectorySize } from "@/lib/files"
 
 export async function analyzeFileAction(
   file: File,
@@ -95,7 +98,7 @@ export async function saveFileAsTransactionAction(
     const file = await getFileById(fileId, user.id)
     if (!file) throw new Error("File not found")
 
-    // Create transaction
+    // Create transaction 
     const transaction = await createTransaction(user.id, validatedForm.data)
 
     // Move file to processed location
@@ -139,5 +142,81 @@ export async function deleteUnsortedFileAction(
   } catch (error) {
     console.error("Failed to delete file:", error)
     return { success: false, error: "Failed to delete file" }
+  }
+}
+
+export async function splitFileIntoItemsAction(
+  _prevState: ActionState<null> | null,
+  formData: FormData
+): Promise<ActionState<null>> {
+  try {
+    const user = await getCurrentUser()
+    const fileId = formData.get("fileId") as string
+    const items = JSON.parse(formData.get("items") as string) as TransactionData[]
+
+    if (!fileId || !items || items.length === 0) {
+      return { success: false, error: "File ID and items are required" }
+    }
+
+    // Get the original file
+    const originalFile = await getFileById(fileId, user.id)
+    if (!originalFile) {
+      return { success: false, error: "Original file not found" }
+    }
+
+    // Get the original file's content
+    const userUploadsDirectory = getUserUploadsDirectory(user)
+    const originalFilePath = safePathJoin(userUploadsDirectory, originalFile.path)
+    const fileContent = await readFile(originalFilePath)
+
+    // Create a new file for each item
+    for (const item of items) {
+      const fileUuid = randomUUID()
+      const fileName = `${originalFile.filename}-part-${item.name}`
+      const relativeFilePath = unsortedFilePath(fileUuid, fileName)
+      const fullFilePath = safePathJoin(userUploadsDirectory, relativeFilePath)
+
+      // Create directory if it doesn't exist
+      await mkdir(path.dirname(fullFilePath), { recursive: true })
+
+      // Copy the original file content
+      await writeFile(fullFilePath, fileContent)
+
+      // Create file record in database with the item data cached
+      await createFile(user.id, {
+        id: fileUuid,
+        filename: fileName,
+        path: relativeFilePath,
+        mimetype: originalFile.mimetype,
+        metadata: originalFile.metadata,
+        isSplitted: true,
+        cachedParseResult: {
+          name: item.name,
+          merchant: item.merchant,
+          description: item.description,
+          total: item.total,
+          currencyCode: item.currencyCode,
+          categoryCode: item.categoryCode,
+          projectCode: item.projectCode,
+          type: item.type,
+          issuedAt: item.issuedAt,
+          note: item.note,
+          text: item.text,
+        },
+      })
+    }
+
+    // Delete the original file
+    await deleteFile(fileId, user.id)
+
+    // Update user storage used
+    const storageUsed = await getDirectorySize(getUserUploadsDirectory(user))
+    await updateUser(user.id, { storageUsed })
+
+    revalidatePath("/unsorted")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to split file into items:", error)
+    return { success: false, error: `Failed to split file into items: ${error}` }
   }
 }
