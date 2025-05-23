@@ -217,7 +217,7 @@ export default function TransactionEditForm({
       </div>
 
       {formData.items && Array.isArray(formData.items) && formData.items.length > 0 && (
-        <ToolWindow title="Items or products detected">
+        <ToolWindow title="Detected items">
           <ItemsDetectTool data={formData as TransactionData} />
         </ToolWindow>
       )}

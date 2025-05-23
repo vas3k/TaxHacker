@@ -60,7 +60,7 @@ export const ItemsDetectTool = ({ file, data }: { file?: File; data: Transaction
       </div>
 
       {file && data.items && data.items.length > 1 && (
-        <Button onClick={handleSplit} className="mt-2 px-4 py-2" disabled={isSplitting}>
+        <Button variant="outline" onClick={handleSplit} className="mt-2 px-4 py-2" disabled={isSplitting}>
           {isSplitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

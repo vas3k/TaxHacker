@@ -146,7 +146,7 @@ export default function AnalyzeForm({
     <>
       {file.isSplitted ? (
         <div className="flex justify-end">
-          <Badge variant="outline">This file has been split</Badge>
+          <Badge variant="outline">This file has been split up</Badge>
         </div>
       ) : (
         <Button className="w-full mb-6 py-6 text-lg" onClick={startAnalyze} disabled={isAnalyzing} data-analyze-button>
@@ -303,7 +303,7 @@ export default function AnalyzeForm({
         ))}
 
         {formData.items && formData.items.length > 0 && (
-          <ToolWindow title="Items or products detected">
+          <ToolWindow title="Detected items">
             <ItemsDetectTool file={file} data={formData} />
           </ToolWindow>
         )}
