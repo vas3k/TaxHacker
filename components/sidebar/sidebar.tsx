@@ -32,10 +32,12 @@ export function AppSidebar({
   profile,
   unsortedFilesCount,
   isSelfHosted,
+  ip,
 }: {
   profile: UserProfile
   unsortedFilesCount: number
   isSelfHosted: boolean
+  ip: string
 }) {
   const { open, setOpenMobile } = useSidebar()
   const pathname = usePathname()
@@ -161,7 +163,7 @@ export function AppSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarUser profile={profile} isSelfHosted={isSelfHosted} />
+                  <SidebarUser profile={profile} isSelfHosted={isSelfHosted} ip={ip} />
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
