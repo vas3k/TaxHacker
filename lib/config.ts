@@ -7,7 +7,7 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL_NAME: z.string().default("gpt-4o-mini"),
   GOOGLE_AI_API_KEY: z.string().optional(),
-  GOOGLE_AI_MODEL_NAME: z.string().default("gemini-pro-vision"),
+  GOOGLE_AI_MODEL_NAME: z.string().default("gemini-2.5-flash"),
   BETTER_AUTH_SECRET: z
     .string()
     .min(16, "Auth secret must be at least 16 characters")
