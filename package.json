@@ -28,7 +28,7 @@
     "@sentry/nextjs": "^9.11.0",
     "@types/mime-types": "^2.1.4",
     "@types/sharp": "^0.31.1",
-    "better-auth": "^1.2.5",
+    "better-auth": "^1.2.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
