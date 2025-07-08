@@ -39,6 +39,19 @@ export default function LLMSettingsForm({
                 OpenAI Platform Console
               </a>
             </small>
+
+            <FormInput title="Google API Key" name="google_api_key" defaultValue={settings.google_api_key} />
+
+            <small className="text-muted-foreground">
+              Get your API key from{" "}
+              <a
+                href="https://aistudio.google.com/apikey"
+                target="_blank"
+                className="underline"
+              >
+                Google AI Studio Console
+              </a>
+            </small>
           </>
         )}
 

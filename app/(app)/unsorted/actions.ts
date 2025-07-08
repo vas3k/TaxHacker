@@ -31,20 +31,27 @@ export async function analyzeFileAction(
   const user = await getCurrentUser()
 
   if (!file || file.userId !== user.id) {
-    return { success: false, error: "File not found or does not belong to the user" }
-  }
-
-  const apiKey = settings.openai_api_key || config.ai.openaiApiKey || ""
-  if (!apiKey) {
-    return { success: false, error: "OpenAI API key is not set" }
-  }
-
-  if (isAiBalanceExhausted(user)) {
-    return {
-      success: false,
-      error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
+      return { success: false, error: "File not found or does not belong to the user" }
     }
-  }
+
+    // Determine which API key to use
+    let apiKey = "";
+    if (config.ai.provider === "google") {
+      apiKey = settings.google_ai_api_key || config.ai.googleApiKey || "";
+    } else {
+      apiKey = settings.openai_api_key || config.ai.openaiApiKey || "";
+    }
+
+    if (!apiKey) {
+      return { success: false, error: `${config.ai.provider === "google" ? "Google AI" : "OpenAI"} API key is not set` }
+    }
+
+    if (isAiBalanceExhausted(user)) {
+      return {
+        success: false,
+        error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
+      }
+    }
 
   if (isSubscriptionExpired(user)) {
     return {
@@ -98,7 +105,7 @@ export async function saveFileAsTransactionAction(
     const file = await getFileById(fileId, user.id)
     if (!file) throw new Error("File not found")
 
-    // Create transaction 
+    // Create transaction
     const transaction = await createTransaction(user.id, validatedForm.data)
 
     // Move file to processed location
