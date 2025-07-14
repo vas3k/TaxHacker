@@ -36,14 +36,14 @@ export default async function FieldsSettingsPage() {
           { key: "llm_prompt", label: "LLM Prompt", editable: true },
           {
             key: "isVisibleInList",
-            label: "Always show in transactions table",
+            label: "Show in transactions table",
             type: "checkbox",
             defaultValue: false,
             editable: true,
           },
           {
             key: "isVisibleInAnalysis",
-            label: "Always show in analysis form",
+            label: "Show in analysis form",
             type: "checkbox",
             defaultValue: false,
             editable: true,
