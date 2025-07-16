@@ -3,20 +3,20 @@
 import { useNotification } from "@/app/(app)/context"
 import { analyzeFileAction, deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/(app)/unsorted/actions"
 import { CurrencyConverterTool } from "@/components/agents/currency-converter"
+import { ItemsDetectTool } from "@/components/agents/items-detect"
+import ToolWindow from "@/components/agents/tool-window"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
 import { FormSelectType } from "@/components/forms/select-type"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
-import { Brain, Loader2, Trash2, ArrowDownToLine } from "lucide-react"
+import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
-import ToolWindow from "@/components/agents/tool-window"
-import { ItemsDetectTool } from "@/components/agents/items-detect"
-import { Badge } from "@/components/ui/badge"
 
 export default function AnalyzeForm({
   file,
@@ -309,7 +309,7 @@ export default function AnalyzeForm({
         )}
 
         <div className="hidden">
-          <input type="text" name="items" defaultValue={JSON.stringify(formData.items)} />
+          <input type="text" name="items" value={JSON.stringify(formData.items)} readOnly />
           <FormTextarea
             title={fieldMap.text.name}
             name="text"
