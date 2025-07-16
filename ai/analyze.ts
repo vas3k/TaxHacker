@@ -1,11 +1,10 @@
 "use server"
 
 import { ActionState } from "@/lib/actions"
-import config from "@/lib/config"
-import OpenAI from "openai"
 import { AnalyzeAttachment } from "./attachments"
 import { updateFile } from "@/models/files"
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"
+import { getSettings, getLLMSettings } from "@/models/settings"
+import { requestLLM } from "./providers/llmProvider"
 
 export type AnalysisResult = {
   output: Record<string, string>
@@ -16,22 +15,38 @@ export async function analyzeTransaction(
   prompt: string,
   schema: Record<string, unknown>,
   attachments: AnalyzeAttachment[],
-  apiKey: string,
   fileId: string,
   userId: string
 ): Promise<ActionState<AnalysisResult>> {
-  console.log("RUNNING AI ANALYSIS")
-  console.log("PROMPT:", prompt)
-  console.log("SCHEMA:", schema)
+
+  const settings = await getSettings(userId)
+  const llmSettings = getLLMSettings(settings)
 
   try {
-    // Determine which AI provider to use
-    const provider = config.ai.provider
+    const response = await requestLLM(llmSettings, {
+      prompt,
+      schema,
+      attachments,
+    })
 
-    if (provider === "google") {
-      return await analyzeWithGoogle(prompt, schema, attachments, apiKey, fileId, userId)
-    } else {
-      return await analyzeWithOpenAI(prompt, schema, attachments, apiKey, fileId, userId)
+    if (response.error) {
+      throw new Error(response.error)
+    }
+
+    const result = response.output
+    const tokensUsed = response.tokensUsed || 0
+
+    console.log("LLM response:", result)
+    console.log("LLM tokens used:", tokensUsed)
+
+    await updateFile(fileId, userId, { cachedParseResult: result })
+
+    return {
+      success: true,
+      data: {
+        output: result,
+        tokensUsed: tokensUsed
+      },
     }
   } catch (error) {
     console.error("AI Analysis error:", error)

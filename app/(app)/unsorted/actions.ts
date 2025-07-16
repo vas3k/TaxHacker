@@ -34,18 +34,6 @@ export async function analyzeFileAction(
       return { success: false, error: "File not found or does not belong to the user" }
     }
 
-    // Determine which API key to use
-    let apiKey = "";
-    if (config.ai.provider === "google") {
-      apiKey = settings.google_ai_api_key || config.ai.googleApiKey || "";
-    } else {
-      apiKey = settings.openai_api_key || config.ai.openaiApiKey || "";
-    }
-
-    if (!apiKey) {
-      return { success: false, error: `${config.ai.provider === "google" ? "Google AI" : "OpenAI"} API key is not set` }
-    }
-
     if (isAiBalanceExhausted(user)) {
       return {
         success: false,
@@ -77,7 +65,7 @@ export async function analyzeFileAction(
 
   const schema = fieldsToJsonSchema(fields)
 
-  const results = await analyzeTransaction(prompt, schema, attachments, apiKey, file.id, user.id)
+  const results = await analyzeTransaction(prompt, schema, attachments, file.id, user.id)
 
   console.log("Analysis results:", results)
 

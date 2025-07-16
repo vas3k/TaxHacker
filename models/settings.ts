@@ -1,12 +1,50 @@
 import { prisma } from "@/lib/db"
+import { PROVIDERS } from "@/lib/llm-providers"
 import { cache } from "react"
 
 export type SettingsMap = Record<string, string>
+
+/**
+ * Helper to extract LLM provider settings from SettingsMap.
+ */
+export function getLLMSettings(settings: SettingsMap) {
+  const priorities = (settings.llm_providers || "openai,google,mistral").split(",").map(p => p.trim()).filter(Boolean)
+
+  const providers = priorities.map((provider) => {
+    if (provider === "openai") {
+      return {
+        provider: provider,
+        apiKey: settings.openai_api_key || "",
+        model: settings.openai_model_name || PROVIDERS[0]['defaultModelName'],
+      }
+    }
+    if (provider === "google") {
+      return {
+        provider: provider,
+        apiKey: settings.google_api_key || "",
+        model: settings.google_model_name || PROVIDERS[1]['defaultModelName'],
+      }
+    }
+    if (provider === "mistral") {
+      return {
+        provider: provider,
+        apiKey: settings.mistral_api_key || "",
+        model: settings.mistral_model_name || PROVIDERS[2]['defaultModelName'],
+      }
+    }
+    return null
+  }).filter(Boolean)
+
+  return {
+    providers,
+  }
+}
 
 export const getSettings = cache(async (userId: string): Promise<SettingsMap> => {
   const settings = await prisma.setting.findMany({
     where: { userId },
   })
+
   return settings.reduce((acc, setting) => {
     acc[setting.code] = setting.value || ""
     return acc
