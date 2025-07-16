@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormInput } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
@@ -14,12 +14,27 @@ import { useEffect } from "react"
 export default function SelfHostedSetupForm() {
   const [provider, setProvider] = useState(PROVIDERS[0].key)
   const selected = PROVIDERS.find(p => p.key === provider)!
-  const [apiKey, setApiKey] = useState(
-    selected.key === "openai" ? (config.ai.openaiApiKey ?? "") : ""
-  )
+  const getDefaultApiKey = (providerKey: string) => {
+    switch (providerKey) {
+      case "openai":
+        return config.ai.openaiApiKey ?? ""
+      case "google":
+        return config.ai.googleApiKey ?? ""
+      case "mistral":
+        return config.ai.mistralApiKey ?? ""
+      default:
+        return ""
+    }
+  }
+
+  const [apiKey, setApiKey] = useState(getDefaultApiKey(provider))
+  const userTyped = useRef(false)
 
   useEffect(() => {
-    setApiKey(selected.key === "openai" ? (config.ai.openaiApiKey ?? "") : "")
+    if (!userTyped.current) {
+      setApiKey(getDefaultApiKey(provider))
+    }
+    userTyped.current = false
   }, [provider])
 
   return (
@@ -46,11 +61,13 @@ export default function SelfHostedSetupForm() {
       </div>
       <div>
         <FormInput
-          key={provider}
           title={`${selected.label} API Key`}
           name={selected.apiKeyName}
           value={apiKey ?? ""}
-          onChange={e => setApiKey(e.target.value)}
+          onChange={e => {
+            setApiKey(e.target.value)
+            userTyped.current = true
+          }}
           placeholder={selected.placeholder}
         />
         <small className="text-xs text-muted-foreground flex justify-center mt-2">

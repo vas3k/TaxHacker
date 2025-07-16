@@ -5,7 +5,7 @@ import { getSelfHostedUser } from "@/models/users"
 import { ShieldAlert } from "lucide-react"
 import Image from "next/image"
 import { redirect } from "next/navigation"
-import SelfHostedSetupForm from "./SelfHostedSetupForm"
+import SelfHostedSetupForm from "./setup-form"
 
 export default async function SelfHostedWelcomePage() {
   if (!config.selfHosted.isEnabled) {
