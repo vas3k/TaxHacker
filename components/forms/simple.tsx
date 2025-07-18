@@ -88,9 +88,10 @@ export const FormSelect = ({
   placeholder,
   hideIfEmpty = false,
   isRequired = false,
+  onValueChange,
   ...props
 }: {
-  items: Array<{ code: string; name: string; color?: string; badge?: string }>
+  items: Array<{ code: string; name: string; color?: string; badge?: string; logo?: string }>
   title?: string
   emptyValue?: string
   placeholder?: string
@@ -108,7 +109,7 @@ export const FormSelect = ({
       {title && <span className="text-sm font-medium">{title}</span>}
       <Select
         value={props.value}
-        onValueChange={props.onChange}
+        onValueChange={onValueChange}
         {...props}
       >
         <SelectTrigger className={cn("w-full min-w-[150px] bg-background", isRequired && isEmpty && "bg-yellow-50")}>

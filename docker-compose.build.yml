@@ -21,6 +21,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
+    container_name: taxhacker-postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

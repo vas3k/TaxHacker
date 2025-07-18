@@ -48,7 +48,6 @@ export default async function SelfHostedWelcomePage() {
       </CardTitle>
       <CardDescription className="flex flex-col gap-4 text-center text-lg">
         <p>Welcome to your own instance of TaxHacker. Let&apos;s set up a couple of settings to get started.</p>
-        {/* @ts-expect-error Server Component/Client Component mix */}
         <SelfHostedSetupFormClient defaultProvider={defaultProvider} defaultApiKeys={defaultApiKeys} />
       </CardDescription>
     </Card>

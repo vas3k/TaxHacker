@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormInput } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,7 @@ type Props = {
 export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiKeys }: Props) {
   const [provider, setProvider] = useState(defaultProvider)
   const selected = PROVIDERS.find(p => p.key === provider)!
-  const getDefaultApiKey = (providerKey: string) => defaultApiKeys[providerKey] ?? ""
+  const getDefaultApiKey = useCallback((providerKey: string) => defaultApiKeys[providerKey] ?? "", [defaultApiKeys])
 
   const [apiKey, setApiKey] = useState(getDefaultApiKey(provider))
   const userTyped = useRef(false)
@@ -26,7 +26,7 @@ export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiK
       setApiKey(getDefaultApiKey(provider))
     }
     userTyped.current = false
-  }, [provider])
+  }, [provider, getDefaultApiKey])
 
   return (
     <form action={selfHostedGetStartedAction} className="flex flex-col gap-8 pt-8">
@@ -35,13 +35,12 @@ export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiK
           title="LLM provider"
           name="provider"
           value={provider}
-          onChange={setProvider}
+          onValueChange={setProvider}
           items={PROVIDERS.map(p => ({
             code: p.key,
             name: p.label,
             logo: p.logo
           }))}
-          className="max-w-xs w-full"
         />
         <FormSelectCurrency
           title="Default Currency"

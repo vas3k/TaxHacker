@@ -17,6 +17,7 @@ import {
   useSensor,
   useSensors
 } from "@dnd-kit/core"
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
@@ -137,13 +138,20 @@ export default function LLMSettingsForm({
   )
 }
 
-function DndProviderBlocks({ providerOrder, setProviderOrder, providerValues, handleProviderValueChange }) {
+type DndProviderBlocksProps = {
+  providerOrder: string[];
+  setProviderOrder: React.Dispatch<React.SetStateAction<string[]>>;
+  providerValues: Record<string, { apiKey: string; model: string }>;
+  handleProviderValueChange: (providerKey: string, field: "apiKey" | "model", value: string) => void;
+};
+
+function DndProviderBlocks({ providerOrder, setProviderOrder, providerValues, handleProviderValueChange }: DndProviderBlocksProps) {
   const sensors = useSensors(useSensor(PointerSensor))
-  function handleDragEnd(event) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
-    const oldIndex = providerOrder.indexOf(active.id)
-    const newIndex = providerOrder.indexOf(over.id)
+    const oldIndex = providerOrder.indexOf(active.id as string)
+    const newIndex = providerOrder.indexOf(over.id as string)
     setProviderOrder(arrayMove(providerOrder, oldIndex, newIndex))
   }
   return (
@@ -164,7 +172,15 @@ function DndProviderBlocks({ providerOrder, setProviderOrder, providerValues, ha
   )
 }
 
-function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange }) {
+type SortableProviderBlockProps = {
+  id: string;
+  idx: number;
+  providerKey: string;
+  value: { apiKey: string; model: string };
+  handleValueChange: (providerKey: string, field: "apiKey" | "model", value: string) => void;
+};
+
+function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange }: SortableProviderBlockProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
 
   const provider = PROVIDERS.find(p => p.key === providerKey)
