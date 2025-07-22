@@ -1,10 +1,10 @@
 "use server"
 
 import { ActionState } from "@/lib/actions"
-import config from "@/lib/config"
-import OpenAI from "openai"
 import { AnalyzeAttachment } from "./attachments"
 import { updateFile } from "@/models/files"
+import { getSettings, getLLMSettings } from "@/models/settings"
+import { requestLLM } from "./providers/llmProvider"
 
 export type AnalysisResult = {
   output: Record<string, string>
@@ -15,52 +15,39 @@ export async function analyzeTransaction(
   prompt: string,
   schema: Record<string, unknown>,
   attachments: AnalyzeAttachment[],
-  apiKey: string,
   fileId: string,
   userId: string
 ): Promise<ActionState<AnalysisResult>> {
-  const openai = new OpenAI({
-    apiKey,
-  })
-  console.log("RUNNING AI ANALYSIS")
-  console.log("PROMPT:", prompt)
-  console.log("SCHEMA:", schema)
+
+  const settings = await getSettings(userId)
+  const llmSettings = getLLMSettings(settings)
 
   try {
-    const response = await openai.responses.create({
-      model: config.ai.modelName,
-      input: [
-        {
-          role: "user",
-          content: prompt,
-        },
-        {
-          role: "user",
-          content: attachments.map((attachment) => ({
-            type: "input_image",
-            detail: "auto",
-            image_url: `data:${attachment.contentType};base64,${attachment.base64}`,
-          })),
-        },
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "transaction",
-          schema: schema,
-          strict: true,
-        },
-      },
+    const response = await requestLLM(llmSettings, {
+      prompt,
+      schema,
+      attachments,
     })
 
-    console.log("ChatGPT response:", response.output_text)
-    console.log("ChatGPT tokens used:", response.usage)
+    if (response.error) {
+      throw new Error(response.error)
+    }
 
-    const result = JSON.parse(response.output_text)
-    
+    const result = response.output
+    const tokensUsed = response.tokensUsed || 0
+
+    console.log("LLM response:", result)
+    console.log("LLM tokens used:", tokensUsed)
+
     await updateFile(fileId, userId, { cachedParseResult: result })
 
-    return { success: true, data: { output: result, tokensUsed: response.usage?.total_tokens || 0 } }
+    return {
+      success: true,
+      data: {
+        output: result,
+        tokensUsed: tokensUsed
+      },
+    }
   } catch (error) {
     console.error("AI Analysis error:", error)
     return {

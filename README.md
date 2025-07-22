@@ -152,8 +152,12 @@ Configure TaxHacker to suit your needs with these environment variables:
 | `SELF_HOSTED_MODE` | No | Set it to "true" if you're self-hosting the app: it enables auto-login, custom API keys, and more | `true` |
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
 | `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (min 16 characters) | `random-secret-key` |
-| `OPENAI_MODEL_NAME` | No | OpenAI model to use for AI features | `gpt-4o-mini` |
-| `OPENAI_API_KEY` | No | OpenAI API key for AI features. In self-hosted mode you can set it up in settings too. | `sk-...` |
+
+You can also specify LLM provider options in settings or with environment variables:
+
+- For OpenAI: `OPENAI_MODEL_NAME` and `OPENAI_API_KEY`
+- For Google: `GOOGLE_MODEL_NAME` and `GOOGLE_API_KEY`
+- For Mistral: `MISTRAL_MODEL_NAME` and `MISTRAL_API_KEY`
 
 
 ## ⌨️ Local Development

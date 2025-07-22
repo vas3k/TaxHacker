@@ -1,15 +1,12 @@
-import { FormSelectCurrency } from "@/components/forms/select-currency"
-import { FormInput } from "@/components/forms/simple"
-import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { ColoredText } from "@/components/ui/colored-text"
 import config from "@/lib/config"
-import { DEFAULT_CURRENCIES, DEFAULT_SETTINGS } from "@/models/defaults"
 import { getSelfHostedUser } from "@/models/users"
 import { ShieldAlert } from "lucide-react"
 import Image from "next/image"
 import { redirect } from "next/navigation"
-import { selfHostedGetStartedAction } from "../actions"
+import { PROVIDERS } from "@/lib/llm-providers"
+import SelfHostedSetupFormClient from "./setup-form-client"
 
 export default async function SelfHostedWelcomePage() {
   if (!config.selfHosted.isEnabled) {
@@ -35,6 +32,14 @@ export default async function SelfHostedWelcomePage() {
     redirect(config.selfHosted.redirectUrl)
   }
 
+  // Собираем дефолтные ключи для всех провайдеров
+  const defaultProvider = PROVIDERS[0].key
+  const defaultApiKeys: Record<string, string> = {
+    openai: config.ai.openaiApiKey ?? "",
+    google: config.ai.googleApiKey ?? "",
+    mistral: config.ai.mistralApiKey ?? "",
+  }
+
   return (
     <Card className="w-full max-w-xl mx-auto p-8 flex flex-col items-center justify-center gap-4">
       <Image src="/logo/512.png" alt="Logo" width={144} height={144} className="w-36 h-36" />
@@ -43,36 +48,7 @@ export default async function SelfHostedWelcomePage() {
       </CardTitle>
       <CardDescription className="flex flex-col gap-4 text-center text-lg">
         <p>Welcome to your own instance of TaxHacker. Let&apos;s set up a couple of settings to get started.</p>
-
-        <form action={selfHostedGetStartedAction} className="flex flex-col gap-8 pt-8">
-          <div>
-            <FormInput title="OpenAI API Key" name="openai_api_key" defaultValue={config.ai.openaiApiKey} />
-
-            <small className="text-xs text-muted-foreground">
-              Get your API key from{" "}
-              <a
-                href="https://platform.openai.com/settings/organization/api-keys"
-                target="_blank"
-                className="underline"
-              >
-                OpenAI Platform Console
-              </a>
-            </small>
-          </div>
-
-          <div className="flex flex-row items-center justify-center gap-2">
-            <FormSelectCurrency
-              title="Default Currency"
-              name="default_currency"
-              defaultValue={DEFAULT_SETTINGS.find((s) => s.code === "default_currency")?.value ?? "EUR"}
-              currencies={DEFAULT_CURRENCIES}
-            />
-          </div>
-
-          <Button type="submit" className="w-auto p-6">
-            Get Started
-          </Button>
-        </form>
+        <SelfHostedSetupFormClient defaultProvider={defaultProvider} defaultApiKeys={defaultApiKeys} />
       </CardDescription>
     </Card>
   )

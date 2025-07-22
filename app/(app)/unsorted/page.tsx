@@ -38,14 +38,14 @@ export default async function UnsortedPage() {
         {files.length > 1 && <AnalyzeAllButton />}
       </header>
 
-      {config.selfHosted.isEnabled && !settings.openai_api_key && (
+      {config.selfHosted.isEnabled && !settings.openai_api_key && !settings.google_api_key && !settings.mistral_api_key && (
         <Alert>
           <Settings className="h-4 w-4 mt-2" />
           <div className="flex flex-row justify-between pt-2">
             <div className="flex flex-col">
-              <AlertTitle>ChatGPT API Key is required for analyzing files</AlertTitle>
+              <AlertTitle>LLM provider API Key is required for analyzing files</AlertTitle>
               <AlertDescription>
-                Please set your OpenAI API key in the settings to use the analyze form.
+                Please set your LLM provider API key in the settings to use the analyze form.
               </AlertDescription>
             </div>
             <Link href="/settings/llm">

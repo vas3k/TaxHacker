@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -87,9 +88,10 @@ export const FormSelect = ({
   placeholder,
   hideIfEmpty = false,
   isRequired = false,
+  onValueChange,
   ...props
 }: {
-  items: Array<{ code: string; name: string; color?: string; badge?: string }>
+  items: Array<{ code: string; name: string; color?: string; badge?: string; logo?: string }>
   title?: string
   emptyValue?: string
   placeholder?: string
@@ -105,7 +107,11 @@ export const FormSelect = ({
   return (
     <span className="flex flex-col gap-1">
       {title && <span className="text-sm font-medium">{title}</span>}
-      <Select {...props}>
+      <Select
+        value={props.value}
+        onValueChange={onValueChange}
+        {...props}
+      >
         <SelectTrigger className={cn("w-full min-w-[150px] bg-background", isRequired && isEmpty && "bg-yellow-50")}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -114,6 +120,9 @@ export const FormSelect = ({
           {items.map((item) => (
             <SelectItem key={item.code} value={item.code}>
               <div className="flex items-center gap-2 text-base pr-2">
+                {item.logo && (
+                  <Image src={item.logo} alt={item.name} width={20} height={20} className="rounded-full" />
+                )}
                 {item.badge && <Badge className="px-2">{item.badge}</Badge>}
                 {!item.badge && item.color && (
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />

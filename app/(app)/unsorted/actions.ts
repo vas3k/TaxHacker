@@ -31,20 +31,15 @@ export async function analyzeFileAction(
   const user = await getCurrentUser()
 
   if (!file || file.userId !== user.id) {
-    return { success: false, error: "File not found or does not belong to the user" }
-  }
-
-  const apiKey = settings.openai_api_key || config.ai.openaiApiKey || ""
-  if (!apiKey) {
-    return { success: false, error: "OpenAI API key is not set" }
-  }
-
-  if (isAiBalanceExhausted(user)) {
-    return {
-      success: false,
-      error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
+      return { success: false, error: "File not found or does not belong to the user" }
     }
-  }
+
+    if (isAiBalanceExhausted(user)) {
+      return {
+        success: false,
+        error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
+      }
+    }
 
   if (isSubscriptionExpired(user)) {
     return {
@@ -70,7 +65,7 @@ export async function analyzeFileAction(
 
   const schema = fieldsToJsonSchema(fields)
 
-  const results = await analyzeTransaction(prompt, schema, attachments, apiKey, file.id, user.id)
+  const results = await analyzeTransaction(prompt, schema, attachments, file.id, user.id)
 
   console.log("Analysis results:", results)
 
@@ -98,7 +93,7 @@ export async function saveFileAsTransactionAction(
     const file = await getFileById(fileId, user.id)
     if (!file) throw new Error("File not found")
 
-    // Create transaction 
+    // Create transaction
     const transaction = await createTransaction(user.id, validatedForm.data)
 
     // Move file to processed location
