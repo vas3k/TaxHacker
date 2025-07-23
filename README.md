@@ -19,7 +19,7 @@ Upload photos of receipts, invoices, or PDFs, and TaxHacker will automatically r
 
 The app features automatic currency conversion (including crypto!) based on historical exchange rates from the transaction date. With built-in filtering, multi-project support, import/export capabilities, and custom categories, TaxHacker simplifies reporting and makes tax filing a bit easier.
 
-> 🎥 [Watch demo video](public/landing/video.mp4)
+> 🎥 [Watch demo video](https://taxhacker.app/landing/video.mp4)
 
 ![Dashboard](public/landing/main-page.webp)
 
