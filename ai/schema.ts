@@ -16,7 +16,8 @@ export const fieldsToJsonSchema = (fields: Field[]) => {
       ...schemaProperties,
       items: {
         type: "array",
-        description: "Separate items, products or transactions in the file which have own name and price or sum. Find all items!",
+        description:
+          "Separate items, products or transactions in the file which have own name and price or sum. Find all items!",
         items: {
           type: "object",
           properties: schemaProperties,

@@ -1,11 +1,11 @@
 import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { ColoredText } from "@/components/ui/colored-text"
 import config from "@/lib/config"
+import { PROVIDERS } from "@/lib/llm-providers"
 import { getSelfHostedUser } from "@/models/users"
 import { ShieldAlert } from "lucide-react"
 import Image from "next/image"
 import { redirect } from "next/navigation"
-import { PROVIDERS } from "@/lib/llm-providers"
 import SelfHostedSetupFormClient from "./setup-form-client"
 
 export default async function SelfHostedWelcomePage() {
@@ -32,7 +32,6 @@ export default async function SelfHostedWelcomePage() {
     redirect(config.selfHosted.redirectUrl)
   }
 
-  // Собираем дефолтные ключи для всех провайдеров
   const defaultProvider = PROVIDERS[0].key
   const defaultApiKeys: Record<string, string> = {
     openai: config.ai.openaiApiKey ?? "",

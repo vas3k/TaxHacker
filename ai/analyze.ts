@@ -1,9 +1,9 @@
 "use server"
 
 import { ActionState } from "@/lib/actions"
-import { AnalyzeAttachment } from "./attachments"
 import { updateFile } from "@/models/files"
-import { getSettings, getLLMSettings } from "@/models/settings"
+import { getLLMSettings, getSettings } from "@/models/settings"
+import { AnalyzeAttachment } from "./attachments"
 import { requestLLM } from "./providers/llmProvider"
 
 export type AnalysisResult = {
@@ -18,7 +18,6 @@ export async function analyzeTransaction(
   fileId: string,
   userId: string
 ): Promise<ActionState<AnalysisResult>> {
-
   const settings = await getSettings(userId)
   const llmSettings = getLLMSettings(settings)
 
@@ -45,7 +44,7 @@ export async function analyzeTransaction(
       success: true,
       data: {
         output: result,
-        tokensUsed: tokensUsed
+        tokensUsed: tokensUsed,
       },
     }
   } catch (error) {

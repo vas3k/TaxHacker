@@ -30,79 +30,76 @@ export interface LLMResponse {
 
 async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LLMResponse> {
   try {
-    const temperature = 0;
-    let model: any;
+    const temperature = 0
+    let model: any
     if (config.provider === "openai") {
       model = new ChatOpenAI({
         apiKey: config.apiKey,
         model: config.model,
         temperature: temperature,
-      });
+      })
     } else if (config.provider === "google") {
       model = new ChatGoogleGenerativeAI({
         apiKey: config.apiKey,
         model: config.model,
         temperature: temperature,
-      });
+      })
     } else if (config.provider === "mistral") {
       model = new ChatMistralAI({
         apiKey: config.apiKey,
         model: config.model,
         temperature: temperature,
-      });
+      })
     } else {
       return {
         output: {},
         provider: config.provider,
         error: "Unknown provider",
-      };
+      }
     }
 
-    const structuredModel = model.withStructuredOutput(req.schema, { 'name': 'transaction'});
+    const structuredModel = model.withStructuredOutput(req.schema, { name: "transaction" })
 
-    let message_content: any = [{ type: "text", text: req.prompt }];
+    let message_content: any = [{ type: "text", text: req.prompt }]
     if (req.attachments && req.attachments.length > 0) {
-      const images = req.attachments.map(att => ({
+      const images = req.attachments.map((att) => ({
         type: "image_url",
         image_url: {
-          url: `data:${att.contentType};base64,${att.base64}`
+          url: `data:${att.contentType};base64,${att.base64}`,
         },
-      }));
-      message_content.push(...images);
+      }))
+      message_content.push(...images)
     }
-    const messages: BaseMessage[] = [
-      new HumanMessage({ content: message_content })
-    ];
+    const messages: BaseMessage[] = [new HumanMessage({ content: message_content })]
 
-    const response = await structuredModel.invoke(messages);
+    const response = await structuredModel.invoke(messages)
 
     return {
       output: response,
       provider: config.provider,
-    };
+    }
   } catch (error: any) {
     return {
       output: {},
       provider: config.provider,
       error: error instanceof Error ? error.message : `${config.provider} request failed`,
-    };
+    }
   }
 }
 
 export async function requestLLM(settings: LLMSettings, req: LLMRequest): Promise<LLMResponse> {
   for (const config of settings.providers) {
     if (!config.apiKey || !config.model) {
-      console.info('Skipping provider:', config.provider);
-      continue;
+      console.info("Skipping provider:", config.provider)
+      continue
     }
-    console.info('Use provider:', config.provider);
+    console.info("Use provider:", config.provider)
 
-    const response = await requestLLMUnified(config, req);
+    const response = await requestLLMUnified(config, req)
 
     if (!response.error) {
-      return response;
-    }
-    else {
+      return response
+    } else {
       console.error(response.error)
     }
   }
@@ -111,5 +108,5 @@ export async function requestLLM(settings: LLMSettings, req: LLMRequest): Promis
     output: {},
     provider: settings.providers[0]?.provider || "openai",
     error: "All LLM providers failed or are not configured",
-  };
+  }
 }

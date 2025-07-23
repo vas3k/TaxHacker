@@ -7,19 +7,22 @@ import { fieldsToJsonSchema } from "@/ai/schema"
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isAiBalanceExhausted, isSubscriptionExpired } from "@/lib/auth"
-import config from "@/lib/config"
-import { getTransactionFileUploadPath, getUserUploadsDirectory, safePathJoin, unsortedFilePath } from "@/lib/files"
+import {
+  getDirectorySize,
+  getTransactionFileUploadPath,
+  getUserUploadsDirectory,
+  safePathJoin,
+  unsortedFilePath,
+} from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { createFile, deleteFile, getFileById, updateFile } from "@/models/files"
-import { createTransaction, updateTransactionFiles, TransactionData } from "@/models/transactions"
+import { createTransaction, TransactionData, updateTransactionFiles } from "@/models/transactions"
 import { updateUser } from "@/models/users"
 import { Category, Field, File, Project, Transaction } from "@/prisma/client"
-import { mkdir, rename } from "fs/promises"
+import { randomUUID } from "crypto"
+import { mkdir, readFile, rename, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
-import { randomUUID } from "crypto"
-import { readFile, writeFile } from "fs/promises"
-import { getDirectorySize } from "@/lib/files"
 
 export async function analyzeFileAction(
   file: File,
@@ -31,15 +34,15 @@ export async function analyzeFileAction(
   const user = await getCurrentUser()
 
   if (!file || file.userId !== user.id) {
-      return { success: false, error: "File not found or does not belong to the user" }
-    }
+    return { success: false, error: "File not found or does not belong to the user" }
+  }
 
-    if (isAiBalanceExhausted(user)) {
-      return {
-        success: false,
-        error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
-      }
+  if (isAiBalanceExhausted(user)) {
+    return {
+      success: false,
+      error: "You used all of your pre-paid AI scans, please upgrade your account or buy new subscription plan",
     }
+  }
 
   if (isSubscriptionExpired(user)) {
     return {
