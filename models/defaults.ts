@@ -4,6 +4,8 @@ export const DEFAULT_PROMPT_ANALYSE_NEW_FILE = `You are an accountant and invoic
 
 {fields}
 
+Also try to extract "items": all separate products or items from the invoice
+
 Where categories are:
 
 {categories}
