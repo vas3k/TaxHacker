@@ -46,6 +46,16 @@ export const updateProject = async (userId: string, code: string, project: Proje
 }
 
 export const deleteProject = async (userId: string, code: string) => {
+  await prisma.transaction.updateMany({
+    where: {
+      userId,
+      projectCode: code,
+    },
+    data: {
+      projectCode: null,
+    },
+  })
+
   return await prisma.project.delete({
     where: { userId_code: { code, userId } },
   })

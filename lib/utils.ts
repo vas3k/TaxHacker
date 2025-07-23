@@ -80,3 +80,39 @@ export function encodeFilename(filename: string): string {
   const encoded = encodeURIComponent(filename)
   return `UTF-8''${encoded}`
 }
+
+export function generateUUID(): string {
+  // Try to use crypto.randomUUID() if available (modern browsers and Node.js 14.17+)
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID()
+    } catch (error) {
+      // Fall through to next method
+    }
+  }
+
+  // Fallback to crypto.getRandomValues() for UUID v4 generation
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    try {
+      const bytes = new Uint8Array(16)
+      crypto.getRandomValues(bytes)
+
+      // Set version (4) and variant bits according to RFC 4122
+      bytes[6] = (bytes[6] & 0x0f) | 0x40 // Version 4
+      bytes[8] = (bytes[8] & 0x3f) | 0x80 // Variant 10
+
+      // Convert to UUID string format
+      const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")
+      return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20, 32)].join("-")
+    } catch (error) {
+      // Fall through to Math.random() fallback
+    }
+  }
+
+  // Final fallback using Math.random() (RFC 4122 compliant UUID v4)
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0
+    const v = c === "x" ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}

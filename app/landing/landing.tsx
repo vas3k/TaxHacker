@@ -25,13 +25,13 @@ export default function LandingPage() {
           <div className="flex gap-1 md:gap-4 text-xs md:text-sm">
             <Link
               href="/enter"
-              className="font-medium px-4 py-2 rounded-full border-2 border-gradient-to-r from-pink-300 to-indigo-300 hover:from-pink-400 hover:to-indigo-400 bg-white/80 hover:bg-white transition-all duration-300 hover:scale-105"
+              className="cursor-pointer font-medium px-4 py-2 rounded-full border-2 border-gradient-to-r from-pink-300 to-indigo-300 hover:from-pink-400 hover:to-indigo-400 bg-white/80 hover:bg-white transition-all duration-300 hover:scale-105"
             >
               Log In
             </Link>
             <Link
               href="/cloud"
-              className="font-medium bg-gradient-to-r from-pink-600 to-indigo-600 text-white px-4 py-2 rounded-full hover:from-pink-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+              className="cursor-pointer font-medium bg-gradient-to-r from-pink-600 to-indigo-600 text-white px-4 py-2 rounded-full hover:from-pink-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
             >
               Sign Up
             </Link>
@@ -48,14 +48,14 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-12">
-            <div className="inline-block px-6 py-3 rounded-full bg-gradient-to-r from-pink-600 to-indigo-600 text-white text-sm font-medium mb-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="inline-block px-6 py-3 rounded-full border-2 border-pink-600/50 text-sm font-medium mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
               🚀 Under Active Development
             </div>
             <h1 className="text-5xl font-bold tracking-tight sm:text-6xl mb-6 bg-gradient-to-r from-gray-900 via-pink-700 to-indigo-700 bg-clip-text text-transparent pb-2">
               Let AI finally care about your taxes, scan your receipts and analyze your expenses
             </h1>
             <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto font-medium">
-              A self-hosted accounting app crafted with love for freelancers and small businesses
+              Self-hosted accounting app crafted for freelancers, indie-hackers and small businesses
             </p>
             <div className="flex gap-4 justify-center text-sm md:text-lg">
               <Link
@@ -65,18 +65,18 @@ export default function LandingPage() {
                 Get Started ✨
               </Link>
               <Link
-                href="mailto:me@vas3k.ru"
+                href="mailto:me@vas3k.com"
                 className="px-8 py-4 border-2 border-gradient-to-r from-pink-300 to-indigo-300 text-gray-800 font-bold rounded-full hover:bg-gradient-to-r hover:from-pink-50 hover:to-indigo-50 transition-all duration-300 hover:scale-105 bg-white/80"
               >
                 Contact Us 💌
               </Link>
             </div>
           </div>
-          <div className="relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-pink-200 to-indigo-200 hover:scale-105 transition-all duration-500 group">
-            <div className="absolute inset-0 bg-gradient-to-b from-pink-500/10 via-purple-500/10 to-indigo-500/10 z-10 group-hover:from-pink-500/20 group-hover:to-indigo-500/20 transition-all duration-500" />
-            <video className="w-full h-auto" autoPlay loop muted playsInline poster="/landing/title.webp">
+          <div className="relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-pink-200 to-indigo-200">
+            <div className="absolute inset-0 bg-gradient-to-b from-pink-500/5 via-purple-500/5 to-indigo-500/10 z-10" />
+            <video className="w-full h-auto" autoPlay loop muted playsInline poster="/landing/ai-scanner-big.webp">
               <source src="/landing/video.mp4" type="video/mp4" />
-              <Image src="/landing/title.webp" alt="TaxHacker" width={1980} height={1224} priority />
+              <Image src="/landing/ai-scanner-big.webp" alt="TaxHacker" width={1728} height={1080} priority />
             </video>
           </div>
         </div>
@@ -92,7 +92,7 @@ export default function LandingPage() {
                 F∗ck Taxes
               </span>
               <span className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                TaxHacker can save you time, money and nerves
+                TaxHacker saves you time, money and nerves
               </span>
             </h2>
           </div>
@@ -113,15 +113,19 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center">
                   <span className="text-blue-600 mr-3 text-lg">✨</span>
-                  Extract key information like dates, amounts, and vendors
+                  Extract key information like dates, items, and vendors
                 </li>
                 <li className="flex items-center">
                   <span className="text-blue-600 mr-3 text-lg">✨</span>
-                  Works with any language, format and photo quality
+                  Works with any language and any photo quality
                 </li>
                 <li className="flex items-center">
                   <span className="text-blue-600 mr-3 text-lg">✨</span>
                   Automatically organize everything into a structured database
+                </li>
+                <li className="flex items-center">
+                  <span className="text-blue-600 mr-3 text-lg">✨</span>
+                  Bulk upload and analyze multiple files at once
                 </li>
               </ul>
             </div>
@@ -137,24 +141,28 @@ export default function LandingPage() {
                 💱 Currency Converter
               </div>
               <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">
-                Automatically convert currencies
+                Automatically convert currencies (even crypto!)
               </h3>
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <span className="text-green-600 mr-3 text-lg">💰</span>
-                  Detects foreign currencies and coverts it to yours
+                  Detects foreign currencies and converts it to yours
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-600 mr-3 text-lg">💰</span>
-                  Historical exchange rate lookup on a date of transaction
+                  Knows historical exchange rates on a date of transaction
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-600 mr-3 text-lg">💰</span>
-                  Support for 170+ world currencies
+                  Supports 170+ world currencies
                 </li>
                 <li className="flex items-center">
                   <span className="text-green-600 mr-3 text-lg">💰</span>
-                  Even works with cryptocurrencies (BTC, ETH, LTC, etc.)
+                  Works with popular cryptocurrencies (BTC, ETH, LTC, etc.)
+                </li>
+                <li className="flex items-center">
+                  <span className="text-green-600 mr-3 text-lg">💰</span>
+                  Still allows you to fill it manually
                 </li>
               </ul>
             </div>
@@ -170,12 +178,16 @@ export default function LandingPage() {
             </div>
             <div className="flex-1  min-w-60">
               <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 text-white text-sm font-bold mb-4 shadow-lg">
-                🔍 Filters
+                🔍 Filters & Categories
               </div>
               <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-pink-700 to-rose-700 bg-clip-text text-transparent">
-                Organize expenses and income
+                Organize your transactions using fully customizable categories, projects and fields
               </h3>
               <ul className="space-y-3 text-gray-700">
+                <li className="flex items-center">
+                  <span className="text-pink-600 mr-3 text-lg">📊</span>
+                  Absolute freedom to create custom categories, projects and fields
+                </li>
                 <li className="flex items-center">
                   <span className="text-pink-600 mr-3 text-lg">📊</span>
                   Add, edit and manage your transactions
@@ -211,19 +223,23 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">📄</span>
-                  ???
+                  Advanced invoice generator to create any invoice in any language
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">📄</span>
-                  ???
+                  Edit any field, even labels and titles
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">📄</span>
-                  ???
+                  Export invoices to PDF or as transactions
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">📄</span>
-                  ???
+                  Save invoices as templates to reuse them later
+                </li>
+                <li className="flex items-center">
+                  <span className="text-purple-600 mr-3 text-lg">📄</span>
+                  Native support for both included and excluded taxes (VAT, GST, etc.)
                 </li>
               </ul>
             </div>
@@ -231,20 +247,21 @@ export default function LandingPage() {
 
           {/* Custom Fields & Categories */}
           <div className="flex flex-wrap items-center gap-12 mb-20 bg-gradient-to-br from-white via-violet-50/30 to-purple-50/30 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-violet-200 to-purple-200 hover:shadow-2xl transition-all duration-500 group">
-            <div className="flex-1 relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-violet-200 to-purple-200 hover:scale-105 transition-all duration-500">
-              <Image src="/landing/custom-llm.webp" alt="Custom LLM promts" width={1800} height={1081} />
-            </div>
             <div className="flex-1 min-w-60">
               <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold mb-4 shadow-lg">
-                🎨 Customization
+                🎨 Control over AI
               </div>
               <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-violet-700 to-purple-700 bg-clip-text text-transparent">
-                Create custom LLM promts to extract anything
+                Write custom LLM promts to extract anything
               </h3>
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <span className="text-violet-600 mr-3 text-lg">🔧</span>
-                  Create custom fields and categories with your own LLM prompts
+                  Expand and improve your TaxHacker instance with custom LLM prompts
+                </li>
+                <li className="flex items-center">
+                  <span className="text-violet-600 mr-3 text-lg">🔧</span>
+                  Create custom fields and categories and tell AI how to parse them for you
                 </li>
                 <li className="flex items-center">
                   <span className="text-violet-600 mr-3 text-lg">🔧</span>
@@ -260,16 +277,16 @@ export default function LandingPage() {
                 </li>
               </ul>
             </div>
+            <div className="flex-1 relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-violet-200 to-purple-200 hover:scale-105 transition-all duration-500">
+              <Image src="/landing/custom-llm.webp" alt="Custom LLM promts" width={1800} height={1081} />
+            </div>
           </div>
 
           {/* Data Export */}
           <div className="flex flex-wrap items-center gap-12 mb-20 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/30 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-orange-200 to-amber-200 hover:shadow-2xl transition-all duration-500 group flex-row-reverse">
-            <div className="flex-1 relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-orange-200 to-amber-200 hover:scale-105 transition-all duration-500">
-              <Image src="/landing/export.webp" alt="Export" width={1200} height={1081} />
-            </div>
             <div className="flex-1 min-w-60">
               <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white text-sm font-bold mb-4 shadow-lg">
-                📦 Export
+                📦 Self-hosting & Export
               </div>
               <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent">
                 Your Data — Your Rules
@@ -277,11 +294,15 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Flexible filters to export your data for tax prep
+                  Deploy your own instance of TaxHacker if you want 100% privacy
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Full-text search across documents
+                  Export your transactions to CSV for tax prep or any other purpose
+                </li>
+                <li className="flex items-center">
+                  <span className="text-orange-600 mr-3 text-lg">📤</span>
+                  Full-text search across documents and invoices
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
@@ -289,9 +310,13 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Download full data archive to migrate to another service
+                  Download full data archive to migrate to another service. We don't take away or limit what you do with
+                  your data
                 </li>
               </ul>
+            </div>
+            <div className="flex-1 relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-orange-200 to-amber-200 hover:scale-105 transition-all duration-500">
+              <Image src="/landing/export.webp" alt="Export" width={1200} height={1081} />
             </div>
           </div>
         </div>
@@ -311,8 +336,8 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-16">
             {/* Self-Hosted Version */}
-            <div className="bg-gradient-to-br from-white via-violet-50/50 to-indigo-50/50 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-violet-200 to-indigo-200 hover:shadow-2xl transition-all duration-500 hover:scale-105 group">
-              <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-sm font-bold mb-4 shadow-lg">
+            <div className="bg-gradient-to-br from-white via-violet-50/50 to-indigo-50/50 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-violet-200 to-indigo-200 hover:shadow-2xl transition-all duration-500 group">
+              <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-sm font-bold mb-6 shadow-lg">
                 🏠 Use Your Own Server
               </div>
               <h3 className="text-2xl font-bold mb-4">
@@ -346,8 +371,8 @@ export default function LandingPage() {
             </div>
 
             {/* Cloud Version */}
-            <div className="bg-gradient-to-br from-white via-pink-50/50 to-purple-50/50 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-pink-200 to-purple-200 hover:shadow-2xl transition-all duration-500 hover:scale-105 group relative">
-              <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-bold mb-4 shadow-lg">
+            <div className="bg-gradient-to-br from-white via-pink-50/50 to-purple-50/50 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-pink-200 to-purple-200 hover:shadow-2xl transition-all duration-500 group relative">
+              <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-bold mb-6 shadow-lg">
                 ☁️ We Host It For You
               </div>
               <h3 className="text-2xl font-bold mb-4">
@@ -356,15 +381,15 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700 mb-8">
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🎯</span>
-                  SaaS version for those who prefer less hassle
+                  SaaS version if you don't want to hassle with own servers
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🤖</span>
-                  We provide AI keys and storage
+                  We provide you with AI keys and storage
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">💳</span>
-                  Yearly subscription plans
+                  Yearly subscription plans. No hidden fees
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🚀</span>

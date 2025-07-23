@@ -1,3 +1,4 @@
+import { generateUUID } from "@/lib/utils"
 import { useEffect, useState } from "react"
 
 interface Progress {
@@ -38,7 +39,7 @@ export function useProgress(options: UseProgressOptions = {}) {
     }
 
     try {
-      const progressId = crypto.randomUUID()
+      const progressId = generateUUID()
       const source = new EventSource(`/api/progress/${progressId}?type=${type}`)
       setEventSource(source)
 

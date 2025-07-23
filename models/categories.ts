@@ -46,6 +46,16 @@ export const updateCategory = async (userId: string, code: string, category: Cat
 }
 
 export const deleteCategory = async (userId: string, code: string) => {
+  await prisma.transaction.updateMany({
+    where: {
+      userId,
+      categoryCode: code,
+    },
+    data: {
+      categoryCode: null,
+    },
+  })
+
   return await prisma.category.delete({
     where: { userId_code: { userId, code } },
   })

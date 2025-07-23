@@ -21,13 +21,13 @@ I'm a small self-hosted accountant app that can help you deal with invoices, rec
 
 ## 👋🏻 Getting Started
 
-TaxHacker is a self-hosted accounting app for freelancers and small businesses who want to save time and automate expences and income tracking with power of GenAI. It can recognise uploaded photos, receipts or PDFs and extract important data (e.g. name, total amount, date, merchant, VAT) and save it as structured transactions to a table. You can also create your own custom fields to extract with your LLM prompts.
+TaxHacker is a self-hosted accounting app for freelancers, indie-hackers and small businesses who want to save time and automate expences and income tracking with power of GenAI. It can recognise uploaded photos, receipts or PDFs and extract important data (e.g. name, total amount, date, merchant, VAT) and save it as structured transactions to a table. You can also create your own custom fields to extract with your LLM prompts.
 
 It supports automatic currency conversion on a day of transaction. Even for crypto!
 
 Built-in system of filters, support for multiple projects, import-export of transactions for a certain time (along with attached files) and custom categories, allows you to simplify reporting and tax filing.
 
-![Dashboard](docs/screenshots/title.png)
+![Dashboard](public/landing/main-page.webp)
 
 > \[!IMPORTANT]
 >
@@ -36,6 +36,8 @@ Built-in system of filters, support for multiple projects, import-export of tran
 ## ✨ Features
 
 ### `1` Upload photos or documents to analyze with LLM
+
+![Currency Conversion](public/landing/ai-scanner-big.webp)
 
 https://github.com/user-attachments/assets/3326d0e3-0bf6-4c39-9e00-4bf0983d9b7a
 
@@ -53,7 +55,7 @@ TaxHacker recognizes a wide variety of documents including store receipts, resta
 
 ### `2` Multi-currency support with automatic conversion (even for crypto)
 
-![Currency Conversion](docs/screenshots/currency_conversion.png)
+![Currency Conversion](public/landing/multi-currency.webp)
 
 TaxHacker automatically converts foreign currencies and even knows the historical exchange rates on the invoice date.
 
@@ -62,9 +64,20 @@ TaxHacker automatically converts foreign currencies and even knows the historica
 - Historical exchange rate lookup for past transactions
 - Support for over 170 world currencies and 14 popular cryptocurrencies (BTC, ETC, LTC, DOT, etc)!
 
-### `3` Customize any LLM prompt
+### `3` Create custom fields, projects, categories
 
-![Transactions Table](docs/screenshots/transactions.png)
+![Transactions Table](public/landing/transactions-big.webp)
+
+Adapt TaxHacker to your specific tracking needs. You can create new fields, projects or categories to extract additional information from documents. For example, if you need to save emails, addresses, and any custom information into separate fields, you can do it. Custom fields will be available when exporting too.
+
+- Create unlimited custom fields for transaction tracking
+- Automatically extract custom field data using AI
+- Include custom fields in exports and reports
+- Create new categories or projects to organise your transactions and filter by them
+
+### `4` `Customize any LLM prompt
+
+![Custom Categories](public/landing/custom-llm.webp)
 
 You can customize LLM Prompts for built-in fields, categories, and projects, as well as modify global templates in the application settings. This allows to customize the quality of recognizing specific things to your specific use-cases.
 
@@ -75,20 +88,9 @@ You can customize LLM Prompts for built-in fields, categories, and projects, as 
 
 The whole extraction process is under your contoll all the time!
 
-### `4` Create custom fields, projects, categories
-
-![Custom Categories](docs/screenshots/fields.png)
-
-Adapt TaxHacker to your specific tracking needs. You can create new fields, projects or categories to extract additional information from documents. For example, if you need to save emails, addresses, and any custom information into separate fields, you can do it. Custom fields will be available when exporting too.
-
-- Create unlimited custom fields for transaction tracking
-- Automatically extract custom field data using AI
-- Include custom fields in exports and reports
-- Create new categories or projects to organise your transactions and filter by them
-
 ### `5` Flexible data filtering and export
 
-![Data Export](docs/screenshots/export.png)
+![Data Export](public/landing/export.webp)
 
 Once all documents have been uploaded and analyzed, you can view, filter and export your transaction history.
 
