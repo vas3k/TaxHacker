@@ -1,6 +1,8 @@
 "use client"
 
 import { deleteTransactionAction, saveTransactionAction } from "@/app/(app)/transactions/actions"
+import { ItemsDetectTool } from "@/components/agents/items-detect"
+import ToolWindow from "@/components/agents/tool-window"
 import { FormError } from "@/components/forms/error"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
@@ -8,14 +10,12 @@ import { FormSelectProject } from "@/components/forms/select-project"
 import { FormSelectType } from "@/components/forms/select-type"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
+import { TransactionData } from "@/models/transactions"
 import { Category, Currency, Field, Project, Transaction } from "@/prisma/client"
 import { format } from "date-fns"
 import { Loader2, Save, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react"
-import ToolWindow from "@/components/agents/tool-window"
-import { ItemsDetectTool } from "@/components/agents/items-detect"
-import { TransactionData } from "@/models/transactions"
 
 export default function TransactionEditForm({
   transaction,

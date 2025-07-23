@@ -38,29 +38,32 @@ export default async function UnsortedPage() {
         {files.length > 1 && <AnalyzeAllButton />}
       </header>
 
-      {config.selfHosted.isEnabled && !settings.openai_api_key && !settings.google_api_key && !settings.mistral_api_key && (
-        <Alert>
-          <Settings className="h-4 w-4 mt-2" />
-          <div className="flex flex-row justify-between pt-2">
-            <div className="flex flex-col">
-              <AlertTitle>LLM provider API Key is required for analyzing files</AlertTitle>
-              <AlertDescription>
-                Please set your LLM provider API key in the settings to use the analyze form.
-              </AlertDescription>
+      {config.selfHosted.isEnabled &&
+        !settings.openai_api_key &&
+        !settings.google_api_key &&
+        !settings.mistral_api_key && (
+          <Alert>
+            <Settings className="h-4 w-4 mt-2" />
+            <div className="flex flex-row justify-between pt-2">
+              <div className="flex flex-col">
+                <AlertTitle>LLM provider API Key is required for analyzing files</AlertTitle>
+                <AlertDescription>
+                  Please set your LLM provider API key in the settings to use the analyze form.
+                </AlertDescription>
+              </div>
+              <Link href="/settings/llm">
+                <Button>Go to Settings</Button>
+              </Link>
             </div>
-            <Link href="/settings/llm">
-              <Button>Go to Settings</Button>
-            </Link>
-          </div>
-        </Alert>
-      )}
+          </Alert>
+        )}
 
       <main className="flex flex-col gap-5">
         {files.map((file) => (
           <Card
             key={file.id}
             id={file.id}
-            className="flex flex-row flex-wrap md:flex-nowrap justify-center items-start gap-5 p-5 bg-accent"
+            className="flex flex-row flex-wrap md:flex-nowrap justify-center items-start gap-5 p-5 bg-gradient-to-br from-violet-50/80 via-indigo-50/80 to-white border-violet-200/60 rounded-2xl"
           >
             <div className="w-full max-w-[500px]">
               <Card>

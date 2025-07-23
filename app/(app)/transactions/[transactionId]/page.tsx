@@ -11,8 +11,8 @@ import { getFilesByTransactionId } from "@/models/files"
 import { getProjects } from "@/models/projects"
 import { getSettings } from "@/models/settings"
 import { getTransactionById } from "@/models/transactions"
-import { notFound } from "next/navigation"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 
 export default async function TransactionPage({ params }: { params: Promise<{ transactionId: string }> }) {
   const { transactionId } = await params
@@ -32,7 +32,7 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
 
   return (
     <div className="flex flex-wrap flex-row items-start justify-center gap-4 max-w-6xl">
-      <Card className="w-full flex-1 flex flex-col flex-wrap justify-center items-start overflow-hidden">
+      <Card className="w-full flex-1 flex flex-col flex-wrap justify-center items-start overflow-hidden bg-gradient-to-br from-violet-50/80 via-indigo-50/80 to-white border-violet-200/60">
         {incompleteFields.length > 0 && (
           <div className="w-full flex flex-col gap-1 rounded-md bg-yellow-50 p-5">
             <span>
@@ -47,7 +47,7 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
             </span>
           </div>
         )}
-        <div className="w-full p-5 bg-accent">
+        <div className="w-full p-5">
           <TransactionEditForm
             transaction={transaction}
             categories={categories}

@@ -31,6 +31,7 @@ export type TransactionFilters = {
   ordering?: string
   categoryCode?: string
   projectCode?: string
+  type?: string
   page?: number
 }
 
@@ -54,11 +55,11 @@ export const getTransactions = cache(
     if (filters) {
       if (filters.search) {
         where.OR = [
-          { name: { contains: filters.search, mode: 'insensitive' } },
-          { merchant: { contains: filters.search, mode: 'insensitive' } },
-          { description: { contains: filters.search, mode: 'insensitive' } },
-          { note: { contains: filters.search, mode: 'insensitive' } },
-          { text: { contains: filters.search, mode: 'insensitive' } },
+          { name: { contains: filters.search, mode: "insensitive" } },
+          { merchant: { contains: filters.search, mode: "insensitive" } },
+          { description: { contains: filters.search, mode: "insensitive" } },
+          { note: { contains: filters.search, mode: "insensitive" } },
+          { text: { contains: filters.search, mode: "insensitive" } },
         ]
       }
 
@@ -75,6 +76,10 @@ export const getTransactions = cache(
 
       if (filters.projectCode) {
         where.projectCode = filters.projectCode
+      }
+
+      if (filters.type) {
+        where.type = filters.type
       }
 
       if (filters.ordering) {
@@ -148,7 +153,7 @@ export const updateTransaction = async (id: string, userId: string, data: Transa
     data: {
       ...standard,
       extra: extra,
-      items: data.items ? data.items as Prisma.InputJsonValue : [],
+      items: data.items ? (data.items as Prisma.InputJsonValue) : [],
     },
   })
 }
