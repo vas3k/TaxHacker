@@ -25,7 +25,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     <div className="flex flex-col gap-5 p-5 w-full max-w-7xl self-center">
       <div className="flex flex-col sm:flex-row gap-5 items-stretch h-full">
         <DashboardDropZoneWidget />
-
         <DashboardUnsortedWidget files={unsortedFiles} />
       </div>
 

@@ -10,6 +10,7 @@ import { getUnsortedFilesCount } from "@/models/files"
 import type { Metadata, Viewport } from "next"
 import "../globals.css"
 import { NotificationProvider } from "./context"
+import { getLocalIpAddress } from "@/lib/network"
 
 export const metadata: Metadata = {
   title: {
@@ -32,6 +33,17 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
   const unsortedFilesCount = await getUnsortedFilesCount(user.id)
+  // We need to be on Server side when we getting IP.
+  // Down the stack we are in "use client" area
+  // where I am not able to get IP of current machine running self-hosted instance
+  // or I'm not aware how to do it properly.
+  // Also it is not needed to get IP address for not self-hosted version.
+  var ip
+  if (config.selfHosted.isEnabled) {
+    ip = getLocalIpAddress()
+  } else {
+    ip = ""
+  }
 
   const userProfile = {
     id: user.id,
@@ -53,6 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             profile={userProfile}
             unsortedFilesCount={unsortedFilesCount}
             isSelfHosted={config.selfHosted.isEnabled}
+            ip={ip}
           />
           <SidebarInset className="w-full h-full mt-[60px] md:mt-0 overflow-auto">
             {isSubscriptionExpired(user) && <SubscriptionExpired />}
