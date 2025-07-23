@@ -210,7 +210,7 @@ export default function LandingPage() {
 
           {/* Invoice Generator */}
           <div className="flex flex-wrap items-center gap-12 mb-20 bg-gradient-to-br from-white via-purple-50/30 to-indigo-50/30 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-purple-200 to-indigo-200 hover:shadow-2xl transition-all duration-500 group">
-            <div className="flex-1 relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-purple-200 to-indigo-200 hover:scale-105 transition-all duration-500">
+            <div className="max-w-sm flex-1 relative aspect-auto rounded-3xl overflow-hidden shadow-2xl ring-4 ring-gradient-to-r from-purple-200 to-indigo-200 hover:scale-105 transition-all duration-500">
               <Image src="/landing/invoice-generator.webp" alt="Invoice Generator" width={1800} height={1081} />
             </div>
             <div className="flex-1 min-w-60">
@@ -252,7 +252,7 @@ export default function LandingPage() {
                 🎨 Control over AI
               </div>
               <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-violet-700 to-purple-700 bg-clip-text text-transparent">
-                Write custom LLM promts to extract anything
+                Tune any LLM prompt to extract anything you need
               </h3>
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
@@ -286,7 +286,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center gap-12 mb-20 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/30 p-8 rounded-3xl shadow-xl ring-2 ring-gradient-to-r from-orange-200 to-amber-200 hover:shadow-2xl transition-all duration-500 group flex-row-reverse">
             <div className="flex-1 min-w-60">
               <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white text-sm font-bold mb-4 shadow-lg">
-                📦 Self-hosting & Export
+                📦 Self-hosting & Data Export
               </div>
               <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent">
                 Your Data — Your Rules
@@ -294,19 +294,15 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Deploy your own instance of TaxHacker if you want 100% privacy
+                  Deploy your own instance of TaxHacker for 100% privacy
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Export your transactions to CSV for tax prep or any other purpose
+                  Export your transactions to CSV for tax prep
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
                   Full-text search across documents and invoices
-                </li>
-                <li className="flex items-center">
-                  <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Export to CSV with attached documents
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
@@ -346,7 +342,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700 mb-8">
                 <li className="flex items-center">
                   <span className="text-indigo-600 mr-3 text-lg">🆓</span>
-                  Free and open source
+                  Free and Open Source
                 </li>
                 <li className="flex items-center">
                   <span className="text-indigo-600 mr-3 text-lg">🔒</span>
@@ -354,7 +350,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center">
                   <span className="text-indigo-600 mr-3 text-lg">🏗️</span>
-                  Use at your own infrastructure
+                  Deploy at your own infrastructure or home server
                 </li>
                 <li className="flex items-center">
                   <span className="text-indigo-600 mr-3 text-lg">🔑</span>
@@ -366,7 +362,7 @@ export default function LandingPage() {
                 target="_blank"
                 className="block w-full text-center px-6 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-full hover:from-violet-700 hover:to-indigo-700 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-110"
               >
-                Free: Github + Docker Compose 🐳
+                Github + Docker Compose 🐳
               </Link>
             </div>
 
@@ -381,7 +377,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700 mb-8">
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🎯</span>
-                  SaaS version if you don't want to hassle with own servers
+                  SaaS version if you don't want to hassle with own servers and deployments
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🤖</span>
