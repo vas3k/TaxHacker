@@ -9,6 +9,7 @@ import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
 import { FormSelectType } from "@/components/forms/select-type"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
+import { DeleteModal } from "@/components/transactions/delete-file-modal"
 import { Button } from "@/components/ui/button"
 import { TransactionData } from "@/models/transactions"
 import { Category, Currency, Field, Project, Transaction } from "@/prisma/client"
@@ -35,6 +36,7 @@ export default function TransactionEditForm({
   const router = useRouter()
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteTransactionAction, null)
   const [saveState, saveAction, isSaving] = useActionState(saveTransactionAction, null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   const extraFields = fields.filter((field) => field.isExtra)
   const [formData, setFormData] = useState({
@@ -71,12 +73,15 @@ export default function TransactionEditForm({
   }, [fields])
 
   const handleDelete = async () => {
-    if (confirm("Are you sure? This will delete the transaction with all the files permanently")) {
-      startTransition(async () => {
-        await deleteAction(transaction.id)
-        router.back()
-      })
-    }
+    startTransition(async () => {
+      await deleteAction(transaction.id)
+      router.back()
+    })
+    setDeleteModalOpen(false)
+  }
+
+  const openDeleteModal = () => {
+    setDeleteModalOpen(true)
   }
 
   useEffect(() => {
@@ -223,7 +228,7 @@ export default function TransactionEditForm({
       )}
 
       <div className="flex justify-between space-x-4 pt-6">
-        <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
+        <Button type="button" onClick={openDeleteModal} variant="destructive" disabled={isDeleting}>
           <>
             <Trash2 className="h-4 w-4" />
             {isDeleting ? "⏳ Deleting..." : "Delete "}
@@ -249,6 +254,14 @@ export default function TransactionEditForm({
         {deleteState?.error && <FormError>{deleteState.error}</FormError>}
         {saveState?.error && <FormError>{saveState.error}</FormError>}
       </div>
+
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Transaction"
+        description="Are you sure? This will delete the transaction with all the files permanently"
+      />
     </form>
   )
 }
