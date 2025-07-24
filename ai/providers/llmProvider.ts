@@ -3,7 +3,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
 
-export type LLMProvider = "openai" | "google" | "mistral"
+export type LLMProvider = "openai" | "google" | "mistral" | "openrouter"
 
 export interface LLMConfig {
   provider: LLMProvider
@@ -49,6 +49,15 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         apiKey: config.apiKey,
         model: config.model,
         temperature: temperature,
+      })
+    } else if (config.provider === "openrouter") {
+      model = new ChatOpenAI({
+        apiKey: config.apiKey,
+        model: config.model,
+        temperature: temperature,
+        configuration: {
+          baseURL: "https://openrouter.ai/api/v1",
+        },
       })
     } else {
       return {

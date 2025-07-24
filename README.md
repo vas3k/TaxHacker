@@ -40,7 +40,7 @@ Snap a photo of any receipt or upload an invoice PDF, and TaxHacker will automat
 - **Auto-categorization**: Transactions are automatically sorted into relevant categories based on their content
 - **Item splitting**: Extract individual items from invoices and split them into separate transactions when needed
 - **Structured storage**: Everything gets saved in an organized database for easy filtering and retrieval
-- **Customizable AI providers**: Choose from OpenAI, Google Gemini, or Mistral (local LLM support coming soon)
+- **Customizable AI providers**: Choose from OpenAI, Google Gemini, Mistral and OpenRouter (local LLM support coming soon)
 
 TaxHacker works with a wide variety of documents, including store receipts, restaurant bills, invoices, bank statements, letters, even handwritten receipts. It handles any language and any currency with ease.
 
@@ -163,6 +163,7 @@ You can also configure LLM provider settings in the application or via environme
 - **OpenAI**: `OPENAI_MODEL_NAME` and `OPENAI_API_KEY`
 - **Google Gemini**: `GOOGLE_MODEL_NAME` and `GOOGLE_API_KEY`
 - **Mistral**: `MISTRAL_MODEL_NAME` and `MISTRAL_API_KEY`
+- **OpenRouter**: `OPENROUTER_MODEL_NAME` and `OPENROUTER_API_KEY`
 
 ## ⌨️ Local Development
 
