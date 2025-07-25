@@ -61,6 +61,8 @@ const config = {
     googleModelName: env.GOOGLE_MODEL_NAME,
     mistralApiKey: env.MISTRAL_API_KEY,
     mistralModelName: env.MISTRAL_MODEL_NAME,
+    openrouterApiKey: env.OPENROUTER_API_KEY,
+    openrouterModelName: env.OPENROUTER_MODEL_NAME,
   },
   auth: {
     secret: env.BETTER_AUTH_SECRET,

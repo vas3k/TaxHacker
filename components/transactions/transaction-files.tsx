@@ -95,7 +95,7 @@ export default function TransactionFiles({ transaction, files }: { transaction: 
         }}
         onConfirm={() => fileToDelete && handleDeleteFile(fileToDelete.id)}
         title="Delete File"
-        description={`Are you sure you want to delete ${fileToDelete?.originalName ? `"${fileToDelete.originalName}"` : "this file"}? This action cannot be undone.`}
+        description={`Are you sure you want to delete ${fileToDelete?.filename ? `"${fileToDelete.filename}"` : "this file"}? This action cannot be undone.`}
       />
     </>
   )

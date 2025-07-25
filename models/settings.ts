@@ -18,28 +18,28 @@ export function getLLMSettings(settings: SettingsMap) {
       return {
         provider: provider as LLMProvider,
         apiKey: settings.openai_api_key || "",
-        model: settings.openai_model_name || (providerConfig?.defaultModelName),
+        model: settings.openai_model_name || providerConfig?.defaultModelName || "gpt-4o-mini",
       }
     }
     if (provider === "google") {
       return {
         provider: provider as LLMProvider,
         apiKey: settings.google_api_key || "",
-        model: settings.google_model_name || (providerConfig?.defaultModelName),
+        model: settings.google_model_name || providerConfig?.defaultModelName || "gemini-2.5-flash",
       }
     }
     if (provider === "mistral") {
       return {
         provider: provider as LLMProvider,
         apiKey: settings.mistral_api_key || "",
-        model: settings.mistral_model_name || (providerConfig?.defaultModelName),
+        model: settings.mistral_model_name || providerConfig?.defaultModelName || "mistral-medium-latest",
       }
     }
     if (provider === "openrouter") {
       return {
         provider: provider as LLMProvider,
         apiKey: settings.openrouter_api_key || "",
-        model: settings.openrouter_model_name || (providerConfig?.defaultModelName),
+        model: settings.openrouter_model_name || providerConfig?.defaultModelName || "openai/gpt-4.1-mini",
       }
     }
     return null
