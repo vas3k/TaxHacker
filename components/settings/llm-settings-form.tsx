@@ -30,7 +30,7 @@ import { PROVIDERS } from "@/lib/llm-providers";
 function getInitialProviderOrder(settings: Record<string, string>) {
   let order: string[] = []
   if (!settings.llm_providers) {
-    order = ['openai', 'google', 'mistral']
+    order = ['openai', 'google', 'mistral', 'openrouter']
   } else {
     order = settings.llm_providers.split(",").map(p => p.trim())
   }

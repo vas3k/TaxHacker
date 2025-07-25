@@ -16,7 +16,8 @@ export async function selfHostedGetStartedAction(formData: FormData) {
   const apiKeys = [
     "openai_api_key",
     "google_api_key",
-    "mistral_api_key"
+    "mistral_api_key",
+    "openrouter_api_key"
   ]
 
   for (const key of apiKeys) {

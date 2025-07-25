@@ -37,6 +37,7 @@ export default async function SelfHostedWelcomePage() {
     openai: config.ai.openaiApiKey ?? "",
     google: config.ai.googleApiKey ?? "",
     mistral: config.ai.mistralApiKey ?? "",
+    openrouter: config.ai.openrouterApiKey ?? "",
   }
 
   return (

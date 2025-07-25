@@ -10,6 +10,8 @@ const envSchema = z.object({
   GOOGLE_MODEL_NAME: z.string().default("gemini-2.5-flash"),
   MISTRAL_API_KEY: z.string().optional(),
   MISTRAL_MODEL_NAME: z.string().default("mistral-medium-latest"),
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_MODEL_NAME: z.string().default("gpt-4o-mini"),
   BETTER_AUTH_SECRET: z
     .string()
     .min(16, "Auth secret must be at least 16 characters")
@@ -59,6 +61,8 @@ const config = {
     googleModelName: env.GOOGLE_MODEL_NAME,
     mistralApiKey: env.MISTRAL_API_KEY,
     mistralModelName: env.MISTRAL_MODEL_NAME,
+    openrouterApiKey: env.OPENROUTER_API_KEY,
+    openrouterModelName: env.OPENROUTER_MODEL_NAME,
   },
   auth: {
     secret: env.BETTER_AUTH_SECRET,
