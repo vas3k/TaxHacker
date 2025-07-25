@@ -2,6 +2,7 @@
 
 import { deleteTransactionFileAction, uploadTransactionFilesAction } from "@/app/(app)/transactions/actions"
 import { FilePreview } from "@/components/files/preview"
+import { DeleteModal } from "@/components/transactions/delete-file-modal"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import config from "@/lib/config"
@@ -11,9 +12,18 @@ import { useState } from "react"
 
 export default function TransactionFiles({ transaction, files }: { transaction: Transaction; files: File[] }) {
   const [isUploading, setIsUploading] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [fileToDelete, setFileToDelete] = useState<File | null>(null)
 
   const handleDeleteFile = async (fileId: string) => {
     await deleteTransactionFileAction(transaction.id, fileId)
+    setDeleteModalOpen(false)
+    setFileToDelete(null)
+  }
+
+  const openDeleteModal = (file: File) => {
+    setFileToDelete(file)
+    setDeleteModalOpen(true)
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +45,7 @@ export default function TransactionFiles({ transaction, files }: { transaction: 
         <Card key={file.id} className="p-4 relative">
           <Button
             type="button"
-            onClick={() => handleDeleteFile(file.id)}
+            onClick={() => openDeleteModal(file)}
             variant="destructive"
             size="icon"
             className="absolute -right-2 -top-2 rounded-full w-6 h-6 z-10"
@@ -76,6 +86,17 @@ export default function TransactionFiles({ transaction, files }: { transaction: 
           />
         </label>
       </Card>
+
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setFileToDelete(null)
+        }}
+        onConfirm={() => fileToDelete && handleDeleteFile(fileToDelete.id)}
+        title="Delete File"
+        description={`Are you sure you want to delete ${fileToDelete?.filename ? `"${fileToDelete.filename}"` : "this file"}? This action cannot be undone.`}
+      />
     </>
   )
 }

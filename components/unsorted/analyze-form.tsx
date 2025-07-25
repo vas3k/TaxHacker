@@ -11,6 +11,7 @@ import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
 import { FormSelectType } from "@/components/forms/select-type"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
+import { DeleteModal } from "@/components/transactions/delete-file-modal"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
@@ -40,6 +41,7 @@ export default function AnalyzeForm({
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteUnsortedFileAction, null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -140,6 +142,15 @@ export default function AnalyzeForm({
       setIsAnalyzing(false)
       setAnalyzeStep("")
     }
+  }
+
+  const handleDelete = () => {
+    startTransition(() => deleteAction(file.id))
+    setDeleteModalOpen(false)
+  }
+
+  const openDeleteModal = () => {
+    setDeleteModalOpen(true)
   }
 
   return (
@@ -322,7 +333,7 @@ export default function AnalyzeForm({
         <div className="flex justify-between gap-4 pt-6">
           <Button
             type="button"
-            onClick={() => startTransition(() => deleteAction(file.id))}
+            onClick={openDeleteModal}
             variant="destructive"
             disabled={isDeleting}
           >
@@ -350,6 +361,14 @@ export default function AnalyzeForm({
           {saveError && <FormError>{saveError}</FormError>}
         </div>
       </form>
+
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete File"
+        description={`Are you sure you want to delete this file? This action cannot be undone.`}
+      />
     </>
   )
 }
