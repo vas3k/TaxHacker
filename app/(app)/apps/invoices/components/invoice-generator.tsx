@@ -38,10 +38,28 @@ function invoiceFormReducer(state: InvoiceFormData, action: any): InvoiceFormDat
       if (action.field === "quantity" || action.field === "unitPrice") {
         items[action.index].subtotal = Number(items[action.index].quantity) * Number(items[action.index].unitPrice)
       }
-      return { ...state, items }
+      
+      // Recalculate tax amounts when items change
+      const newSubtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
+      const updatedTaxes = state.additionalTaxes.map(tax => ({
+        ...tax,
+        amount: (newSubtotal * tax.rate) / 100
+      }))
+      
+      return { ...state, items, additionalTaxes: updatedTaxes }
     }
-    case "REMOVE_ITEM":
-      return { ...state, items: state.items.filter((_, i) => i !== action.index) }
+    case "REMOVE_ITEM": {
+      const items = state.items.filter((_, i) => i !== action.index)
+      
+      // Recalculate tax amounts when items are removed
+      const newSubtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
+      const updatedTaxes = state.additionalTaxes.map(tax => ({
+        ...tax,
+        amount: (newSubtotal * tax.rate) / 100
+      }))
+      
+      return { ...state, items, additionalTaxes: updatedTaxes }
+    }
     case "ADD_TAX":
       return { ...state, additionalTaxes: [...state.additionalTaxes, { name: "", rate: 0, amount: 0 }] }
     case "UPDATE_TAX": {
