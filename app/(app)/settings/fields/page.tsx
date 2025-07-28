@@ -1,5 +1,5 @@
 import { addFieldAction, deleteFieldAction, editFieldAction } from "@/app/(app)/settings/actions"
-import { CrudTable } from "@/components/settings/crud"
+import { FieldsTable } from "@/components/settings/fields"
 import { getCurrentUser } from "@/lib/auth"
 import { getFields } from "@/models/fields"
 import { Prisma } from "@/prisma/client"
@@ -21,41 +21,8 @@ export default async function FieldsSettingsPage() {
         prompts or hide them. If you don&apos;t want a field to be analyzed by AI but filled in by hand, leave the
         &quot;LLM prompt&quot; empty.
       </p>
-      <CrudTable
-        items={fieldsWithActions}
-        columns={[
-          { key: "name", label: "Name", editable: true },
-          {
-            key: "type",
-            label: "Type",
-            type: "select",
-            options: ["string", "number", "boolean"],
-            defaultValue: "string",
-            editable: true,
-          },
-          { key: "llm_prompt", label: "LLM Prompt", editable: true },
-          {
-            key: "isVisibleInList",
-            label: "Show in transactions table",
-            type: "checkbox",
-            defaultValue: false,
-            editable: true,
-          },
-          {
-            key: "isVisibleInAnalysis",
-            label: "Show in analysis form",
-            type: "checkbox",
-            defaultValue: false,
-            editable: true,
-          },
-          {
-            key: "isRequired",
-            label: "Is required",
-            type: "checkbox",
-            defaultValue: false,
-            editable: true,
-          },
-        ]}
+      <FieldsTable
+        fields={fieldsWithActions}
         onDelete={async (code) => {
           "use server"
           return await deleteFieldAction(user.id, code)

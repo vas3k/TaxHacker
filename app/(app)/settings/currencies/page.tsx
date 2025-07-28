@@ -1,5 +1,5 @@
 import { addCurrencyAction, deleteCurrencyAction, editCurrencyAction } from "@/app/(app)/settings/actions"
-import { CrudTable } from "@/components/settings/crud"
+import { CurrenciesTable } from "@/components/tables/CurrenciesTable"
 import { getCurrentUser } from "@/lib/auth"
 import { getCurrencies } from "@/models/currencies"
 
@@ -18,12 +18,8 @@ export default async function CurrenciesSettingsPage() {
       <p className="text-sm text-gray-500 mb-6 max-w-prose">
         Custom currencies would not be automatically converted but you still can have them.
       </p>
-      <CrudTable
-        items={currenciesWithActions}
-        columns={[
-          { key: "code", label: "Code", editable: true },
-          { key: "name", label: "Name", editable: true },
-        ]}
+      <CurrenciesTable
+        data={currenciesWithActions}
         onDelete={async (code) => {
           "use server"
           return await deleteCurrencyAction(user.id, code)

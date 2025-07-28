@@ -1,7 +1,6 @@
 import { addCategoryAction, deleteCategoryAction, editCategoryAction } from "@/app/(app)/settings/actions"
-import { CrudTable } from "@/components/settings/crud"
+import { CategoriesTable } from "@/components/tables/CategoriesTable"
 import { getCurrentUser } from "@/lib/auth"
-import { randomHexColor } from "@/lib/utils"
 import { getCategories } from "@/models/categories"
 import { Prisma } from "@/prisma/client"
 
@@ -22,13 +21,8 @@ export default async function CategoriesSettingsPage() {
         that AI can determine this category automatically.
       </p>
 
-      <CrudTable
-        items={categoriesWithActions}
-        columns={[
-          { key: "name", label: "Name", editable: true },
-          { key: "llm_prompt", label: "LLM Prompt", editable: true },
-          { key: "color", label: "Color", defaultValue: randomHexColor(), editable: true },
-        ]}
+      <CategoriesTable
+        data={categoriesWithActions}
         onDelete={async (code) => {
           "use server"
           return await deleteCategoryAction(user.id, code)

@@ -1,7 +1,6 @@
 import { addProjectAction, deleteProjectAction, editProjectAction } from "@/app/(app)/settings/actions"
-import { CrudTable } from "@/components/settings/crud"
+import { ProjectsTable } from "@/components/tables/ProjectsTable"
 import { getCurrentUser } from "@/lib/auth"
-import { randomHexColor } from "@/lib/utils"
 import { getProjects } from "@/models/projects"
 import { Prisma } from "@/prisma/client"
 
@@ -21,13 +20,8 @@ export default async function ProjectsSettingsPage() {
         Use projects to differentiate between the type of activities you do For example: Freelancing, YouTube channel,
         Blogging. Projects are just a convenient way to separate statistics.
       </p>
-      <CrudTable
-        items={projectsWithActions}
-        columns={[
-          { key: "name", label: "Name", editable: true },
-          { key: "llm_prompt", label: "LLM Prompt", editable: true },
-          { key: "color", label: "Color", defaultValue: randomHexColor(), editable: true },
-        ]}
+      <ProjectsTable
+        data={projectsWithActions}
         onDelete={async (code) => {
           "use server"
           return await deleteProjectAction(user.id, code)

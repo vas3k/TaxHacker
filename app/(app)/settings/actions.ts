@@ -255,17 +255,21 @@ export async function editFieldAction(userId: string, code: string, data: Prisma
     return { success: false, error: validatedForm.error.message }
   }
 
-  const field = await updateField(userId, code, {
-    name: validatedForm.data.name,
-    type: validatedForm.data.type,
-    llm_prompt: validatedForm.data.llm_prompt,
-    isVisibleInList: validatedForm.data.isVisibleInList,
-    isVisibleInAnalysis: validatedForm.data.isVisibleInAnalysis,
-    isRequired: validatedForm.data.isRequired,
-  })
-  revalidatePath("/settings/fields")
+  try {
+    const field = await updateField(userId, code, {
+      name: validatedForm.data.name,
+      type: validatedForm.data.type,
+      llm_prompt: validatedForm.data.llm_prompt,
+      isVisibleInList: validatedForm.data.isVisibleInList,
+      isVisibleInAnalysis: validatedForm.data.isVisibleInAnalysis,
+      isRequired: validatedForm.data.isRequired,
+    })
+    revalidatePath("/settings/fields")
 
-  return { success: true, field }
+    return { success: true, field }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
 }
 
 export async function deleteFieldAction(userId: string, code: string) {
