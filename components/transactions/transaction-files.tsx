@@ -41,21 +41,6 @@ export default function TransactionFiles({ transaction, files }: { transaction: 
 
   return (
     <>
-      {files.map((file) => (
-        <Card key={file.id} className="p-4 relative">
-          <Button
-            type="button"
-            onClick={() => openDeleteModal(file)}
-            variant="destructive"
-            size="icon"
-            className="absolute -right-2 -top-2 rounded-full w-6 h-6 z-10"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          <FilePreview file={file} />
-        </Card>
-      ))}
-
       <Card className="relative min-h-32 p-4">
         <input type="hidden" name="transactionId" value={transaction.id} />
         <label
@@ -86,6 +71,38 @@ export default function TransactionFiles({ transaction, files }: { transaction: 
           />
         </label>
       </Card>
+      {files.length === 1 ? (
+        <Card className="p-4 relative">
+          <Button
+            type="button"
+            onClick={() => openDeleteModal(files[0])}
+            variant="destructive"
+            size="icon"
+            className="absolute -right-2 -top-2 rounded-full w-6 h-6 z-10"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <FilePreview file={files[0]} />
+        </Card>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          {files.map((file) => (
+            <Card key={file.id} className="p-4 relative">
+              <Button
+                type="button"
+                onClick={() => openDeleteModal(file)}
+                variant="destructive"
+                size="icon"
+                className="absolute -right-2 -top-2 rounded-full w-6 h-6 z-10"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <FilePreview file={file} />
+            </Card>
+          ))}
+        </div>
+      )}
+
 
       <DeleteModal
         isOpen={deleteModalOpen}
