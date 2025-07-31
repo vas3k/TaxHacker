@@ -112,10 +112,17 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
       </div>
     ),
     footerValue: (transactions: Transaction[]) => {
-      const totalPerCurrency = calcTotalPerCurrency(transactions)
+      const totalIncomePerCurrency = calcTotalPerCurrency(transactions.filter((t) => t.type === "income"))
+      const totalExpensesPerCurrency = calcTotalPerCurrency(transactions.filter((t) => t.type === "expense"))
+      const profitPerCurrency = Object.fromEntries(
+        Object.keys(totalIncomePerCurrency).map((currency) => [
+          currency,
+          totalIncomePerCurrency[currency] - totalExpensesPerCurrency[currency],
+      ])
+    )
       return (
         <div className="flex flex-col">
-          {Object.entries(totalPerCurrency).map(([currency, total]) => (
+          {Object.entries(profitPerCurrency).map(([currency, total]) => (
             <div key={currency} className="text-sm first:text-base">
               {formatCurrency(total, currency)}
             </div>
