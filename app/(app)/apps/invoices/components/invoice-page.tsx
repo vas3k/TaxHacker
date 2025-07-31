@@ -277,7 +277,7 @@ export function InvoicePage({ invoiceData, dispatch, currencies }: InvoicePagePr
   )
 
   return (
-    <div className="relative w-full max-w-[794px] sm:w-[794px] min-h-[297mm] bg-white shadow-lg p-2 sm:p-8 mb-8">
+    <div className="relative w-full max-w-[794px] min-h-[297mm] bg-white shadow-lg p-2 sm:p-8 mb-8">
       {/* Gradient Background */}
       <div className="absolute top-0 left-0 right-0 h-[25%] bg-gradient-to-b from-indigo-100 to-indigo-0 opacity-70" />
 

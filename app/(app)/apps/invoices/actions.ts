@@ -47,6 +47,17 @@ export async function deleteTemplateAction(user: User, templateId: string) {
   return { success: true, data: appDataResult }
 }
 
+export async function updateTemplateAction(user: User, templateId: string, updatedTemplate: InvoiceTemplate) {
+  const appData = (await getAppData(user, "invoices")) as InvoiceAppData | null
+  if (!appData) return { success: false, error: "No app data found" }
+
+  const updatedTemplates = appData.templates.map((t) => 
+    t.id === templateId ? updatedTemplate : t
+  )
+  const appDataResult = await setAppData(user, "invoices", { ...appData, templates: updatedTemplates })
+  return { success: true, data: appDataResult }
+}
+
 export async function saveInvoiceAsTransactionAction(
   formData: InvoiceFormData
 ): Promise<{ success: boolean; error?: string; data?: Transaction }> {

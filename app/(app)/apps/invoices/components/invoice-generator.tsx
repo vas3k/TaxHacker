@@ -13,6 +13,7 @@ import {
   deleteTemplateAction,
   generateInvoicePDF,
   saveInvoiceAsTransactionAction,
+  updateTemplateAction,
 } from "../actions"
 import defaultTemplates, { InvoiceTemplate } from "../default-templates"
 import { InvoiceAppData } from "../page"
@@ -109,6 +110,7 @@ export function InvoiceGenerator({
   const [formData, dispatch] = useReducer(invoiceFormReducer, templates[0].formData)
   const [isPdfLoading, setIsPdfLoading] = useState(false)
   const [isSavingTransaction, setIsSavingTransaction] = useState(false)
+  const [isUpdatingTemplate, setIsUpdatingTemplate] = useState(false)
 
   const router = useRouter()
 
@@ -204,6 +206,38 @@ export function InvoiceGenerator({
     }
   }
 
+  const handleUpdateTemplate = async () => {
+    const selectedTemplateData = templates.find((t) => t.name === selectedTemplate)
+    if (!selectedTemplateData || !selectedTemplateData.id) {
+      alert("Cannot update default templates")
+      return
+    }
+
+    setIsUpdatingTemplate(true)
+
+    try {
+      const result = await updateTemplateAction(user, selectedTemplateData.id, {
+        ...selectedTemplateData,
+        formData: formData,
+      })
+
+      if (result.success) {
+        router.refresh()
+        // Add a second delay to show the "updating" state
+        setTimeout(() => {
+          setIsUpdatingTemplate(false)
+        }, 1000)
+      } else {
+        alert("Failed to update template. Please try again.")
+        setIsUpdatingTemplate(false)
+      }
+    } catch (error) {
+      console.error("Error updating template:", error)
+      alert("Failed to update template. Please try again.")
+      setIsUpdatingTemplate(false)
+    }
+  }
+
   // Accept optional event, prevent default only if present
   const handleSaveAsTransaction = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
@@ -261,41 +295,53 @@ export function InvoiceGenerator({
         ))}
       </div>
 
-      <div className="flex flex-row flex-wrap justify-start items-start gap-4">
-        <InvoicePage invoiceData={formData} dispatch={dispatch} currencies={currencies} />
-
-        {/* Generate PDF Button */}
-        <div className="flex flex-col gap-4">
-          <Button onClick={handleGeneratePDF} disabled={isPdfLoading}>
+      <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 lg:order-2 lg:flex lg:flex-col gap-3 lg:gap-4">
+          <Button onClick={handleGeneratePDF} disabled={isPdfLoading} className="justify-start">
             {isPdfLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
+                <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+                <span className="ml-2">Generating...</span>
               </>
             ) : (
               <>
-                <FileDown className="mr-2" />
-                Download PDF
+                <FileDown className="h-4 w-4 flex-shrink-0" />
+                <span className="ml-2">Download PDF</span>
               </>
             )}
           </Button>
-          <Button variant="secondary" onClick={() => setIsTemplateDialogOpen(true)}>
-            <TextSelect />
-            Make a Template
+          <Button variant="secondary" onClick={() => setIsTemplateDialogOpen(true)} className="justify-start">
+            <TextSelect className="h-4 w-4 flex-shrink-0" />
+            <span className="ml-2">Make a Template</span>
           </Button>
-          <Button variant="secondary" onClick={handleSaveAsTransaction} disabled={isSavingTransaction}>
+          <Button 
+            variant="secondary" 
+            onClick={handleUpdateTemplate}
+            disabled={!templates.find((t) => t.name === selectedTemplate)?.id || isUpdatingTemplate}
+            className="justify-start"
+          >
+            <Save className={`h-4 w-4 flex-shrink-0 ${isUpdatingTemplate ? "text-green-600" : ""}`} />
+            <span className="ml-2">{isUpdatingTemplate ? "Updating..." : "Update a Template"}</span>
+          </Button>
+          <Button variant="secondary" onClick={handleSaveAsTransaction} disabled={isSavingTransaction} className="justify-start">
             {isSavingTransaction ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+                <span className="ml-2">Saving...</span>
               </>
             ) : (
               <>
-                <Save className="mr-2" />
-                Save as Transaction
+                <Save className="h-4 w-4 flex-shrink-0" />
+                <span className="ml-2">Save as Transaction</span>
               </>
             )}
           </Button>
+        </div>
+
+        {/* Invoice Page */}
+        <div className="lg:order-1">
+          <InvoicePage invoiceData={formData} dispatch={dispatch} currencies={currencies} />
         </div>
       </div>
 
