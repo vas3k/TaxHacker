@@ -9,10 +9,12 @@ import {
 } from "@/lib/files"
 import { getAppData, setAppData } from "@/models/apps"
 import { createFile } from "@/models/files"
+import { getSettings } from "@/models/settings"
 import { createTransaction, updateTransactionFiles } from "@/models/transactions"
 import { Transaction, User } from "@/prisma/client"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { randomUUID } from "crypto"
+import { getCurrencyRate } from "@/lib/currency"
 import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
@@ -21,6 +23,7 @@ import { InvoiceFormData } from "./components/invoice-page"
 import { InvoicePDF } from "./components/invoice-pdf"
 import { InvoiceTemplate } from "./default-templates"
 import { InvoiceAppData } from "./page"
+
 
 export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Array> {
   const pdfElement = createElement(InvoicePDF, { data })
@@ -49,6 +52,7 @@ export async function saveInvoiceAsTransactionAction(
 ): Promise<{ success: boolean; error?: string; data?: Transaction }> {
   try {
     const user = await getCurrentUser()
+    const settings = await getSettings(user.id)
 
     // Generate PDF
     const pdfBuffer = await generateInvoicePDF(formData)
@@ -59,18 +63,58 @@ export async function saveInvoiceAsTransactionAction(
     const fees = formData.additionalFees.reduce((sum, fee) => sum + fee.amount, 0)
     const totalAmount = (formData.taxIncluded ? subtotal : subtotal + taxes) + fees
 
-    // Create transaction
-    const transaction = await createTransaction(user.id, {
+    // Extract VAT information from additional taxes
+    let vatAmount = 0
+    let vatRate = 0
+    
+    // Look for VAT in additional taxes (assumes VAT is one of the tax entries)
+    const vatTax = formData.additionalTaxes.find(tax => 
+      tax.name.toLowerCase().includes('vat') || 
+      tax.name.toLowerCase().includes('tax')
+    )
+    
+    if (vatTax) {
+      vatAmount = vatTax.amount
+      vatRate = vatTax.rate
+    }
+
+    // Get default currency for conversion
+    const defaultCurrency = settings.default_currency || 'EUR'
+    
+    // Prepare transaction data with VAT information
+    const transactionData: any = {
       name: `Invoice #${formData.invoiceNumber || "unknown"}`,
       merchant: `${formData.billTo.split("\n")[0]}`,
       total: totalAmount * 100,
       currencyCode: formData.currency,
       issuedAt: new Date(formData.date),
-      categoryCode: null,
-      projectCode: null,
+      categoryCode: "invoice",
+      projectCode: "personal",
       type: "income",
-      status: "pending",
-    })
+    }
+    
+    // Add VAT fields if they exist (including 0% VAT)
+    if (vatTax) {
+      transactionData.vat = vatAmount
+      transactionData.vat_rate = vatRate
+    }
+
+    // Add currency conversion if the invoice currency differs from default currency
+    if (formData.currency !== defaultCurrency) {
+      try {
+        const exchangeRate = await getCurrencyRate(formData.currency, defaultCurrency, new Date(formData.date))
+        const convertedTotal = Math.round(totalAmount * exchangeRate * 100) / 100
+        
+        transactionData.convertedTotal = Math.round(convertedTotal * 100) // Store in cents
+        transactionData.convertedCurrencyCode = defaultCurrency
+      } catch (error) {
+        console.warn(`Failed to convert currency from ${formData.currency} to ${defaultCurrency}:`, error)
+        // Continue without conversion - this is not a critical failure
+      }
+    }
+
+    // Create transaction
+    const transaction = await createTransaction(user.id, transactionData)
 
     // Check storage limits
     if (!isEnoughStorageToUploadFile(user, pdfBuffer.length)) {

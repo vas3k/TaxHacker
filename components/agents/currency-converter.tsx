@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 
-async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
+async function getCurrencyRateFromAPI(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
   const formattedDate = format(date, "yyyy-MM-dd")
   const response = await fetch(`/api/currency?from=${currencyCodeFrom}&to=${currencyCodeTo}&date=${formattedDate}`)
 
@@ -44,7 +44,7 @@ export const CurrencyConverterTool = ({
       setIsLoading(true)
       setError(null)
 
-      const rate = await getCurrencyRate(originalCurrencyCode, targetCurrencyCode, normalizedDate)
+      const rate = await getCurrencyRateFromAPI(originalCurrencyCode, targetCurrencyCode, normalizedDate)
       setExchangeRate(rate)
       setConvertedTotal(Math.round(originalTotal * rate * 100) / 100)
     } catch (error) {
