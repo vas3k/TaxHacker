@@ -2,7 +2,7 @@ import { formatCurrency } from "@/lib/utils"
 import { Document, Font, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer"
 import { formatDate } from "date-fns"
 import { ReactElement } from "react"
-import { AdditionalFee, AdditionalTax, InvoiceFormData, InvoiceItem } from "./invoice-page"
+import { AdditionalFee, AdditionalTax, InvoicePDFData, InvoiceItem } from "./invoice-page"
 
 Font.register({
   family: "Inter",
@@ -267,6 +267,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000000",
   },
+  convertedCurrency: {
+    fontSize: 10,
+    color: "#9CA3AF",
+  },
   bankDetails: {
     marginTop: 30,
     paddingTop: 20,
@@ -278,7 +282,7 @@ const styles = StyleSheet.create({
   },
 })
 
-export function InvoicePDF({ data }: { data: InvoiceFormData }): ReactElement {
+export function InvoicePDF({ data }: { data: InvoicePDFData }): ReactElement {
   const calculateSubtotal = (): number => {
     return data.items.reduce((sum: number, item: InvoiceItem) => sum + item.subtotal, 0)
   }
@@ -385,7 +389,12 @@ export function InvoicePDF({ data }: { data: InvoiceFormData }): ReactElement {
               <Text style={styles.summaryLabel}>
                 {tax.name} ({tax.rate}%):
               </Text>
-              <Text style={styles.summaryValue}>{formatCurrency(tax.amount * 100, data.currency)}</Text>
+              <Text style={styles.summaryValue}>
+                {formatCurrency(tax.amount * 100, data.currency)}
+                {data.currency !== data.defaultCurrency && data.currencyRate && (
+                  <Text style={styles.convertedCurrency}> ({new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(tax.amount * data.currencyRate)} in {data.defaultCurrency})</Text>
+                )}
+              </Text>
             </View>
           ))}
 

@@ -53,6 +53,35 @@ export interface InvoiceFormData {
   summaryTotalLabel: string
 }
 
+export interface InvoicePDFData {
+  title: string
+  businessLogo: string | null
+  invoiceNumber: string
+  date: string
+  dueDate: string
+  currency: string
+  currencyRate: number | null
+  defaultCurrency?: string
+  companyDetails: string
+  companyDetailsLabel: string
+  billTo: string
+  billToLabel: string
+  items: InvoiceItem[]
+  taxIncluded: boolean
+  additionalTaxes: AdditionalTax[]
+  additionalFees: AdditionalFee[]
+  notes: string
+  bankDetails: string
+  issueDateLabel: string
+  dueDateLabel: string
+  itemLabel: string
+  quantityLabel: string
+  unitPriceLabel: string
+  subtotalLabel: string
+  summarySubtotalLabel: string
+  summaryTotalLabel: string
+}
+
 interface InvoicePageProps {
   invoiceData: InvoiceFormData
   dispatch: React.Dispatch<any>

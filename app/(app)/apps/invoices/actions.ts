@@ -19,13 +19,13 @@ import { mkdir, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
 import { createElement } from "react"
-import { InvoiceFormData } from "./components/invoice-page"
+import { InvoiceFormData, InvoicePDFData } from "./components/invoice-page"
 import { InvoicePDF } from "./components/invoice-pdf"
 import { InvoiceTemplate } from "./default-templates"
 import { InvoiceAppData } from "./page"
 
 
-export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Array> {
+export async function generateInvoicePDF(data: InvoicePDFData): Promise<Uint8Array> {
   const pdfElement = createElement(InvoicePDF, { data })
   const buffer = await renderToBuffer(pdfElement as any)
   return new Uint8Array(buffer)
@@ -64,9 +64,6 @@ export async function saveInvoiceAsTransactionAction(
   try {
     const user = await getCurrentUser()
     const settings = await getSettings(user.id)
-
-    // Generate PDF
-    const pdfBuffer = await generateInvoicePDF(formData)
 
     // Calculate total amount from items
     const subtotal = formData.items.reduce((sum, item) => sum + item.subtotal, 0)
@@ -110,11 +107,11 @@ export async function saveInvoiceAsTransactionAction(
       transactionData.vat_rate = vatRate
     }
 
-    // Add currency conversion if the invoice currency differs from default currency
+    let currencyRate = 1
     if (formData.currency !== defaultCurrency) {
       try {
-        const exchangeRate = await getCurrencyRate(formData.currency, defaultCurrency, new Date(formData.date))
-        const convertedTotal = Math.round(totalAmount * exchangeRate * 100) / 100
+        currencyRate = await getCurrencyRate(formData.currency, defaultCurrency, new Date(formData.date))
+        const convertedTotal = Math.round(totalAmount * currencyRate * 100) / 100
         
         transactionData.convertedTotal = Math.round(convertedTotal * 100) // Store in cents
         transactionData.convertedCurrencyCode = defaultCurrency
@@ -123,6 +120,14 @@ export async function saveInvoiceAsTransactionAction(
         // Continue without conversion - this is not a critical failure
       }
     }
+
+    // Create pdfData for PDF generation with currency information
+    const pdfData: InvoicePDFData = {
+      ...formData,
+      currencyRate,
+      defaultCurrency
+    }
+    const pdfBuffer = await generateInvoicePDF(pdfData)
 
     // Create transaction
     const transaction = await createTransaction(user.id, transactionData)

@@ -17,7 +17,7 @@ import {
 } from "../actions"
 import defaultTemplates, { InvoiceTemplate } from "../default-templates"
 import { InvoiceAppData } from "../page"
-import { InvoiceFormData, InvoicePage } from "./invoice-page"
+import { InvoiceFormData, InvoicePDFData, InvoicePage } from "./invoice-page"
 
 function invoiceFormReducer(state: InvoiceFormData, action: any): InvoiceFormData {
   switch (action.type) {
@@ -132,7 +132,13 @@ export function InvoiceGenerator({
         formData.businessLogo = await fetchAsBase64(formData.businessLogo)
       }
 
-      const pdfBuffer = await generateInvoicePDF(formData)
+      // Create pdfData for PDF generation with currency information
+      const pdfData: InvoicePDFData = {
+        ...formData,
+        defaultCurrency: settings.default_currency,
+        currencyRate: 1 // Default currency rate for invoice generator
+      }
+      const pdfBuffer = await generateInvoicePDF(pdfData)
 
       // Create a blob from the buffer
       const blob = new Blob([pdfBuffer], { type: "application/pdf" })
