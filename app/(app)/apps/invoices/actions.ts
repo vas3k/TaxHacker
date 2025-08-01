@@ -23,6 +23,7 @@ import { InvoiceFormData, InvoicePDFData } from "./components/invoice-page"
 import { InvoicePDF } from "./components/invoice-pdf"
 import { InvoiceTemplate } from "./default-templates"
 import { InvoiceAppData } from "./page"
+import { subDays } from "date-fns"
 
 
 export async function generateInvoicePDF(data: InvoicePDFData): Promise<Uint8Array> {
@@ -110,7 +111,8 @@ export async function saveInvoiceAsTransactionAction(
     let currencyRate = 1
     if (formData.currency !== defaultCurrency) {
       try {
-        currencyRate = await getCurrencyRate(formData.currency, defaultCurrency, new Date(formData.date))
+        const invoiceDate = subDays(new Date(formData.date), 1)
+        currencyRate = await getCurrencyRate(formData.currency, defaultCurrency, invoiceDate)
         const convertedTotal = Math.round(totalAmount * currencyRate * 100) / 100
         
         transactionData.convertedTotal = Math.round(convertedTotal * 100) // Store in cents

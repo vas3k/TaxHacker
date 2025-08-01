@@ -15,7 +15,7 @@ import { DeleteModal } from "@/components/transactions/delete-file-modal"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
-import { format } from "date-fns"
+import { format, subDays } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
 
@@ -97,6 +97,7 @@ export default function AnalyzeForm({
     }
   }, [file.filename, settings, extraFields, file.cachedParseResult])
   const [formData, setFormData] = useState(initialFormState)
+  const rateDate = subDays(new Date(formData.issuedAt || Date.now()), 1)
 
   async function saveAsTransaction(formData: FormData) {
     setSaveError("")
@@ -241,12 +242,12 @@ export default function AnalyzeForm({
         </div>
 
         {formData.total != 0 && formData.currencyCode && formData.currencyCode !== settings.default_currency && (
-          <ToolWindow title={`Exchange rate on ${format(new Date(formData.issuedAt || Date.now()), "LLLL dd, yyyy")}`}>
+          <ToolWindow title={`Exchange rate on ${format(rateDate, "LLLL dd, yyyy")}`}>
             <CurrencyConverterTool
               originalTotal={formData.total}
               originalCurrencyCode={formData.currencyCode}
               targetCurrencyCode={settings.default_currency}
-              date={new Date(formData.issuedAt || Date.now())}
+              date={rateDate}
               onChange={(value) => setFormData((prev) => ({ ...prev, convertedTotal: value }))}
             />
             <input type="hidden" name="convertedCurrencyCode" value={settings.default_currency} />

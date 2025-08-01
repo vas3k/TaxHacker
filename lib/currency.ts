@@ -6,7 +6,36 @@ type HistoricRate = {
   inverse: number
 }
 
-export async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
+export async function getCurrencyRateFromNBP(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
+  // hack to get yesterday's rate if it's today
+  if (isSameDay(date, new Date())) {
+    date = subDays(date, 1)
+  }
+
+  const formattedDate = format(date, "yyyy-MM-dd")
+
+  const url = `https://api.nbp.pl/api/exchangerates/rates/A/${currencyCodeFrom}/${formattedDate}/`
+
+  const response = await fetch(url)
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch currency data: ${response.status}`)
+  }
+
+  const json = await response.json()
+
+  // Extract the rate from the new JSON schema
+  if (!json.rates || json.rates.length === 0) {
+    throw new Error(`No rates found for ${currencyCodeFrom} on ${formattedDate}`)
+  }
+
+  const rate = json.rates[0].mid
+
+  return rate
+}
+
+
+export async function getCurrencyRateFromXE(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
   // hack to get yesterday's rate if it's today
   if (isSameDay(date, new Date())) {
     date = subDays(date, 1)
@@ -45,4 +74,12 @@ export async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: 
   }
 
   return rate.rate
+}
+
+export async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
+  try {
+    return await getCurrencyRateFromNBP(currencyCodeFrom, currencyCodeTo, date)
+  } catch (error) {
+    return await getCurrencyRateFromXE(currencyCodeFrom, currencyCodeTo, date)
+  }
 }
