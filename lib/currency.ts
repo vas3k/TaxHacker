@@ -1,4 +1,4 @@
-import { format, isSameDay, subDays } from "date-fns"
+import { format, subDays } from "date-fns"
 
 type HistoricRate = {
   currency: string
@@ -7,14 +7,11 @@ type HistoricRate = {
 }
 
 export async function getCurrencyRateFromNBP(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
-  // hack to get yesterday's rate if it's today
-  if (isSameDay(date, new Date())) {
-    date = subDays(date, 1)
-  }
+  // Create date range from date-3 to date to handle holidays/weekends
+  const endDate = format(date, "yyyy-MM-dd")
+  const startDate = format(subDays(date, 3), "yyyy-MM-dd")
 
-  const formattedDate = format(date, "yyyy-MM-dd")
-
-  const url = `https://api.nbp.pl/api/exchangerates/rates/A/${currencyCodeFrom}/${formattedDate}/`
+  const url = `https://api.nbp.pl/api/exchangerates/rates/A/${currencyCodeFrom}/${startDate}/${endDate}/`
 
   const response = await fetch(url)
 
@@ -26,20 +23,15 @@ export async function getCurrencyRateFromNBP(currencyCodeFrom: string, currencyC
 
   // Extract the rate from the new JSON schema
   if (!json.rates || json.rates.length === 0) {
-    throw new Error(`No rates found for ${currencyCodeFrom} on ${formattedDate}`)
+    throw new Error(`No rates found for ${currencyCodeFrom} in date range ${startDate} to ${endDate}`)
   }
 
-  const rate = json.rates[0].mid
-
-  return rate
+  // Take the latest available rate (rates are ordered by date)
+  return json.rates[json.rates.length - 1].mid
 }
 
 
 export async function getCurrencyRateFromXE(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
-  // hack to get yesterday's rate if it's today
-  if (isSameDay(date, new Date())) {
-    date = subDays(date, 1)
-  }
 
   const formattedDate = format(date, "yyyy-MM-dd")
   const url = `https://www.xe.com/currencytables/?from=${currencyCodeFrom}&date=${formattedDate}`
