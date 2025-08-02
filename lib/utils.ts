@@ -127,9 +127,9 @@ export function formatPeriodLabel(period: string, date: Date): string {
       year: "numeric",
     })
   } else {
-    // Monthly format: show month/year
+    // Monthly format: show month/year with short month name
     return date.toLocaleDateString("en-US", {
-      month: "long",
+      month: "short",
       year: "numeric",
     })
   }

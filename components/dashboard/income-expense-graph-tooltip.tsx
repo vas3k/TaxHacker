@@ -17,10 +17,8 @@ export function IncomeExpenceGraphTooltip({ data, defaultCurrency, position, vis
   const incomeCategories = data.categories.filter((cat) => cat.income > 0)
   const expenseCategories = data.categories.filter((cat) => cat.expenses > 0)
 
-  // Calculate positioning - show to right if space available, otherwise to left
   const tooltipWidth = 320 // estimated max width
   const spaceToRight = window.innerWidth - position.x
-  const spaceToLeft = position.x
   const showToRight = spaceToRight >= tooltipWidth + 20 // 20px margin
 
   const horizontalOffset = showToRight ? 15 : -15 // distance from cursor

@@ -121,7 +121,7 @@ export function IncomeExpenseGraph({ data, defaultCurrency }: IncomeExpenseGraph
                   onClick={() => item.income > 0 && handleBarClick(item, "income")}
                 >
                   {/* Period label above income bars */}
-                  <div className="text-sm font-bold text-gray-700 break-all mb-2 text-center">
+                  <div className="text-sm font-bold text-gray-700 break-words mb-2 text-center">
                     {formatPeriodLabel(item.period, item.date)}
                   </div>
 
