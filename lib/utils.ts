@@ -116,3 +116,21 @@ export function generateUUID(): string {
     return v.toString(16)
   })
 }
+
+export function formatPeriodLabel(period: string, date: Date): string {
+  if (period.includes("-") && period.split("-").length === 3) {
+    // Daily format: show day/month/year
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+  } else {
+    // Monthly format: show month/year
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    })
+  }
+}

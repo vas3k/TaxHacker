@@ -1,10 +1,12 @@
 import { FiltersWidget } from "@/components/dashboard/filters-widget"
+import { IncomeExpenseGraph } from "@/components/dashboard/income-expense-graph"
 import { ProjectsWidget } from "@/components/dashboard/projects-widget"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth"
 import { formatCurrency } from "@/lib/utils"
 import { getProjects } from "@/models/projects"
-import { getDashboardStats, getProjectStats } from "@/models/stats"
+import { getSettings } from "@/models/settings"
+import { getDashboardStats, getDetailedTimeSeriesStats, getProjectStats } from "@/models/stats"
 import { TransactionFilters } from "@/models/transactions"
 import { ArrowDown, ArrowUp, BicepsFlexed } from "lucide-react"
 import Link from "next/link"
@@ -12,7 +14,11 @@ import Link from "next/link"
 export async function StatsWidget({ filters }: { filters: TransactionFilters }) {
   const user = await getCurrentUser()
   const projects = await getProjects(user.id)
+  const settings = await getSettings(user.id)
+  const defaultCurrency = settings.default_currency || "EUR"
+
   const stats = await getDashboardStats(user.id, filters)
+  const statsTimeSeries = await getDetailedTimeSeriesStats(user.id, filters, defaultCurrency)
   const statsPerProject = Object.fromEntries(
     await Promise.all(
       projects.map((project) => getProjectStats(user.id, project.code, filters).then((stats) => [project.code, stats]))
@@ -26,6 +32,8 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
 
         <FiltersWidget defaultFilters={filters} defaultRange="last-12-months" />
       </div>
+
+      {statsTimeSeries.length > 0 && <IncomeExpenseGraph data={statsTimeSeries} defaultCurrency={defaultCurrency} />}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/transactions?type=income">

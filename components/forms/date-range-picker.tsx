@@ -2,7 +2,7 @@
 
 import { format, startOfMonth, startOfQuarter, subMonths, subWeeks } from "date-fns"
 import { CalendarIcon } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
