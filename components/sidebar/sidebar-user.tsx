@@ -16,8 +16,9 @@ import { formatBytes } from "@/lib/utils"
 import { CreditCard, LogOut, MoreVertical, Settings, Sparkles, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { SidebarQRCode } from "./sidebar-qr-code"
 
-export default function SidebarUser({ profile, isSelfHosted }: { profile: UserProfile; isSelfHosted: boolean }) {
+export default function SidebarUser({ profile, isSelfHosted, ip }: { profile: UserProfile; isSelfHosted: boolean, ip: string }) {
   const signOut = async () => {
     await authClient.signOut({})
     redirect("/")
@@ -78,6 +79,11 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
               Settings
             </Link>
           </DropdownMenuItem>
+          {isSelfHosted && (
+            <DropdownMenuItem asChild>
+              <SidebarQRCode ip={ip} />
+            </DropdownMenuItem>
+          )}
           {!isSelfHosted && (
             <DropdownMenuItem asChild>
               <Link href="/api/stripe/portal" className="flex items-center gap-2">
