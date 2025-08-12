@@ -90,7 +90,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
             <input
               type="color"
               className="absolute inset-0 h-4 w-4 opacity-0 cursor-pointer"
-              value={(editingItem[column.key] as string) || "#000" }
+              value={(editingItem[column.key] as string) || "#000"}
               onChange={(e) =>
                 setEditingItem({
                   ...editingItem,
@@ -167,12 +167,12 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
           <div className="relative">
             <span
               className="block h-4 w-4 rounded-full border"
-              style={{ backgroundColor: String(newItem[column.key] || column.defaultValue || "#000000") }}
+              style={{ backgroundColor: String(newItem[column.key] || column.defaultValue || "#000") }}
             />
             <input
               type="color"
               className="absolute inset-0 h-4 w-4 opacity-0 cursor-pointer"
-              value={String(newItem[column.key] || column.defaultValue || "#000000")}
+              value={String(newItem[column.key] || column.defaultValue || "#000")}
               onChange={(e) =>
                 setNewItem({
                   ...newItem,
@@ -192,7 +192,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
               }
               placeholder="#FFFFFF"
             />
-        </div>
+          </div>
       )
     }
     return (
