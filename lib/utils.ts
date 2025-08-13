@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import slugify from "slugify"
 import { twMerge } from "tailwind-merge"
+import { violet, tomato, red, crimson, pink, plum, purple, indigo, blue, sky, cyan, teal, mint, grass, lime, yellow, amber, orange, brown } from "@radix-ui/colors"
 
 const LOCALE = "en-US"
 
@@ -52,7 +53,28 @@ export function codeFromName(name: string, maxLength: number = 16) {
 }
 
 export function randomHexColor() {
-  return "#" + Math.floor(Math.random() * 16777215).toString(16)
+  const palette = [
+    violet.violet9,
+    indigo.indigo9,
+    blue.blue9,
+    cyan.cyan9,
+    teal.teal9,
+    grass.grass9,
+    lime.lime9,
+    yellow.yellow9,
+    amber.amber9,
+    orange.orange9,
+    red.red9,
+    crimson.crimson9,
+    pink.pink9,
+    purple.purple9,
+    plum.plum9,
+    mint.mint9,
+    brown.brown9,
+    sky.sky9,
+    tomato.tomato9,
+  ]
+  return palette[Math.floor(Math.random() * palette.length)]
 }
 
 export async function fetchAsBase64(url: string): Promise<string | null> {

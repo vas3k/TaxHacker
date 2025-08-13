@@ -9,7 +9,7 @@ import { useOptimistic, useState } from "react"
 interface CrudColumn<T> {
   key: keyof T
   label: string
-  type?: "text" | "number" | "checkbox" | "select"
+  type?: "text" | "number" | "checkbox" | "select" | "color"
   options?: string[]
   defaultValue?: string | boolean
   editable?: boolean
@@ -33,6 +33,15 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
   const FormCell = (item: T, column: CrudColumn<T>) => {
     if (column.type === "checkbox") {
       return item[column.key] ? <Check /> : ""
+    }
+    if (column.type === "color" || column.key === "color") {
+      const value = (item[column.key] as string) || ""
+      return (
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 rounded-full border" style={{ backgroundColor: value || "#ffffff" }} />
+          <span>{value}</span>
+        </div>
+      )
     }
     return item[column.key]
   }
@@ -69,6 +78,39 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
             </option>
           ))}
         </select>
+      )
+    } else if (column.type === "color" || column.key === "color") {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <span
+              className="block h-4 w-4 rounded-full border"
+              style={{ backgroundColor: (editingItem[column.key] as string) || "#000" }}
+            />
+            <input
+              type="color"
+              className="absolute inset-0 h-4 w-4 opacity-0 cursor-pointer"
+              value={(editingItem[column.key] as string) || "#000"}
+              onChange={(e) =>
+                setEditingItem({
+                  ...editingItem,
+                  [column.key]: e.target.value,
+                })
+              }
+            />
+          </div>
+          <Input
+            type="text"
+            value={(editingItem[column.key] as string) || ""}
+            onChange={(e) =>
+              setEditingItem({
+                ...editingItem,
+                [column.key]: e.target.value,
+              })
+            }
+            placeholder="#FFFFFF"
+          />
+        </div>
       )
     }
 
@@ -118,6 +160,39 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
             </option>
           ))}
         </select>
+      )
+    } else if (column.type === "color" || column.key === "color") {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <span
+              className="block h-4 w-4 rounded-full border"
+              style={{ backgroundColor: String(newItem[column.key] || column.defaultValue || "#000") }}
+            />
+            <input
+              type="color"
+              className="absolute inset-0 h-4 w-4 opacity-0 cursor-pointer"
+              value={String(newItem[column.key] || column.defaultValue || "#000")}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  [column.key]: e.target.value,
+                })
+              }
+            />
+          </div>
+            <Input
+              type="text"
+              value={String(newItem[column.key] || column.defaultValue || "")}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  [column.key]: e.target.value,
+                })
+              }
+              placeholder="#FFFFFF"
+            />
+          </div>
       )
     }
     return (

@@ -26,7 +26,7 @@ export default async function ProjectsSettingsPage() {
         columns={[
           { key: "name", label: "Name", editable: true },
           { key: "llm_prompt", label: "LLM Prompt", editable: true },
-          { key: "color", label: "Color", defaultValue: randomHexColor(), editable: true },
+          { key: "color", label: "Color", type: "color", defaultValue: randomHexColor(), editable: true },
         ]}
         onDelete={async (code) => {
           "use server"
