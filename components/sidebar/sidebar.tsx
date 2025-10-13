@@ -2,6 +2,8 @@
 
 import { useNotification } from "@/app/(app)/context"
 import { UploadButton } from "@/components/files/upload-button"
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,11 +24,12 @@ import { ClockArrowUp, FileText, Gift, House, Import, LayoutDashboard, Settings,
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { ColoredText } from "../ui/colored-text"
 import { Blinker } from "./blinker"
 import { SidebarMenuItemWithHighlight } from "./sidebar-item"
 import SidebarUser from "./sidebar-user"
+import { useRouter } from "next/navigation";
 
 export function AppSidebar({
   profile,
@@ -39,12 +42,35 @@ export function AppSidebar({
 }) {
   const { open, setOpenMobile } = useSidebar()
   const pathname = usePathname()
-  const { notification } = useNotification()
+  const { notification, showNotification } = useNotification() as any
+  const router = useRouter()
+  const [manualProcessing, setManualProcessing] = useState(false)
+  const [manualMessage, setManualMessage] = useState("")
+  const [manualCount, setManualCount] = useState<number | null>(null);
 
   // Hide sidebar on mobile when clicking an item
   useEffect(() => {
     setOpenMobile(false)
   }, [pathname, setOpenMobile])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    async function fetchCount() {
+      if (!isSelfHosted) return;
+      const res = await fetch("/api/manual-upload/count");
+      if (res.ok) {
+        const data = await res.json();
+        setManualCount(data.count ?? 0);
+      }
+    }
+    fetchCount(); // initial load
+    if (isSelfHosted) {
+      interval = setInterval(fetchCount, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isSelfHosted]);
 
   return (
     <>
@@ -65,6 +91,54 @@ export function AppSidebar({
               <Upload className="h-4 w-4" />
               {open ? <span>Upload</span> : ""}
             </UploadButton>
+            {isSelfHosted && (
+              <Button
+                className="w-full mb-2"
+                disabled={manualProcessing}
+                type="button"
+                onClick={async () => {
+                  setManualProcessing(true)
+                  setManualMessage("")
+                  try {
+                    const res = await fetch("/api/manual-upload", { method: "POST" })
+                    const data = await res.json()
+                    if (data.success) {
+                      setManualMessage(`Processed: ${data.processed?.join(", ") || "None"}`)
+                      // mimic Upload button behavior
+                      showNotification({ code: "sidebar.unsorted", message: "new" })
+                      setTimeout(() => showNotification({ code: "sidebar.unsorted", message: "" }), 3000)
+                      router.push("/unsorted")
+                    } else {
+                      setManualMessage(data.error || "Failed to process")
+                    }
+                    // refresh count after processing
+                    const countRes = await fetch("/api/manual-upload/count");
+                    if (countRes.ok) {
+                      const countData = await countRes.json();
+                      setManualCount(countData.count ?? 0);
+                    }
+                  } catch (err) {
+                    setManualMessage("Failed to process (network error)")
+                  }
+                  setManualProcessing(false)
+                }}
+              >
+                {manualProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4" />
+                    {open ? (
+                      <span>Process Manual Uploads{manualCount !== null ? ` (${manualCount})` : ""}</span>
+                    ) : ""}
+                  </>
+                )}
+              </Button>
+            )}
+            
           </SidebarGroup>
           <SidebarGroup>
             <SidebarGroupContent>
