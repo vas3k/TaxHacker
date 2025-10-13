@@ -20,6 +20,7 @@ const envSchema = z.object({
   RESEND_AUDIENCE_ID: z.string().default(""),
   STRIPE_SECRET_KEY: z.string().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().default(""),
+  MANUAL_UPLOADS_ROOT: z.string().default("data/manual_uploads"),
 })
 
 const env = envSchema.parse(process.env)
@@ -46,6 +47,7 @@ const config = {
       maxWidth: 1500,
       maxHeight: 1500,
     },
+    manualUploadsRoot: env.MANUAL_UPLOADS_ROOT,
   },
   selfHosted: {
     isEnabled: env.SELF_HOSTED_MODE === "true",

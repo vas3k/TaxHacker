@@ -6,8 +6,9 @@ import { getUserUploadsDirectory, safePathJoin, unsortedFilePath } from "@/lib/f
 import { createFile } from "@/models/files";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
+import config from "@/lib/config";
 
-const MANUAL_UPLOADS_ROOT = path.resolve("data/manual_uploads");
+const MANUAL_UPLOADS_ROOT = path.resolve(config.upload.manualUploadsRoot);
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();

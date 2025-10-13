@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { getCurrentUser } from "@/lib/auth";
+import config from "@/lib/config";
 
-const MANUAL_UPLOADS_ROOT = path.resolve("data/manual_uploads");
+const MANUAL_UPLOADS_ROOT = path.resolve(config.upload.manualUploadsRoot);
 
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
