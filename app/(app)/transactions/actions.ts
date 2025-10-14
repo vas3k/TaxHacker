@@ -11,7 +11,7 @@ import {
   safePathJoin,
 } from "@/lib/files"
 import { updateField } from "@/models/fields"
-import { createFile, deleteFile } from "@/models/files"
+import { createFile, deleteFile, getFilesByTransactionId } from "@/models/files"
 import {
   bulkDeleteTransactions,
   createTransaction,
@@ -19,11 +19,12 @@ import {
   getTransactionById,
   updateTransaction,
   updateTransactionFiles,
+  TransactionData,
 } from "@/models/transactions"
 import { updateUser } from "@/models/users"
 import { Transaction } from "@/prisma/client"
 import { randomUUID } from "crypto"
-import { mkdir, writeFile } from "fs/promises"
+import { copyFile, mkdir, readFile, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
 import path from "path"
 
@@ -211,6 +212,88 @@ export async function bulkDeleteTransactionsAction(transactionIds: string[]) {
   } catch (error) {
     console.error("Failed to delete transactions:", error)
     return { success: false, error: "Failed to delete transactions" }
+  }
+}
+
+export async function duplicateTransactionAction(transactionId: string): Promise<ActionState<Transaction>> {
+  try {
+    const user = await getCurrentUser()
+    const originalTransaction = await getTransactionById(transactionId, user.id)
+    
+    if (!originalTransaction) {
+      return { success: false, error: "Transaction not found" }
+    }
+
+    // Get all files attached to the original transaction
+    const originalFiles = await getFilesByTransactionId(transactionId, user.id)
+    const userUploadsDirectory = getUserUploadsDirectory(user)
+
+    // Create a new transaction with the same data (without id and timestamps)
+    const newTransaction = await createTransaction(user.id, {
+      name: originalTransaction.name,
+      description: originalTransaction.description,
+      merchant: originalTransaction.merchant,
+      total: originalTransaction.total,
+      currencyCode: originalTransaction.currencyCode,
+      convertedTotal: originalTransaction.convertedTotal,
+      convertedCurrencyCode: originalTransaction.convertedCurrencyCode,
+      type: originalTransaction.type,
+      categoryCode: originalTransaction.categoryCode,
+      projectCode: originalTransaction.projectCode,
+      issuedAt: originalTransaction.issuedAt,
+      note: originalTransaction.note,
+      items: originalTransaction.items as TransactionData[] | undefined,
+      extra: originalTransaction.extra as Record<string, unknown>,
+      text: originalTransaction.text,
+    }, { skipExtraSplit: true })
+
+    // Clone all files
+    const newFileIds: string[] = []
+    for (const originalFile of originalFiles) {
+      try {
+        const newFileUuid = randomUUID()
+        const originalFilePath = safePathJoin(userUploadsDirectory, originalFile.path)
+        const newRelativeFilePath = getTransactionFileUploadPath(newFileUuid, originalFile.filename, newTransaction)
+        const newFullFilePath = safePathJoin(userUploadsDirectory, newRelativeFilePath)
+
+        // Ensure directory exists
+        await mkdir(path.dirname(newFullFilePath), { recursive: true })
+
+        // Copy the physical file
+        await copyFile(originalFilePath, newFullFilePath)
+
+        // Create new file record in database
+        const newFileRecord = await createFile(user.id, {
+          id: newFileUuid,
+          filename: originalFile.filename,
+          path: newRelativeFilePath,
+          mimetype: originalFile.mimetype,
+          isReviewed: true,
+          metadata: originalFile.metadata,
+        })
+
+        newFileIds.push(newFileRecord.id)
+      } catch (fileError) {
+        console.error("Failed to clone file:", originalFile.filename, fileError)
+        // Continue with other files even if one fails
+      }
+    }
+
+    // Link cloned files to the new transaction
+    if (newFileIds.length > 0) {
+      await updateTransactionFiles(newTransaction.id, user.id, newFileIds)
+    }
+
+    // Update user storage used
+    const storageUsed = await getDirectorySize(getUserUploadsDirectory(user))
+    await updateUser(user.id, { storageUsed })
+
+    revalidatePath("/transactions")
+    
+    return { success: true, data: newTransaction }
+  } catch (error) {
+    console.error("Failed to duplicate transaction:", error)
+    return { success: false, error: "Failed to duplicate transaction" }
   }
 }
 
