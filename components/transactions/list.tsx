@@ -4,7 +4,7 @@ import { BulkActionsMenu } from "@/components/transactions/bulk-actions"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { calcTotalPerCurrency, isTransactionIncomplete } from "@/lib/stats"
+import { calcNetTotalPerCurrency, calcTotalPerCurrency, isTransactionIncomplete } from "@/lib/stats"
 import { cn, formatCurrency } from "@/lib/utils"
 import { Category, Field, Project, Transaction } from "@/prisma/client"
 import { formatDate } from "date-fns"
@@ -112,14 +112,30 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
       </div>
     ),
     footerValue: (transactions: Transaction[]) => {
-      const totalPerCurrency = calcTotalPerCurrency(transactions)
+      const netTotalPerCurrency = calcNetTotalPerCurrency(transactions)
+      const turnoverPerCurrency = calcTotalPerCurrency(transactions)
+
       return (
-        <div className="flex flex-col">
-          {Object.entries(totalPerCurrency).map(([currency, total]) => (
-            <div key={currency} className="text-sm first:text-base">
-              {formatCurrency(total, currency)}
-            </div>
-          ))}
+        <div className="flex flex-col gap-3 text-right">
+          <dl className="space-y-1">
+            <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Net Total</dt>
+            {Object.entries(netTotalPerCurrency).map(([currency, total]) => (
+              <dd
+                key={`net-${currency}`}
+                className={cn("text-sm first:text-base font-medium", total >= 0 ? "text-green-600" : "text-red-600")}
+              >
+                {formatCurrency(total, currency)}
+              </dd>
+            ))}
+          </dl>
+          <dl className="space-y-1">
+            <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Turnover</dt>
+            {Object.entries(turnoverPerCurrency).map(([currency, total]) => (
+              <dd key={`turnover-${currency}`} className="text-sm text-muted-foreground">
+                {formatCurrency(total, currency)}
+              </dd>
+            ))}
+          </dl>
         </div>
       )
     },

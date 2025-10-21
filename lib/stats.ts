@@ -16,6 +16,32 @@ export function calcTotalPerCurrency(transactions: Transaction[]): Record<string
   )
 }
 
+export function calcNetTotalPerCurrency(transactions: Transaction[]): Record<string, number> {
+  return transactions.reduce(
+    (acc, transaction) => {
+      let amount = 0
+      let currency: string | undefined
+      if (
+        transaction.convertedTotal !== null &&
+        transaction.convertedTotal !== undefined &&
+        transaction.convertedCurrencyCode
+      ) {
+        amount = transaction.convertedTotal
+        currency = transaction.convertedCurrencyCode.toUpperCase()
+      } else if (transaction.total !== null && transaction.total !== undefined && transaction.currencyCode) {
+        amount = transaction.total
+        currency = transaction.currencyCode.toUpperCase()
+      }
+      if (currency && amount !== 0) {
+        const sign = transaction.type === "expense" ? -1 : 1
+        acc[currency] = (acc[currency] || 0) + amount * sign
+      }
+      return acc
+    },
+    {} as Record<string, number>
+  )
+}
+
 export const isTransactionIncomplete = (fields: Field[], transaction: Transaction): boolean => {
   const incompleteFields = incompleteTransactionFields(fields, transaction)
 
