@@ -132,8 +132,17 @@ export const getTransactionsByFileId = cache(async (fileId: string, userId: stri
   })
 })
 
-export const createTransaction = async (userId: string, data: TransactionData): Promise<Transaction> => {
-  const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
+export const createTransaction = async (userId: string, data: TransactionData, options?: { skipExtraSplit?: boolean } ): Promise<Transaction> => { 
+  let standard: any, extra: any
+
+  if (options?.skipExtraSplit) {
+    standard = data
+    extra = data.extra || {}
+  } else {
+    const split = await splitTransactionDataExtraFields(data, userId)
+    standard = split.standard
+    extra = split.extra
+  }
 
   return await prisma.transaction.create({
     data: {
