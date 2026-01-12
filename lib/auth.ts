@@ -42,7 +42,6 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    generateId: false,
     cookiePrefix: "taxhacker",
   },
   plugins: [
