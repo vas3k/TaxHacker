@@ -1,9 +1,7 @@
 import { prisma } from "@/lib/db"
 import {
   buildSearchFilters,
-  isSQLite,
   parseFilesArray,
-  prepareJsonField,
 } from "@/lib/db-compat"
 import { Field, Prisma, Transaction } from "@/prisma/client"
 import { cache } from "react"
@@ -130,20 +128,8 @@ export const getTransactionById = cache(async (id: string, userId: string): Prom
 })
 
 export const getTransactionsByFileId = cache(async (fileId: string, userId: string): Promise<Transaction[]> => {
-  if (isSQLite) {
-    // SQLite: files is stored as JSON string, use string_contains
-    // Type assertion needed because Prisma generates different types based on schema
-    return await prisma.transaction.findMany({
-      where: {
-        files: { string_contains: fileId },
-        userId,
-      } as Prisma.TransactionWhereInput,
-    })
-  }
-  // PostgreSQL: use native JSON array_contains
-  // Using type assertion because Prisma generates different types based on schema
   return await prisma.transaction.findMany({
-    where: { files: { array_contains: [fileId] } as unknown, userId } as Prisma.TransactionWhereInput,
+    where: { files: { array_contains: [fileId] }, userId },
   })
 })
 
@@ -156,8 +142,8 @@ export const createTransaction = async (userId: string, data: TransactionData): 
   return await prisma.transaction.create({
     data: {
       ...standardWithoutRelations,
-      extra: prepareJsonField(extra),
-      items: prepareJsonField(data.items || []),
+      extra: extra,
+      items: (data.items || []) as Prisma.InputJsonValue,
       user: { connect: { id: userId } },
       // Use Prisma connect syntax for composite foreign keys
       ...(categoryCode
@@ -196,8 +182,8 @@ export const updateTransaction = async (id: string, userId: string, data: Transa
     where: { id, userId },
     data: {
       ...standardWithoutRelations,
-      extra: prepareJsonField(extra),
-      items: prepareJsonField(data.items || []),
+      extra: extra,
+      items: (data.items || []) as Prisma.InputJsonValue,
       ...categoryUpdate,
       ...projectUpdate,
     } as unknown as Prisma.TransactionUpdateInput,
@@ -207,7 +193,7 @@ export const updateTransaction = async (id: string, userId: string, data: Transa
 export const updateTransactionFiles = async (id: string, userId: string, files: string[]): Promise<Transaction> => {
   return await prisma.transaction.update({
     where: { id, userId },
-    data: { files: prepareJsonField(files) } as unknown as Prisma.TransactionUpdateInput,
+    data: { files: files } as unknown as Prisma.TransactionUpdateInput,
   })
 }
 
@@ -266,7 +252,7 @@ export const duplicateTransaction = async (id: string, userId: string): Promise<
     data: {
       ...transactionDataWithoutRelations,
       name: original.name ? `${original.name} (Copy)` : "Copy",
-      files: prepareJsonField([]),
+      files: [],
       items: original.items,
       extra: original.extra,
       user: { connect: { id: userId } },

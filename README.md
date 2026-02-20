@@ -40,7 +40,7 @@ Snap a photo of any receipt or upload an invoice PDF, and TaxHacker will automat
 - **Auto-categorization**: Transactions are automatically sorted into relevant categories based on their content
 - **Item splitting**: Extract individual items from invoices and split them into separate transactions when needed
 - **Structured storage**: Everything gets saved in an organized database for easy filtering and retrieval
-- **Customizable AI providers**: Choose from OpenAI, Google Gemini, or Mistral (local LLM support coming soon)
+- **Customizable AI providers**: Choose from OpenAI, Google Gemini, Mistral, or Ollama (local LLMs)
 
 TaxHacker works with a wide variety of documents, including store receipts, restaurant bills, invoices, bank statements, letters, even handwritten receipts. It handles any language and any currency with ease.
 
@@ -163,6 +163,33 @@ You can also configure LLM provider settings in the application or via environme
 - **OpenAI**: `OPENAI_MODEL_NAME` and `OPENAI_API_KEY`
 - **Google Gemini**: `GOOGLE_MODEL_NAME` and `GOOGLE_API_KEY`
 - **Mistral**: `MISTRAL_MODEL_NAME` and `MISTRAL_API_KEY`
+- **Ollama (Local)**: `OLLAMA_MODEL_NAME` and `OLLAMA_BASE_URL`
+
+### Using Ollama (Local LLMs)
+
+TaxHacker supports [Ollama](https://ollama.ai/) for running LLMs locally without any API keys or cloud dependencies. To use Ollama:
+
+1. **Install Ollama**: Download and install from [ollama.ai/download](https://ollama.ai/download)
+
+2. **Pull a vision-capable model** (required for document analysis):
+   ```bash
+   ollama pull llava
+   ```
+   Other supported vision models: `llava:13b`, `llama3.2-vision`, `bakllava`, `moondream`
+
+3. **Configure TaxHacker**: In Settings → LLM Providers, add Ollama with:
+   - **Base URL**: `http://localhost:11434` (default Ollama address)
+   - **Model**: `llava` (or any vision model you pulled)
+
+   Or set via environment variables:
+   ```env
+   OLLAMA_BASE_URL="http://localhost:11434"
+   OLLAMA_MODEL_NAME="llava"
+   ```
+
+4. **Docker users**: If running TaxHacker in Docker, use `http://host.docker.internal:11434` as the base URL to reach the host's Ollama instance.
+
+> **Note**: Ollama requires a vision-capable model for document analysis. Text-only models (e.g., `llama3`) will not work for receipt/invoice scanning.
 
 ## ⌨️ Local Development
 

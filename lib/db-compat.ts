@@ -1,17 +1,11 @@
 /**
- * Database compatibility layer for PostgreSQL vs SQLite
+ * Database compatibility utilities for JSON field handling
  *
- * PostgreSQL uses native JSON types, SQLite stores JSON as strings.
- * This module provides utilities to handle these differences.
+ * Provides type-safe parsing for JSON fields stored in PostgreSQL.
  */
-
-// Check if using SQLite (stores JSON as string) vs PostgreSQL (native JSON)
-export const isSQLite = process.env.DATABASE_PROVIDER === "sqlite" ||
-  process.env.DATABASE_URL?.startsWith("file:")
 
 /**
  * Parse a JSON field value from the database
- * PostgreSQL returns parsed objects, SQLite returns strings
  */
 export function parseJsonField<T>(value: unknown, defaultValue: T): T {
   if (value === null || value === undefined) {
@@ -30,26 +24,9 @@ export function parseJsonField<T>(value: unknown, defaultValue: T): T {
 }
 
 /**
- * Prepare a JSON value for storage
- * PostgreSQL accepts objects directly, SQLite needs strings
- */
-export function prepareJsonField<T>(value: T): T | string {
-  if (isSQLite) {
-    return JSON.stringify(value)
-  }
-  return value
-}
-
-/**
  * Get case-insensitive search filter
- * PostgreSQL supports mode: 'insensitive', SQLite uses LOWER()
  */
 export function getCaseInsensitiveContains(field: string, search: string) {
-  if (isSQLite) {
-    // SQLite: Use case-insensitive LIKE via raw query or simple contains
-    // Note: SQLite's LIKE is case-insensitive for ASCII by default
-    return { [field]: { contains: search } }
-  }
   return { [field]: { contains: search, mode: "insensitive" as const } }
 }
 
@@ -61,7 +38,7 @@ export function buildSearchFilters(fields: string[], search: string) {
 }
 
 /**
- * Parse files array from transaction (handles both JSON and string storage)
+ * Parse files array from transaction
  */
 export function parseFilesArray(files: unknown): string[] {
   return parseJsonField<string[]>(files, [])
