@@ -43,6 +43,9 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: "taxhacker",
+    database: {
+      generateId: "uuid",
+    },
   },
   plugins: [
     emailOTP({
