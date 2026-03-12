@@ -1,6 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/db"
+import { parseFilesArray } from "@/lib/db-compat"
 import { unlink } from "fs/promises"
 import path from "path"
 import { cache } from "react"
@@ -36,11 +37,11 @@ export const getFileById = cache(async (id: string, userId: string) => {
 export const getFilesByTransactionId = cache(async (id: string, userId: string) => {
   const transaction = await getTransactionById(id, userId)
   if (transaction && transaction.files) {
+    const fileIds = parseFilesArray(transaction.files)
+    if (fileIds.length === 0) return []
     return await prisma.file.findMany({
       where: {
-        id: {
-          in: transaction.files as string[],
-        },
+        id: { in: fileIds },
         userId,
       },
       orderBy: {
