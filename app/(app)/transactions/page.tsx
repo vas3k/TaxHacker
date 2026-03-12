@@ -47,15 +47,10 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         </h2>
         <div className="flex gap-2">
           <ExportTransactionsDialog fields={fields} categories={categories} projects={projects} total={total}>
-            <Button variant="outline">
-              <Download />
-              <span className="hidden md:block">Export</span>
-            </Button>
+            <Download /> <span className="hidden md:block">Export</span>
           </ExportTransactionsDialog>
           <NewTransactionDialog>
-            <Button>
-              <Plus /> <span className="hidden md:block">Add Transaction</span>
-            </Button>
+            <Plus /> <span className="hidden md:block">Add Transaction</span>
           </NewTransactionDialog>
         </div>
       </header>

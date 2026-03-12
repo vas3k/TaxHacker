@@ -76,7 +76,9 @@ export function ExportTransactionsDialog({
 
   return (
     <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline">{children}</Button>
+      </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Export {total} Transactions</DialogTitle>
