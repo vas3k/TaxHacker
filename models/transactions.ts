@@ -1,4 +1,10 @@
 import { prisma } from "@/lib/db"
+import {
+  buildSearchFilters,
+  isSQLite,
+  parseFilesArray,
+  prepareJsonField,
+} from "@/lib/db-compat"
 import { Field, Prisma, Transaction } from "@/prisma/client"
 import { cache } from "react"
 import { getFields } from "./fields"
@@ -54,13 +60,10 @@ export const getTransactions = cache(
 
     if (filters) {
       if (filters.search) {
-        where.OR = [
-          { name: { contains: filters.search, mode: "insensitive" } },
-          { merchant: { contains: filters.search, mode: "insensitive" } },
-          { description: { contains: filters.search, mode: "insensitive" } },
-          { note: { contains: filters.search, mode: "insensitive" } },
-          { text: { contains: filters.search, mode: "insensitive" } },
-        ]
+        where.OR = buildSearchFilters(
+          ["name", "merchant", "description", "note", "text"],
+          filters.search
+        )
       }
 
       if (filters.dateFrom || filters.dateTo) {
@@ -127,8 +130,19 @@ export const getTransactionById = cache(async (id: string, userId: string): Prom
 })
 
 export const getTransactionsByFileId = cache(async (fileId: string, userId: string): Promise<Transaction[]> => {
+  if (isSQLite) {
+    // SQLite: files is stored as JSON string, use contains
+    return await prisma.transaction.findMany({
+      where: {
+        files: { contains: fileId },
+        userId,
+      },
+    })
+  }
+  // PostgreSQL: use native JSON array_contains
+  // Using type assertion because Prisma generates different types based on schema
   return await prisma.transaction.findMany({
-    where: { files: { array_contains: [fileId] }, userId },
+    where: { files: { array_contains: [fileId] } as unknown, userId } as Prisma.TransactionWhereInput,
   })
 })
 
@@ -138,10 +152,10 @@ export const createTransaction = async (userId: string, data: TransactionData): 
   return await prisma.transaction.create({
     data: {
       ...standard,
-      extra: extra,
-      items: data.items as Prisma.InputJsonValue,
-      userId,
-    },
+      extra: prepareJsonField(extra),
+      items: prepareJsonField(data.items || []),
+      user: { connect: { id: userId } },
+    } as unknown as Prisma.TransactionCreateInput,
   })
 }
 
@@ -152,16 +166,16 @@ export const updateTransaction = async (id: string, userId: string, data: Transa
     where: { id, userId },
     data: {
       ...standard,
-      extra: extra,
-      items: data.items ? (data.items as Prisma.InputJsonValue) : [],
-    },
+      extra: prepareJsonField(extra),
+      items: prepareJsonField(data.items || []),
+    } as unknown as Prisma.TransactionUpdateInput,
   })
 }
 
 export const updateTransactionFiles = async (id: string, userId: string, files: string[]): Promise<Transaction> => {
   return await prisma.transaction.update({
     where: { id, userId },
-    data: { files },
+    data: { files: prepareJsonField(files) } as unknown as Prisma.TransactionUpdateInput,
   })
 }
 
@@ -169,9 +183,9 @@ export const deleteTransaction = async (id: string, userId: string): Promise<Tra
   const transaction = await getTransactionById(id, userId)
 
   if (transaction) {
-    const files = Array.isArray(transaction.files) ? transaction.files : []
+    const files = parseFilesArray(transaction.files)
 
-    for (const fileId of files as string[]) {
+    for (const fileId of files) {
       if ((await getTransactionsByFileId(fileId, userId)).length <= 1) {
         await deleteFile(fileId, userId)
       }
@@ -186,6 +200,42 @@ export const deleteTransaction = async (id: string, userId: string): Promise<Tra
 export const bulkDeleteTransactions = async (ids: string[], userId: string) => {
   return await prisma.transaction.deleteMany({
     where: { id: { in: ids }, userId },
+  })
+}
+
+export const duplicateTransaction = async (id: string, userId: string): Promise<Transaction> => {
+  const original = await getTransactionById(id, userId)
+  if (!original) {
+    throw new Error("Transaction not found")
+  }
+
+  // Create a copy without id, timestamps, files, and relations
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {
+    id: _id,
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    files: _files,
+    items: _items,
+    extra: _extra,
+    ...rest
+  } = original as Transaction & { category?: unknown; project?: unknown }
+
+  // Remove relation fields if present (from include)
+  const { category: _category, project: _project, ...transactionData } = rest as typeof rest & {
+    category?: unknown
+    project?: unknown
+  }
+
+  return await prisma.transaction.create({
+    data: {
+      ...transactionData,
+      name: original.name ? `${original.name} (Copy)` : "Copy",
+      files: prepareJsonField([]),
+      items: original.items,
+      extra: original.extra,
+      user: { connect: { id: userId } },
+    } as unknown as Prisma.TransactionCreateInput,
   })
 }
 
