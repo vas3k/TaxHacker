@@ -1,0 +1,19 @@
+# Nixpacks configuration for Dokploy
+# Requires Node 20+ for File API and package compatibility
+#
+# Database Configuration:
+#   - For PostgreSQL: DATABASE_URL=postgresql://user:pass@host:5432/db
+#   - For SQLite: DATABASE_URL=file:./data/taxhacker.db
+#   - Optional: DATABASE_PROVIDER=postgresql|sqlite (auto-detected from URL)
+
+[phases.setup]
+nixPkgs = ["nodejs_22", "openssl"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["node scripts/select-schema.js", "npx prisma generate", "npx next telemetry disable", "npm run build"]
+
+[start]
+cmd = "node scripts/select-schema.js && npx prisma generate && (echo $DATABASE_URL | grep -q '^file:' && npx prisma db push --accept-data-loss || npx prisma migrate deploy) && npm start"
