@@ -13,9 +13,10 @@ import { FormSelectType } from "@/components/forms/select-type"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
-import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
+import { ArrowDownToLine, Brain, ChevronDown, FileText, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
 
 export default function AnalyzeForm({
@@ -40,6 +41,7 @@ export default function AnalyzeForm({
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteUnsortedFileAction, null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
+  const [isTextOpen, setIsTextOpen] = useState(false)
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -79,14 +81,19 @@ export default function AnalyzeForm({
       {} as Record<string, string>
     )
 
-    // Load cached results if they exist
-    const cachedResults = file.cachedParseResult
-      ? Object.fromEntries(
-          Object.entries(file.cachedParseResult as Record<string, string>).filter(
-            ([_, value]) => value !== null && value !== undefined && value !== ""
-          )
+    // Load cached results if they exist (handle string for SQLite, object for PostgreSQL)
+    const parseCachedResult = () => {
+      if (!file.cachedParseResult) return {}
+      const parsed = typeof file.cachedParseResult === "string"
+        ? JSON.parse(file.cachedParseResult)
+        : file.cachedParseResult
+      return Object.fromEntries(
+        Object.entries(parsed as Record<string, string>).filter(
+          ([_, value]) => value !== null && value !== undefined && value !== ""
         )
-      : {}
+      )
+    }
+    const cachedResults = parseCachedResult()
 
     return {
       ...baseState,
@@ -308,16 +315,40 @@ export default function AnalyzeForm({
           </ToolWindow>
         )}
 
-        <div className="hidden">
-          <input type="text" name="items" value={JSON.stringify(formData.items)} readOnly />
-          <FormTextarea
-            title={fieldMap.text.name}
-            name="text"
-            value={formData.text}
-            onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
-            hideIfEmpty={!fieldMap.text.isVisibleInAnalysis}
-          />
-        </div>
+        {/* Hidden fields for form submission */}
+        <input type="hidden" name="items" value={JSON.stringify(formData.items)} />
+        <input type="hidden" name="text" value={formData.text} />
+
+        {/* Recognized text display */}
+        {formData.text && (
+          <Collapsible open={isTextOpen} onOpenChange={setIsTextOpen} className="border rounded-lg">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full flex justify-between items-center p-4 h-auto">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Recognized Text</span>
+                  <Badge variant="secondary" className="ml-2">
+                    {formData.text.length} chars
+                  </Badge>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isTextOpen ? "rotate-180" : ""}`}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="p-4 pt-0">
+                <FormTextarea
+                  name="text_display"
+                  value={formData.text}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
+                  className="font-mono text-xs bg-muted/50 min-h-[200px]"
+                  placeholder="No text was recognized from this file"
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         <div className="flex justify-between gap-4 pt-6">
           <Button

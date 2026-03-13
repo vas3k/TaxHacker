@@ -1,0 +1,36 @@
+# Docker Compose configuration for SQLite mode
+# Use this for simple single-container deployments without PostgreSQL
+#
+# Usage:
+#   docker-compose -f docker-compose.sqlite.yml up -d
+#
+# Or build locally:
+#   docker-compose -f docker-compose.sqlite.yml up -d --build
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7331:7331"
+    environment:
+      - NODE_ENV=production
+      - PORT=7331
+      - SELF_HOSTED_MODE=true
+      - DATABASE_PROVIDER=sqlite
+      - DATABASE_URL=file:/app/data/taxhacker.db
+      - UPLOAD_PATH=/app/data/uploads
+    env_file:
+      - .env
+    volumes:
+      - taxhacker-data:/app/data
+    restart: unless-stopped
+    logging:
+      driver: local
+      options:
+        max-size: "100M"
+        max-file: "3"
+
+volumes:
+  taxhacker-data:
