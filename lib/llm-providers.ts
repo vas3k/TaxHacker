@@ -44,4 +44,19 @@ export const PROVIDERS = [
     },
     logo: "/logo/mistral.svg"
   },
+  {
+    key: "minimax",
+    label: "MiniMax",
+    apiKeyName: "minimax_api_key",
+    modelName: "minimax_model_name",
+    defaultModelName: "MiniMax-M2.7",
+    apiDoc: "https://platform.minimax.io/user-center/basic-information/interface-key",
+    apiDocLabel: "MiniMax Platform Console",
+    placeholder: "sk-...",
+    help: {
+      url: "https://platform.minimax.io/user-center/basic-information/interface-key",
+      label: "MiniMax Platform Console"
+    },
+    logo: "/logo/minimax.svg"
+  },
 ]

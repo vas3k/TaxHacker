@@ -3,7 +3,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
 
-export type LLMProvider = "openai" | "google" | "mistral"
+export type LLMProvider = "openai" | "google" | "mistral" | "minimax"
 
 export interface LLMConfig {
   provider: LLMProvider
@@ -49,6 +49,15 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         apiKey: config.apiKey,
         model: config.model,
         temperature: temperature,
+      })
+    } else if (config.provider === "minimax") {
+      model = new ChatOpenAI({
+        apiKey: config.apiKey,
+        model: config.model,
+        temperature: temperature,
+        configuration: {
+          baseURL: "https://api.minimax.io/v1",
+        },
       })
     } else {
       return {

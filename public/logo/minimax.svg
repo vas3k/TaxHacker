@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <rect width="256" height="256" rx="40" fill="#1A1A2E"/>
+  <text x="128" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="56" fill="#FFFFFF">MM</text>
+  <rect x="48" y="170" width="160" height="4" rx="2" fill="#4A90D9"/>
+</svg>
