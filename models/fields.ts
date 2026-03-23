@@ -10,9 +10,10 @@ export type FieldData = {
 export const getFields = cache(async (userId: string) => {
   return await prisma.field.findMany({
     where: { userId },
-    orderBy: {
-      createdAt: "asc",
-    },
+    orderBy: [
+      { order: "asc" },
+      { createdAt: "asc" },
+    ],
   })
 })
 
@@ -43,4 +44,16 @@ export const deleteField = async (userId: string, code: string) => {
   return await prisma.field.delete({
     where: { userId_code: { code, userId } },
   })
+}
+
+export const updateFieldOrders = async (userId: string, fieldOrders: { code: string; order: number }[]) => {
+  // Use a transaction to update all field orders atomically
+  return await prisma.$transaction(
+    fieldOrders.map(({ code, order }) =>
+      prisma.field.update({
+        where: { userId_code: { code, userId } },
+        data: { order },
+      })
+    )
+  )
 }

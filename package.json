@@ -3,11 +3,18 @@
   "version": "0.5.5",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev -p 7331 --turbopack",
     "build": "next build",
-    "start": "prisma migrate deploy && next start",
-    "lint": "next lint"
+    "start": "next start",
+    "lint": "next lint",
+    "db:setup": "node scripts/select-schema.js && prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "postinstall": "node scripts/select-schema.js && prisma generate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -1,3 +1,4 @@
+import { parseJsonObject } from "@/lib/db-compat"
 import { Field, Transaction } from "@/prisma/client"
 
 export function calcTotalPerCurrency(transactions: Transaction[]): Record<string, number> {
@@ -50,10 +51,11 @@ export const isTransactionIncomplete = (fields: Field[], transaction: Transactio
 
 export const incompleteTransactionFields = (fields: Field[], transaction: Transaction): Field[] => {
   const requiredFields = fields.filter((field) => field.isRequired)
+  const extra = parseJsonObject<Record<string, unknown>>(transaction.extra)
 
   return requiredFields.filter((field) => {
     const value = field.isExtra
-      ? (transaction.extra as Record<string, any>)?.[field.code]
+      ? extra?.[field.code]
       : transaction[field.code as keyof Transaction]
 
     return value === undefined || value === null || value === ""

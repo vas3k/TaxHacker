@@ -6,10 +6,11 @@ export const settingsFormSchema = z.object({
   default_type: z.string().optional(),
   default_category: z.string().optional(),
   default_project: z.string().optional(),
+  tax_year_start: z.string().max(5).optional(), // Format: "MM-DD", e.g. "04-06" for UK tax year (April 6)
   openai_api_key: z.string().optional(),
   openai_model_name: z.string().default('gpt-4o-mini'),
   google_api_key: z.string().optional(),
-  google_model_name: z.string().default("gemini-2.5-flash"),
+  google_model_name: z.string().default("gemini-2.0-flash"),
   mistral_api_key: z.string().optional(),
   mistral_model_name: z.string().default("mistral-medium-latest"),
   llm_providers: z.string().default('openai,google,mistral'),
@@ -32,6 +33,7 @@ export const categoryFormSchema = z.object({
   name: z.string().max(128),
   llm_prompt: z.string().max(512).nullable().optional(),
   color: z.string().max(7).default(randomHexColor()).nullable().optional(),
+  parentCode: z.string().max(128).nullable().optional(),
 })
 
 export const fieldFormSchema = z.object({
