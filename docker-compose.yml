@@ -3,18 +3,18 @@ services:
     image: ghcr.io/vas3k/taxhacker:latest
     ports:
       - "7331:7331"
-    environment:
-      - NODE_ENV=production
-      - SELF_HOSTED_MODE=true
-      - UPLOAD_PATH=/app/data/uploads
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
+    env_file:
+      - .env
     volumes:
-      - ./data:/app/data
+      - taxhacker-data:/app/data
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    networks:
+      - taxhacker-network
     logging:
-      driver: "local"
+      driver: local
       options:
         max-size: "100M"
         max-file: "3"
@@ -22,14 +22,28 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=taxhacker
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - taxhacker-pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - taxhacker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d taxhacker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     logging:
-      driver: "local"
+      driver: local
       options:
         max-size: "100M"
         max-file: "3"
+
+volumes:
+  taxhacker-data:
+  taxhacker-pgdata:
+
+networks:
+  taxhacker-network:
+    driver: bridge

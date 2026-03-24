@@ -14,7 +14,7 @@ import { uploadStaticImage } from "@/lib/uploads"
 import { codeFromName, randomHexColor } from "@/lib/utils"
 import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
 import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
-import { createField, deleteField, updateField } from "@/models/fields"
+import { createField, deleteField, updateField, updateFieldOrders } from "@/models/fields"
 import { createProject, deleteProject, updateProject } from "@/models/projects"
 import { SettingsMap, updateSettings } from "@/models/settings"
 import { updateUser } from "@/models/users"
@@ -57,8 +57,8 @@ export async function saveProfileAction(
 
   // Upload avatar
   let avatarUrl = user.avatar
-  const avatarFile = formData.get("avatar") as File | null
-  if (avatarFile instanceof File && avatarFile.size > 0) {
+  const avatarFile = formData.get("avatar")
+  if (avatarFile && typeof avatarFile === "object" && "size" in avatarFile && (avatarFile as Blob).size > 0) {
     try {
       const uploadedAvatarPath = await uploadStaticImage(user, avatarFile, "avatar.webp", 500, 500)
       avatarUrl = `/files/static/${path.basename(uploadedAvatarPath)}`
@@ -69,8 +69,8 @@ export async function saveProfileAction(
 
   // Upload business logo
   let businessLogoUrl = user.businessLogo
-  const businessLogoFile = formData.get("businessLogo") as File | null
-  if (businessLogoFile instanceof File && businessLogoFile.size > 0) {
+  const businessLogoFile = formData.get("businessLogo")
+  if (businessLogoFile && typeof businessLogoFile === "object" && "size" in businessLogoFile && (businessLogoFile as Blob).size > 0) {
     try {
       const uploadedBusinessLogoPath = await uploadStaticImage(user, businessLogoFile, "businessLogo.png", 500, 500)
       businessLogoUrl = `/files/static/${path.basename(uploadedBusinessLogoPath)}`
@@ -195,6 +195,7 @@ export async function addCategoryAction(userId: string, data: Prisma.CategoryCre
       name: validatedForm.data.name,
       llm_prompt: validatedForm.data.llm_prompt,
       color: validatedForm.data.color || "",
+      parentCode: validatedForm.data.parentCode || null,
     })
     revalidatePath("/settings/categories")
 
@@ -221,6 +222,7 @@ export async function editCategoryAction(userId: string, code: string, data: Pri
     name: validatedForm.data.name,
     llm_prompt: validatedForm.data.llm_prompt,
     color: validatedForm.data.color || "",
+    parentCode: validatedForm.data.parentCode || null,
   })
   revalidatePath("/settings/categories")
 
@@ -287,4 +289,18 @@ export async function deleteFieldAction(userId: string, code: string) {
   }
   revalidatePath("/settings/fields")
   return { success: true }
+}
+
+export async function reorderFieldsAction(
+  fieldOrders: { code: string; order: number }[]
+): Promise<ActionState<void>> {
+  try {
+    const user = await getCurrentUser()
+    await updateFieldOrders(user.id, fieldOrders)
+    revalidatePath("/settings/fields")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to reorder fields:", error)
+    return { success: false, error: "Failed to reorder fields" }
+  }
 }

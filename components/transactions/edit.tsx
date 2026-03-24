@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteTransactionAction, saveTransactionAction } from "@/app/(app)/transactions/actions"
+import { deleteTransactionAction, duplicateTransactionAction, saveTransactionAction } from "@/app/(app)/transactions/actions"
 import { ItemsDetectTool } from "@/components/agents/items-detect"
 import ToolWindow from "@/components/agents/tool-window"
 import { FormError } from "@/components/forms/error"
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { TransactionData } from "@/models/transactions"
 import { Category, Currency, Field, Project, Transaction } from "@/prisma/client"
 import { format } from "date-fns"
-import { Loader2, Save, Trash2 } from "lucide-react"
+import { Copy, Loader2, Save, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react"
 
@@ -70,12 +70,26 @@ export default function TransactionEditForm({
     )
   }, [fields])
 
+  const [isDuplicating, setIsDuplicating] = useState(false)
+
   const handleDelete = async () => {
     if (confirm("Are you sure? This will delete the transaction with all the files permanently")) {
       startTransition(async () => {
         await deleteAction(transaction.id)
         router.back()
       })
+    }
+  }
+
+  const handleDuplicate = async () => {
+    setIsDuplicating(true)
+    try {
+      const result = await duplicateTransactionAction(transaction.id)
+      if (result.success && result.data) {
+        router.push(`/transactions/${result.data.id}`)
+      }
+    } finally {
+      setIsDuplicating(false)
     }
   }
 
@@ -223,12 +237,28 @@ export default function TransactionEditForm({
       )}
 
       <div className="flex justify-between space-x-4 pt-6">
-        <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
-          <>
-            <Trash2 className="h-4 w-4" />
-            {isDeleting ? "⏳ Deleting..." : "Delete "}
-          </>
-        </Button>
+        <div className="flex gap-2">
+          <Button type="button" onClick={handleDelete} variant="destructive" disabled={isDeleting}>
+            <>
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? "⏳ Deleting..." : "Delete"}
+            </>
+          </Button>
+
+          <Button type="button" onClick={handleDuplicate} variant="outline" disabled={isDuplicating}>
+            {isDuplicating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Copying...
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4" />
+                Duplicate
+              </>
+            )}
+          </Button>
+        </div>
 
         <Button type="submit" disabled={isSaving}>
           {isSaving ? (
