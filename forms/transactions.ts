@@ -42,7 +42,14 @@ export const transactionFormSchema = z
           .refine((val) => !isNaN(Date.parse(val)), {
             message: "Invalid date format",
           })
-          .transform((val) => new Date(val)),
+          .transform((val) => {
+            // Parse date-only strings as local midnight to avoid timezone shift
+            // e.g., "2024-04-09" should be April 9th in user's timezone, not UTC
+            if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+              return new Date(val + "T00:00:00")
+            }
+            return new Date(val)
+          }),
       ])
       .optional(),
     text: z.string().optional(),

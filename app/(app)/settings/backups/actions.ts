@@ -1,5 +1,13 @@
 "use server"
 
+// File-like interface for form data uploads (avoids runtime File check issues in Node.js)
+interface UploadedFile {
+  name: string
+  size: number
+  type: string
+  arrayBuffer(): Promise<ArrayBuffer>
+}
+
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
@@ -23,7 +31,7 @@ export async function restoreBackupAction(
 ): Promise<ActionState<BackupRestoreResult>> {
   const user = await getCurrentUser()
   const userUploadsDirectory = getUserUploadsDirectory(user)
-  const file = formData.get("file") as File
+  const file = formData.get("file") as UploadedFile | null
 
   if (!file || file.size === 0) {
     return { success: false, error: "No file provided" }

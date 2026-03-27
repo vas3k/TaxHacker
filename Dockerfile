@@ -3,6 +3,7 @@ FROM node:23-slim AS base
 # Default environment variables
 ENV PORT=7331
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build stage
 FROM base AS builder
@@ -22,8 +23,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Disable Next.js telemetry and build
+RUN npx next telemetry disable && npm run build
 
 # Production stage
 FROM base
@@ -47,6 +48,7 @@ RUN mkdir -p /app/upload
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/app ./app

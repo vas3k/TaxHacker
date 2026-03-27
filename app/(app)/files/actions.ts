@@ -1,5 +1,14 @@
 "use server"
 
+// File-like interface for form data uploads (avoids runtime File check issues in Node.js)
+interface UploadedFile {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+  arrayBuffer(): Promise<ArrayBuffer>
+}
+
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import {
@@ -18,13 +27,13 @@ import path from "path"
 
 export async function uploadFilesAction(formData: FormData): Promise<ActionState<null>> {
   const user = await getCurrentUser()
-  const files = formData.getAll("files") as File[]
+  const files = formData.getAll("files") as UploadedFile[]
 
   // Make sure upload dir exists
   const userUploadsDirectory = getUserUploadsDirectory(user)
 
   // Check limits
-  const totalFileSize = files.reduce((acc, file) => acc + file.size, 0)
+  const totalFileSize = files.reduce((acc, file) => acc + (file?.size || 0), 0)
   if (!isEnoughStorageToUploadFile(user, totalFileSize)) {
     return { success: false, error: `Insufficient storage to upload these files` }
   }
@@ -39,7 +48,7 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
   // Process each file
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
-      if (!(file instanceof File)) {
+      if (!file || typeof file !== "object" || !("size" in file) || !("arrayBuffer" in file)) {
         return { success: false, error: "Invalid file" }
       }
 
