@@ -13,7 +13,38 @@ export const getCategories = cache(async (userId: string) => {
     orderBy: {
       name: "asc",
     },
+    include: {
+      children: true,
+    },
   })
+})
+
+// Get categories in hierarchical structure (parent categories first, then children)
+export const getCategoriesHierarchical = cache(async (userId: string) => {
+  const categories = await prisma.category.findMany({
+    where: { userId },
+    orderBy: {
+      name: "asc",
+    },
+  })
+
+  // Build hierarchical structure
+  const parentCategories = categories.filter((c) => !c.parentCode)
+  const childCategories = categories.filter((c) => c.parentCode)
+
+  // Group children by parent
+  const childrenByParent = childCategories.reduce(
+    (acc, child) => {
+      if (!acc[child.parentCode!]) {
+        acc[child.parentCode!] = []
+      }
+      acc[child.parentCode!].push(child)
+      return acc
+    },
+    {} as Record<string, typeof categories>
+  )
+
+  return { parentCategories, childrenByParent, allCategories: categories }
 })
 
 export const getCategoryByCode = cache(async (userId: string, code: string) => {

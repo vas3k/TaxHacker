@@ -1,8 +1,18 @@
 "use server"
 
+// File-like interface for form data uploads (avoids runtime File check issues in Node.js)
+interface UploadedFile {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+  arrayBuffer(): Promise<ArrayBuffer>
+}
+
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
+import { parseFilesArray } from "@/lib/db-compat"
 import {
   getDirectorySize,
   getTransactionFileUploadPath,
@@ -16,6 +26,7 @@ import {
   bulkDeleteTransactions,
   createTransaction,
   deleteTransaction,
+  duplicateTransaction,
   getTransactionById,
   updateTransaction,
   updateTransactionFiles,
@@ -106,10 +117,11 @@ export async function deleteTransactionFileAction(
     return { success: false, error: "Transaction not found" }
   }
 
+  const currentFiles = parseFilesArray(transaction.files)
   await updateTransactionFiles(
     transactionId,
     user.id,
-    transaction.files ? (transaction.files as string[]).filter((id) => id !== fileId) : []
+    currentFiles.filter((id) => id !== fileId)
   )
 
   await deleteFile(fileId, user.id)
@@ -125,7 +137,7 @@ export async function deleteTransactionFileAction(
 export async function uploadTransactionFilesAction(formData: FormData): Promise<ActionState<Transaction>> {
   try {
     const transactionId = formData.get("transactionId") as string
-    const files = formData.getAll("files") as File[]
+    const files = formData.getAll("files") as UploadedFile[]
 
     if (!files || !transactionId) {
       return { success: false, error: "No files or transaction ID provided" }
@@ -182,12 +194,11 @@ export async function uploadTransactionFilesAction(formData: FormData): Promise<
     )
 
     // Update invoice with the new file ID
+    const existingFiles = parseFilesArray(transaction.files)
     await updateTransactionFiles(
       transactionId,
       user.id,
-      transaction.files
-        ? [...(transaction.files as string[]), ...fileRecords.map((file) => file.id)]
-        : fileRecords.map((file) => file.id)
+      [...existingFiles, ...fileRecords.map((file) => file.id)]
     )
 
     // Update user storage used
@@ -224,5 +235,20 @@ export async function updateFieldVisibilityAction(fieldCode: string, isVisible: 
   } catch (error) {
     console.error("Failed to update field visibility:", error)
     return { success: false, error: "Failed to update field visibility" }
+  }
+}
+
+export async function duplicateTransactionAction(
+  transactionId: string
+): Promise<ActionState<Transaction>> {
+  try {
+    const user = await getCurrentUser()
+    const newTransaction = await duplicateTransaction(transactionId, user.id)
+
+    revalidatePath("/transactions")
+    return { success: true, data: newTransaction }
+  } catch (error) {
+    console.error("Failed to duplicate transaction:", error)
+    return { success: false, error: "Failed to duplicate transaction" }
   }
 }

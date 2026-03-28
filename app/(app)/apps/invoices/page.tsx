@@ -14,7 +14,7 @@ export default async function InvoicesApp() {
   const user = await getCurrentUser()
   const settings = await getSettings(user.id)
   const currencies = await getCurrencies(user.id)
-  const appData = (await getAppData(user, "invoices")) as InvoiceAppData | null
+  const appData = await getAppData<InvoiceAppData>(user, "invoices")
 
   return (
     <div>
