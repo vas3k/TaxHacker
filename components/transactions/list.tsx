@@ -4,6 +4,7 @@ import { BulkActionsMenu } from "@/components/transactions/bulk-actions"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { parseFilesArray } from "@/lib/db-compat"
 import { calcNetTotalPerCurrency, calcTotalPerCurrency, isTransactionIncomplete } from "@/lib/stats"
 import { cn, formatCurrency } from "@/lib/utils"
 import { Category, Field, Project, Transaction } from "@/prisma/client"
@@ -79,7 +80,7 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     formatValue: (transaction: Transaction) => (
       <div className="flex items-center gap-2 text-sm">
         <File className="w-4 h-4" />
-        {(transaction.files as string[]).length}
+        {parseFilesArray(transaction.files).length}
       </div>
     ),
   },
@@ -181,6 +182,7 @@ const getFieldRenderer = (field: Field): FieldRenderer => {
 
 export function TransactionList({ transactions, fields = [] }: { transactions: Transaction[]; fields?: Field[] }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -208,17 +210,33 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
   const toggleAllRows = () => {
     if (selectedIds.length === transactions.length) {
       setSelectedIds([])
+      setLastSelectedIndex(null)
     } else {
       setSelectedIds(transactions.map((transaction) => transaction.id))
+      setLastSelectedIndex(null)
     }
   }
 
-  const toggleOneRow = (e: React.MouseEvent, id: string) => {
+  const toggleOneRow = (e: React.MouseEvent, id: string, index: number) => {
     e.stopPropagation()
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((item) => item !== id))
+
+    // SHIFT+click for range selection
+    if (e.shiftKey && lastSelectedIndex !== null) {
+      const start = Math.min(lastSelectedIndex, index)
+      const end = Math.max(lastSelectedIndex, index)
+      const rangeIds = transactions.slice(start, end + 1).map((t) => t.id)
+
+      // Add all items in range to selection (union with existing selection)
+      const newSelection = [...new Set([...selectedIds, ...rangeIds])]
+      setSelectedIds(newSelection)
     } else {
-      setSelectedIds([...selectedIds, id])
+      // Normal toggle behavior
+      if (selectedIds.includes(id)) {
+        setSelectedIds(selectedIds.filter((item) => item !== id))
+      } else {
+        setSelectedIds([...selectedIds, id])
+      }
+      setLastSelectedIndex(index)
     }
   }
 
@@ -242,7 +260,10 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
 
   const renderFieldInTable = (transaction: Transaction, field: FieldWithRenderer): string | React.ReactNode => {
     if (field.isExtra) {
-      return transaction.extra?.[field.code as keyof typeof transaction.extra] ?? ""
+      const extra = typeof transaction.extra === "string"
+        ? JSON.parse(transaction.extra || "{}")
+        : (transaction.extra || {})
+      return extra[field.code] ?? ""
     } else if (field.renderer.formatValue) {
       return field.renderer.formatValue(transaction)
     } else {
@@ -294,7 +315,7 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.map((transaction) => (
+          {transactions.map((transaction, index) => (
             <TableRow
               key={transaction.id}
               className={cn(
@@ -304,14 +325,10 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
               )}
               onClick={() => handleRowClick(transaction.id)}
             >
-              <TableCell onClick={(e) => e.stopPropagation()}>
+              <TableCell onClick={(e) => toggleOneRow(e, transaction.id, index)}>
                 <Checkbox
                   checked={selectedIds.includes(transaction.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked !== "indeterminate") {
-                      toggleOneRow({ stopPropagation: () => {} } as React.MouseEvent, transaction.id)
-                    }
-                  }}
+                  onCheckedChange={() => {}}
                 />
               </TableCell>
               {visibleFields.map((field) => (

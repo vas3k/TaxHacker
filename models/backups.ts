@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db"
+import { prepareJsonField } from "@/lib/db-compat"
 
 type BackupSetting = {
   filename: string
@@ -168,7 +169,7 @@ export const MODEL_BACKUP: BackupSetting[] = [
         id: json.id,
         filename: json.filename,
         path: json.path ? json.path.replace(/^.*\/uploads\//, "") : "",
-        metadata: json.metadata,
+        metadata: json.metadata ? prepareJsonField(json.metadata) : null,
         isReviewed: json.isReviewed,
         mimetype: json.mimetype,
         user: {
@@ -195,6 +196,7 @@ export const MODEL_BACKUP: BackupSetting[] = [
         type: row.type,
         note: row.note,
         files: row.files,
+        items: row.items,
         extra: row.extra,
         categoryCode: row.categoryCode,
         projectCode: row.projectCode,
@@ -216,8 +218,9 @@ export const MODEL_BACKUP: BackupSetting[] = [
         convertedCurrencyCode: json.convertedCurrencyCode,
         type: json.type,
         note: json.note,
-        files: json.files,
-        extra: json.extra,
+        files: prepareJsonField(json.files || []),
+        items: prepareJsonField(json.items || []),
+        extra: json.extra ? prepareJsonField(json.extra) : null,
         issuedAt: json.issuedAt,
         user: {
           connect: {

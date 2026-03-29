@@ -1,6 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/db"
+import { parseFilesArray, prepareJsonField } from "@/lib/db-compat"
 import { unlink } from "fs/promises"
 import path from "path"
 import { cache } from "react"
@@ -36,11 +37,11 @@ export const getFileById = cache(async (id: string, userId: string) => {
 export const getFilesByTransactionId = cache(async (id: string, userId: string) => {
   const transaction = await getTransactionById(id, userId)
   if (transaction && transaction.files) {
+    const fileIds = parseFilesArray(transaction.files)
+    if (fileIds.length === 0) return []
     return await prisma.file.findMany({
       where: {
-        id: {
-          in: transaction.files as string[],
-        },
+        id: { in: fileIds },
         userId,
       },
       orderBy: {
@@ -52,18 +53,32 @@ export const getFilesByTransactionId = cache(async (id: string, userId: string) 
 })
 
 export const createFile = async (userId: string, data: any) => {
+  // Prepare JSON fields for storage (stringify for SQLite)
+  const preparedData = {
+    ...data,
+    userId,
+    metadata: data.metadata ? prepareJsonField(data.metadata) : null,
+    cachedParseResult: data.cachedParseResult ? prepareJsonField(data.cachedParseResult) : null,
+  }
+
   return await prisma.file.create({
-    data: {
-      ...data,
-      userId,
-    },
+    data: preparedData,
   })
 }
 
 export const updateFile = async (id: string, userId: string, data: any) => {
+  // Prepare JSON fields for storage (stringify for SQLite)
+  const preparedData = { ...data }
+  if (preparedData.metadata !== undefined) {
+    preparedData.metadata = preparedData.metadata ? prepareJsonField(preparedData.metadata) : null
+  }
+  if (preparedData.cachedParseResult !== undefined) {
+    preparedData.cachedParseResult = preparedData.cachedParseResult ? prepareJsonField(preparedData.cachedParseResult) : null
+  }
+
   return await prisma.file.update({
     where: { id, userId },
-    data,
+    data: preparedData,
   })
 }
 

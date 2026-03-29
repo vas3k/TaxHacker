@@ -2,24 +2,62 @@
 
 import { DateRangePicker } from "@/components/forms/date-range-picker"
 import { ColumnSelector } from "@/components/transactions/fields-selector"
+import { TaxYearSelector } from "@/components/transactions/tax-year-selector"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { isFiltered, useTransactionFilters } from "@/hooks/use-transaction-filters"
 import { TransactionFilters } from "@/models/transactions"
 import { Category, Field, Project } from "@/prisma/client"
+import { format } from "date-fns"
 import { X } from "lucide-react"
+import { useMemo } from "react"
 
 export function TransactionSearchAndFilters({
   categories,
   projects,
   fields,
+  taxYearStart = "01-01",
 }: {
   categories: Category[]
   projects: Project[]
   fields: Field[]
+  taxYearStart?: string
 }) {
   const [filters, setFilters] = useTransactionFilters()
+
+  // Derive selected tax year from current date filters
+  const selectedTaxYear = useMemo(() => {
+    if (!filters.dateFrom || !filters.dateTo) return undefined
+
+    const [startMonth, startDay] = (taxYearStart || "01-01").split("-").map(Number)
+    const isCalendarYear = startMonth === 1 && startDay === 1
+    const fromDate = new Date(filters.dateFrom)
+    const year = fromDate.getFullYear()
+
+    // Check if the date range matches a tax year
+    if (isCalendarYear) {
+      const expectedFrom = new Date(year, 0, 1)
+      const expectedTo = new Date(year, 11, 31)
+      if (
+        format(fromDate, "yyyy-MM-dd") === format(expectedFrom, "yyyy-MM-dd") &&
+        format(new Date(filters.dateTo), "yyyy-MM-dd") === format(expectedTo, "yyyy-MM-dd")
+      ) {
+        return `${year}`
+      }
+    } else {
+      const expectedFrom = new Date(year, startMonth - 1, startDay)
+      const expectedTo = new Date(year + 1, startMonth - 1, startDay - 1)
+      if (
+        format(fromDate, "yyyy-MM-dd") === format(expectedFrom, "yyyy-MM-dd") &&
+        format(new Date(filters.dateTo), "yyyy-MM-dd") === format(expectedTo, "yyyy-MM-dd")
+      ) {
+        return `${year}-${year + 1}`
+      }
+    }
+
+    return undefined
+  }, [filters.dateFrom, filters.dateTo, taxYearStart])
 
   const handleFilterChange = (name: keyof TransactionFilters, value: any) => {
     setFilters((prev) => ({
@@ -79,6 +117,15 @@ export function TransactionSearchAndFilters({
             </SelectContent>
           </Select>
         )}
+
+        <TaxYearSelector
+          taxYearStart={taxYearStart}
+          value={selectedTaxYear}
+          onChange={(from, to) => {
+            handleFilterChange("dateFrom", from)
+            handleFilterChange("dateTo", to)
+          }}
+        />
 
         <DateRangePicker
           defaultDate={{
