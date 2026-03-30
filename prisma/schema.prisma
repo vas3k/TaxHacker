@@ -161,9 +161,11 @@ model File {
   metadata          Json?
   isReviewed        Boolean  @default(false) @map("is_reviewed")
   isSplitted        Boolean  @default(false) @map("is_splitted")
-  cachedParseResult Json?    @map("cached_parse_result")
-  createdAt         DateTime @default(now()) @map("created_at")
+  cachedParseResult   Json?    @map("cached_parse_result")
+  paperlessDocumentId Int?     @map("paperless_document_id")
+  createdAt           DateTime @default(now()) @map("created_at")
 
+  @@index([userId, paperlessDocumentId])
   @@map("files")
 }
 
