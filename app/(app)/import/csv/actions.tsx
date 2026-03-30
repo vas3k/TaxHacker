@@ -1,5 +1,13 @@
 "use server"
 
+// File-like interface for form data uploads (avoids runtime File check issues in Node.js)
+interface UploadedFile {
+  name: string
+  size: number
+  type: string
+  arrayBuffer(): Promise<ArrayBuffer>
+}
+
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { EXPORT_AND_IMPORT_FIELD_MAP } from "@/models/export_and_import"
@@ -12,7 +20,7 @@ export async function parseCSVAction(
   _prevState: ActionState<string[][]> | null,
   formData: FormData
 ): Promise<ActionState<string[][]>> {
-  const file = formData.get("file") as File
+  const file = formData.get("file") as UploadedFile | null
   if (!file) {
     return { success: false, error: "No file uploaded" }
   }
