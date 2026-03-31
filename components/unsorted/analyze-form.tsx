@@ -187,7 +187,7 @@ export default function AnalyzeForm({
       {analysisWarnings.length > 0 && (
         <div className="mb-4 space-y-2">
           {analysisWarnings.map((warning, index) => (
-            <FormWarning key={`${index}-${warning}`}>{warning}</FormWarning>
+            <FormWarning key={index}>{warning}</FormWarning>
           ))}
         </div>
       )}

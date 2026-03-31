@@ -218,7 +218,15 @@ async function runPythonEnricher(payload: {
       }
     })
 
-    child.stdin.write(JSON.stringify(payload))
-    child.stdin.end()
+    try {
+      if (!child.stdin.writable) {
+        safeResolve(null)
+        return
+      }
+      child.stdin.write(JSON.stringify(payload))
+      child.stdin.end()
+    } catch {
+      safeResolve(null)
+    }
   })
 }
