@@ -174,7 +174,7 @@ async function runPythonEnricher(payload: {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       stdio: ["pipe", "pipe", "pipe"],
-      // Keep shell disabled so arguments are never interpreted by a shell.
+      // Keep shell disabled to prevent shell injection from command/args configuration.
       shell: false,
     })
     let didResolve = false
@@ -213,8 +213,9 @@ async function runPythonEnricher(payload: {
       }
     })
 
-    child.on("error", () => {
+    child.on("error", (error: Error) => {
       clearTimeout(timeout)
+      console.warn("Python enricher failed to start:", error.message)
       safeResolve(null)
     })
 
@@ -253,7 +254,7 @@ function parseCommand(commandText: string, argsText?: string): string[] {
     const legacyTokens = commandText.split(/\s+/).filter(Boolean)
     if (legacyTokens.length > 1) {
       console.warn(
-        "Legacy TAXHACKER_PYTHON_ENRICHER_CMD with inline args is deprecated; use TAXHACKER_PYTHON_ENRICHER_ARGS JSON array"
+        "Legacy TAXHACKER_PYTHON_ENRICHER_CMD with inline args is deprecated and will be removed in v0.7.0; use TAXHACKER_PYTHON_ENRICHER_ARGS JSON array"
       )
       return legacyTokens
     }
