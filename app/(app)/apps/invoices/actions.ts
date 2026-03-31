@@ -29,14 +29,14 @@ export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Ar
 }
 
 export async function addNewTemplateAction(user: User, template: InvoiceTemplate) {
-  const appData = (await getAppData(user, "invoices")) as InvoiceAppData | null
+  const appData = await getAppData<InvoiceAppData>(user, "invoices")
   const updatedTemplates = [...(appData?.templates || []), template]
   const appDataResult = await setAppData(user, "invoices", { ...appData, templates: updatedTemplates })
   return { success: true, data: appDataResult }
 }
 
 export async function deleteTemplateAction(user: User, templateId: string) {
-  const appData = (await getAppData(user, "invoices")) as InvoiceAppData | null
+  const appData = await getAppData<InvoiceAppData>(user, "invoices")
   if (!appData) return { success: false, error: "No app data found" }
 
   const updatedTemplates = appData.templates.filter((t) => t.id !== templateId)

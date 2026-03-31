@@ -1,5 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is the SQLite version of the Prisma schema
+// Used when DATABASE_PROVIDER=sqlite
 
 generator client {
   provider = "prisma-client-js"
@@ -7,12 +7,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                  String        @id @default(uuid()) @db.Uuid
+  id                  String        @id @default(uuid())
   email               String        @unique
   name                String
   avatar              String?
@@ -45,14 +45,14 @@ model User {
 }
 
 model Session {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String   @id @default(uuid())
   token     String
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   ipAddress String?  @map("ip_address")
   userAgent String?  @map("user_agent")
-  userId    String   @map("user_id") @db.Uuid
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
@@ -63,7 +63,7 @@ model Account {
   id                    String    @id
   accountId             String    @map("account_id")
   providerId            String    @map("provider_id")
-  userId                String    @map("user_id") @db.Uuid
+  userId                String    @map("user_id")
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?   @map("access_token")
   refreshToken          String?   @map("refresh_token")
@@ -79,7 +79,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id @default(uuid()) @db.Uuid
+  id         String   @id @default(uuid())
   identifier String
   value      String
   expiresAt  DateTime @map("expires_at")
@@ -90,8 +90,8 @@ model Verification {
 }
 
 model Setting {
-  id          String  @id @default(uuid()) @db.Uuid
-  userId      String  @map("user_id") @db.Uuid
+  id          String  @id @default(uuid())
+  userId      String  @map("user_id")
   user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   code        String
   name        String
@@ -103,15 +103,15 @@ model Setting {
 }
 
 model Category {
-  id           String        @id @default(uuid()) @db.Uuid
-  userId       String        @map("user_id") @db.Uuid
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
   code         String
   name         String
   color        String        @default("#000000")
   llm_prompt   String?
   parentCode   String?       @map("parent_code")
-  parent       Category?     @relation("CategoryToSubcategory", fields: [parentCode, userId], references: [code, userId], onDelete: SetNull, onUpdate: Cascade)
+  parent       Category?     @relation("CategoryToSubcategory", fields: [parentCode, userId], references: [code, userId], onDelete: Cascade, onUpdate: Cascade)
   children     Category[]    @relation("CategoryToSubcategory")
   transactions Transaction[]
   createdAt    DateTime      @default(now()) @map("created_at")
@@ -121,8 +121,8 @@ model Category {
 }
 
 model Project {
-  id           String        @id @default(uuid()) @db.Uuid
-  userId       String        @map("user_id") @db.Uuid
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   code         String
   name         String
@@ -136,14 +136,14 @@ model Project {
 }
 
 model Field {
-  id                  String   @id @default(uuid()) @db.Uuid
-  userId              String   @map("user_id") @db.Uuid
+  id                  String   @id @default(uuid())
+  userId              String   @map("user_id")
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   code                String
   name                String
   type                String   @default("string")
   llm_prompt          String?
-  options             Json?
+  options             String?
   createdAt           DateTime @default(now()) @map("created_at")
   isVisibleInList     Boolean  @default(false) @map("is_visible_in_list")
   isVisibleInAnalysis Boolean  @default(false) @map("is_visible_in_analysis")
@@ -156,24 +156,24 @@ model Field {
 }
 
 model File {
-  id                String   @id @default(uuid()) @db.Uuid
-  userId            String   @map("user_id") @db.Uuid
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   filename          String
   path              String
   mimetype          String
-  metadata          Json?
+  metadata          String?
   isReviewed        Boolean  @default(false) @map("is_reviewed")
   isSplitted        Boolean  @default(false) @map("is_splitted")
-  cachedParseResult Json?    @map("cached_parse_result")
+  cachedParseResult String?  @map("cached_parse_result")
   createdAt         DateTime @default(now()) @map("created_at")
 
   @@map("files")
 }
 
 model Transaction {
-  id                    String    @id @default(uuid()) @db.Uuid
-  userId                String    @map("user_id") @db.Uuid
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name                  String?
   description           String?
@@ -183,10 +183,10 @@ model Transaction {
   convertedTotal        Int?      @map("converted_total")
   convertedCurrencyCode String?   @map("converted_currency_code")
   type                  String?   @default("expense")
-  items                 Json      @default("[]")
+  items                 String    @default("[]")
   note                  String?
-  files                 Json      @default("[]")
-  extra                 Json?
+  files                 String    @default("[]")
+  extra                 String?
   category              Category? @relation(fields: [categoryCode, userId], references: [code, userId])
   categoryCode          String?   @map("category_code")
   project               Project?  @relation(fields: [projectCode, userId], references: [code, userId])
@@ -207,8 +207,8 @@ model Transaction {
 }
 
 model Currency {
-  id     String  @id @default(uuid()) @db.Uuid
-  userId String? @map("user_id") @db.Uuid
+  id     String  @id @default(uuid())
+  userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   code   String
   name   String
@@ -218,22 +218,22 @@ model Currency {
 }
 
 model AppData {
-  id     String @id @default(uuid()) @db.Uuid
+  id     String @id @default(uuid())
   app    String
-  userId String @map("user_id") @db.Uuid
+  userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  data   Json
+  data   String
 
   @@unique([userId, app])
   @@map("app_data")
 }
 
 model Progress {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      String
-  data      Json?
+  data      String?
   current   Int      @default(0)
   total     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")

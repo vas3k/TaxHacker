@@ -9,8 +9,13 @@ import { useState } from "react"
 export function FilePreview({ file }: { file: File }) {
   const [isEnlarged, setIsEnlarged] = useState(false)
 
-  const fileSize =
-    file.metadata && typeof file.metadata === "object" && "size" in file.metadata ? Number(file.metadata.size) : 0
+  // Handle metadata that could be string (SQLite) or object (PostgreSQL)
+  const getFileSize = () => {
+    if (!file.metadata) return 0
+    const metadata = typeof file.metadata === "string" ? JSON.parse(file.metadata) : file.metadata
+    return "size" in metadata ? Number(metadata.size) : 0
+  }
+  const fileSize = getFileSize()
 
   return (
     <>
