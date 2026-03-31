@@ -68,6 +68,16 @@ export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiK
           </a>
         </small>
       </div>
+      {selected.baseUrlName && (
+        <div>
+          <FormInput
+            title={`${selected.label} Base URL`}
+            name={selected.baseUrlName}
+            defaultValue={selected.defaultBaseUrl}
+            placeholder="http://localhost:11434/v1"
+          />
+        </div>
+      )}
       <Button type="submit" className="w-auto p-6">
         Get Started
       </Button>

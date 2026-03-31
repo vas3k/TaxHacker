@@ -30,7 +30,7 @@ import { PROVIDERS } from "@/lib/llm-providers";
 function getInitialProviderOrder(settings: Record<string, string>) {
   let order: string[] = []
   if (!settings.llm_providers) {
-    order = ['openai', 'google', 'mistral']
+    order = ['openai', 'google', 'mistral', 'openai_compatible']
   } else {
     order = settings.llm_providers.split(",").map(p => p.trim())
   }
@@ -51,17 +51,20 @@ export default function LLMSettingsForm({
 
   // Controlled values for each provider
   const [providerValues, setProviderValues] = useState(() => {
-    const values: Record<string, { apiKey: string; model: string }> = {}
+    const values: Record<string, { apiKey: string; model: string; baseUrl: string }> = {}
     PROVIDERS.forEach((provider) => {
       values[provider.key] = {
         apiKey: settings[provider.apiKeyName],
         model: settings[provider.modelName] || provider.defaultModelName,
+        baseUrl: provider.baseUrlName
+          ? (settings[provider.baseUrlName] || provider.defaultBaseUrl || "")
+          : "",
       }
     })
     return values
   })
 
-  function handleProviderValueChange(providerKey: string, field: "apiKey" | "model", value: string) {
+  function handleProviderValueChange(providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) {
     setProviderValues((prev) => ({
       ...prev,
       [providerKey]: {
@@ -141,8 +144,8 @@ export default function LLMSettingsForm({
 type DndProviderBlocksProps = {
   providerOrder: string[];
   setProviderOrder: React.Dispatch<React.SetStateAction<string[]>>;
-  providerValues: Record<string, { apiKey: string; model: string }>;
-  handleProviderValueChange: (providerKey: string, field: "apiKey" | "model", value: string) => void;
+  providerValues: Record<string, { apiKey: string; model: string; baseUrl: string }>;
+  handleProviderValueChange: (providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) => void;
 };
 
 function DndProviderBlocks({ providerOrder, setProviderOrder, providerValues, handleProviderValueChange }: DndProviderBlocksProps) {
@@ -176,8 +179,8 @@ type SortableProviderBlockProps = {
   id: string;
   idx: number;
   providerKey: string;
-  value: { apiKey: string; model: string };
-  handleValueChange: (providerKey: string, field: "apiKey" | "model", value: string) => void;
+  value: { apiKey: string; model: string; baseUrl: string };
+  handleValueChange: (providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) => void;
 };
 
 function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange }: SortableProviderBlockProps) {
@@ -214,7 +217,7 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           value={value.apiKey}
           onChange={e => handleValueChange(provider.key, "apiKey", e.target.value)}
           className="flex-1 border rounded px-2 py-1"
-          placeholder="API key"
+          placeholder={provider.baseUrlName ? "API key (optional)" : "API key"}
         />
         <input
           type="text"
@@ -225,6 +228,16 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           placeholder="Model name"
         />
       </div>
+      {provider.baseUrlName && (
+        <input
+          type="text"
+          name={provider.baseUrlName}
+          value={value.baseUrl}
+          onChange={e => handleValueChange(provider.key, "baseUrl", e.target.value)}
+          className="w-full border rounded px-2 py-1"
+          placeholder="Base URL (e.g. http://localhost:11434/v1)"
+        />
+      )}
       {provider.apiDoc && (
         <small className="text-muted-foreground">
           Get your API key from{" "}
