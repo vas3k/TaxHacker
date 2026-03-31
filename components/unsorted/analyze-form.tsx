@@ -40,6 +40,9 @@ export default function AnalyzeForm({
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteUnsortedFileAction, null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
+  const [analysisWarnings, setAnalysisWarnings] = useState<string[]>([])
+  const [analysisConfidence, setAnalysisConfidence] = useState<number | null>(null)
+  const [usedPythonEnricher, setUsedPythonEnricher] = useState(false)
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -117,6 +120,9 @@ export default function AnalyzeForm({
   const startAnalyze = async () => {
     setIsAnalyzing(true)
     setAnalyzeError("")
+    setAnalysisWarnings([])
+    setAnalysisConfidence(null)
+    setUsedPythonEnricher(false)
     try {
       setAnalyzeStep("Analyzing...")
       const results = await analyzeFileAction(file, settings, fields, categories, projects)
@@ -126,6 +132,10 @@ export default function AnalyzeForm({
       if (!results.success) {
         setAnalyzeError(results.error ? results.error : "Something went wrong...")
       } else {
+        setAnalysisWarnings(results.data?.warnings || [])
+        setAnalysisConfidence(typeof results.data?.confidence === "number" ? results.data.confidence : null)
+        setUsedPythonEnricher(Boolean(results.data?.usedPythonEnricher))
+
         const nonEmptyFields = Object.fromEntries(
           Object.entries(results.data?.output || {}).filter(
             ([_, value]) => value !== null && value !== undefined && value !== ""
@@ -165,6 +175,21 @@ export default function AnalyzeForm({
       )}
 
       <div>{analyzeError && <FormError>{analyzeError}</FormError>}</div>
+      {analysisConfidence !== null && (
+        <div className="mb-4 flex items-center gap-2 text-xs">
+          <Badge variant={analysisConfidence >= 0.75 ? "secondary" : "outline"}>
+            AI confidence: {Math.round(analysisConfidence * 100)}%
+          </Badge>
+          {usedPythonEnricher && <Badge variant="outline">Python ML enrichment enabled</Badge>}
+        </div>
+      )}
+      {analysisWarnings.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {analysisWarnings.map((warning) => (
+            <FormError key={warning}>{warning}</FormError>
+          ))}
+        </div>
+      )}
 
       <form className="space-y-4" action={saveAsTransaction}>
         <input type="hidden" name="fileId" value={file.id} />
