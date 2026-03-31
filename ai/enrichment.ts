@@ -17,7 +17,7 @@ type PythonEnricherResponse = {
 
 // Keep 3-5 symbols to support common fiat (ISO-4217) and user-defined/crypto tickers used in the app.
 const CURRENCY_CODE_REGEX = /^[A-Z]{3,5}$/
-const PYTHON_ENRICHER_TIMEOUT_MS = 300
+const DEFAULT_PYTHON_ENRICHER_TIMEOUT_MS = 1200
 const SIGTERM_TO_SIGKILL_DELAY_MS = 100
 const MAX_STDOUT_BUFFER_SIZE = 20_000
 const MAX_STDERR_BUFFER_SIZE = 4_000
@@ -162,15 +162,19 @@ async function runPythonEnricher(payload: {
   confidence: number
 }): Promise<PythonEnricherResponse | null> {
   const commandText = process.env.TAXHACKER_PYTHON_ENRICHER_CMD?.trim()
+  const argsText = process.env.TAXHACKER_PYTHON_ENRICHER_ARGS?.trim()
   if (!commandText) return null
 
-  const parsedCommand = parseCommand(commandText)
+  const parsedCommand = parseCommand(commandText, argsText)
   const [command, ...args] = parsedCommand
   if (!command) return null
+
+  const timeoutMs = getPythonEnricherTimeoutMs()
 
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       stdio: ["pipe", "pipe", "pipe"],
+      // Keep shell disabled so arguments are never interpreted by a shell.
       shell: false,
     })
     let didResolve = false
@@ -186,7 +190,7 @@ async function runPythonEnricher(payload: {
       setTimeout(() => child.kill("SIGKILL"), SIGTERM_TO_SIGKILL_DELAY_MS)
       console.warn("Python enricher timed out and was terminated")
       safeResolve(null)
-    }, PYTHON_ENRICHER_TIMEOUT_MS)
+    }, timeoutMs)
 
     const stdoutChunks: string[] = []
     const stderrChunks: string[] = []
@@ -244,15 +248,37 @@ async function runPythonEnricher(payload: {
   })
 }
 
-function parseCommand(commandText: string): string[] {
-  const result: string[] = []
-  const regex = /[^\s"'`]+|"([^"]*)"|'([^']*)'/g
-  let match: RegExpExecArray | null = null
-
-  while ((match = regex.exec(commandText)) !== null) {
-    const token = match[1] ?? match[2] ?? match[0]
-    if (token) result.push(token)
+function parseCommand(commandText: string, argsText?: string): string[] {
+  if (!argsText) {
+    const legacyTokens = commandText.split(/\s+/).filter(Boolean)
+    if (legacyTokens.length > 1) {
+      console.warn(
+        "Legacy TAXHACKER_PYTHON_ENRICHER_CMD with inline args is deprecated; use TAXHACKER_PYTHON_ENRICHER_ARGS JSON array"
+      )
+      return legacyTokens
+    }
+    return [commandText]
   }
 
-  return result
+  try {
+    const parsedArgs = JSON.parse(argsText)
+    if (Array.isArray(parsedArgs) && parsedArgs.every((arg) => typeof arg === "string")) {
+      return [commandText, ...parsedArgs]
+    }
+  } catch {
+    // ignore malformed args config
+  }
+
+  return [commandText]
+}
+
+function getPythonEnricherTimeoutMs(): number {
+  const timeoutRaw = process.env.TAXHACKER_PYTHON_ENRICHER_TIMEOUT_MS?.trim()
+  if (!timeoutRaw) return DEFAULT_PYTHON_ENRICHER_TIMEOUT_MS
+
+  const parsed = Number.parseInt(timeoutRaw, 10)
+  if (Number.isNaN(parsed)) return DEFAULT_PYTHON_ENRICHER_TIMEOUT_MS
+  if (parsed < 100) return 100
+  if (parsed > 5000) return 5000
+  return parsed
 }

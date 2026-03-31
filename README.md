@@ -171,7 +171,10 @@ You can also configure LLM provider settings in the application or via environme
 
 For teams that want lightweight Python-based heuristics or ML enrichment without changing the core extraction flow, TaxHacker can call an optional local Python command after LLM extraction.
 
-- Configure `TAXHACKER_PYTHON_ENRICHER_CMD` (for example: `python3 /app/python/enricher.py`)
+- Configure:
+  - `TAXHACKER_PYTHON_ENRICHER_CMD` (for example: `python3`)
+  - `TAXHACKER_PYTHON_ENRICHER_ARGS` (JSON array of args, for example: `["/app/python/enricher.py"]`)
+  - `TAXHACKER_PYTHON_ENRICHER_TIMEOUT_MS` (optional, default `1200`, clamped to 100..5000)
 - TaxHacker sends JSON payload to `stdin`:
   - `output`: extracted fields
   - `warnings`: current warnings list
@@ -182,6 +185,8 @@ For teams that want lightweight Python-based heuristics or ML enrichment without
   - `confidenceDelta` (number to add to confidence)
 
 If the command is not configured, fails, times out, or returns invalid JSON, TaxHacker safely ignores it and continues with standard extraction behavior.
+
+> For security and reliability, command execution runs with shell disabled. Set these variables only by trusted administrators.
 
 ## ⌨️ Local Development
 
