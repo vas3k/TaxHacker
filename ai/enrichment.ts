@@ -15,6 +15,7 @@ type PythonEnricherResponse = {
   confidenceDelta?: number
 }
 
+// Keep 3-5 symbols to support common fiat (ISO-4217) and user-defined/crypto tickers used in the app.
 const CURRENCY_CODE_REGEX = /^[A-Z]{3,5}$/
 const PYTHON_ENRICHER_TIMEOUT_MS = 900
 const MAX_STDOUT_BUFFER_SIZE = 20_000
@@ -76,6 +77,9 @@ function normalizeOutput(output: Record<string, unknown>): { output: Record<stri
     const parsedDate = new Date(String(normalized.issuedAt))
     if (!Number.isNaN(parsedDate.getTime())) {
       normalized.issuedAt = parsedDate.toISOString().split("T")[0]
+      if (parsedDate.getTime() > Date.now()) {
+        warnings.push("Detected date is in the future and may need manual correction.")
+      }
     } else {
       warnings.push("Detected date is invalid and may need manual correction.")
     }
@@ -156,9 +160,18 @@ async function runPythonEnricher(payload: {
       stdio: ["pipe", "pipe", "pipe"],
       shell: false,
     })
+    let didResolve = false
+
+    const safeResolve = (value: PythonEnricherResponse | null) => {
+      if (didResolve) return
+      didResolve = true
+      resolve(value)
+    }
+
     const timeout = setTimeout(() => {
-      child.kill("SIGKILL")
-      resolve(null)
+      child.kill("SIGTERM")
+      setTimeout(() => child.kill("SIGKILL"), 100)
+      safeResolve(null)
     }, PYTHON_ENRICHER_TIMEOUT_MS)
 
     let stdout = ""
@@ -178,21 +191,21 @@ async function runPythonEnricher(payload: {
 
     child.on("error", () => {
       clearTimeout(timeout)
-      resolve(null)
+      safeResolve(null)
     })
 
     child.on("close", (code) => {
       clearTimeout(timeout)
       if (code !== 0 || !stdout.trim()) {
         if (stderr) console.warn("Python enricher stderr:", stderr)
-        resolve(null)
+        safeResolve(null)
         return
       }
       try {
         const parsed = JSON.parse(stdout) as PythonEnricherResponse
-        resolve(parsed)
+        safeResolve(parsed)
       } catch {
-        resolve(null)
+        safeResolve(null)
       }
     })
 
