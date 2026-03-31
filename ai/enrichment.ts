@@ -17,7 +17,8 @@ type PythonEnricherResponse = {
 
 // Keep 3-5 symbols to support common fiat (ISO-4217) and user-defined/crypto tickers used in the app.
 const CURRENCY_CODE_REGEX = /^[A-Z]{3,5}$/
-const PYTHON_ENRICHER_TIMEOUT_MS = 900
+const PYTHON_ENRICHER_TIMEOUT_MS = 300
+const SIGTERM_TO_SIGKILL_DELAY_MS = 100
 const MAX_STDOUT_BUFFER_SIZE = 20_000
 const MAX_STDERR_BUFFER_SIZE = 4_000
 
@@ -105,7 +106,18 @@ function normalizeOutput(output: Record<string, unknown>): { output: Record<stri
 function normalizeMoneyValue(value: unknown): unknown {
   if (value == null || value === "") return value
   if (typeof value === "number") return Number(value.toFixed(2))
-  const parsed = Number.parseFloat(String(value).replace(",", "."))
+  const rawValue = String(value).trim().replace(/\s+/g, "")
+  let normalized = rawValue
+
+  if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(rawValue)) {
+    normalized = rawValue.replace(/,/g, "")
+  } else if (/^[+-]?\d{1,3}(\.\d{3})+(,\d+)?$/.test(rawValue)) {
+    normalized = rawValue.replace(/\./g, "").replace(",", ".")
+  } else if (rawValue.includes(",") && !rawValue.includes(".")) {
+    normalized = rawValue.replace(",", ".")
+  }
+
+  const parsed = Number.parseFloat(normalized)
   if (Number.isNaN(parsed)) return value
   return Number(parsed.toFixed(2))
 }
@@ -152,7 +164,8 @@ async function runPythonEnricher(payload: {
   const commandText = process.env.TAXHACKER_PYTHON_ENRICHER_CMD?.trim()
   if (!commandText) return null
 
-  const [command, ...args] = commandText.split(/\s+/).filter(Boolean)
+  const parsedCommand = parseCommand(commandText)
+  const [command, ...args] = parsedCommand
   if (!command) return null
 
   return new Promise((resolve) => {
@@ -170,7 +183,7 @@ async function runPythonEnricher(payload: {
 
     const timeout = setTimeout(() => {
       child.kill("SIGTERM")
-      setTimeout(() => child.kill("SIGKILL"), 100)
+      setTimeout(() => child.kill("SIGKILL"), SIGTERM_TO_SIGKILL_DELAY_MS)
       console.warn("Python enricher timed out and was terminated")
       safeResolve(null)
     }, PYTHON_ENRICHER_TIMEOUT_MS)
@@ -229,4 +242,17 @@ async function runPythonEnricher(payload: {
       safeResolve(null)
     }
   })
+}
+
+function parseCommand(commandText: string): string[] {
+  const result: string[] = []
+  const regex = /[^\s"'`]+|"([^"]*)"|'([^']*)'/g
+  let match: RegExpExecArray | null = null
+
+  while ((match = regex.exec(commandText)) !== null) {
+    const token = match[1] ?? match[2] ?? match[0]
+    if (token) result.push(token)
+  }
+
+  return result
 }

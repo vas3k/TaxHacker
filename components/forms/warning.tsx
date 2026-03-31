@@ -7,7 +7,7 @@ export function FormWarning({ children, className }: { children: React.ReactNode
       role="status"
       aria-live="polite"
       className={cn(
-        "inline-flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50 text-amber-800 border border-amber-200",
+        "inline-flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50 text-amber-900 border border-amber-300",
         className
       )}
     >
