@@ -171,21 +171,28 @@ async function runPythonEnricher(payload: {
     const timeout = setTimeout(() => {
       child.kill("SIGTERM")
       setTimeout(() => child.kill("SIGKILL"), 100)
+      console.warn("Python enricher timed out and was terminated")
       safeResolve(null)
     }, PYTHON_ENRICHER_TIMEOUT_MS)
 
-    let stdout = ""
-    let stderr = ""
+    const stdoutChunks: string[] = []
+    const stderrChunks: string[] = []
+    let stdoutSize = 0
+    let stderrSize = 0
 
     child.stdout.on("data", (chunk: Buffer | string) => {
-      if (stdout.length < MAX_STDOUT_BUFFER_SIZE) {
-        stdout += chunk.toString()
+      if (stdoutSize < MAX_STDOUT_BUFFER_SIZE) {
+        const chunkText = chunk.toString()
+        stdoutChunks.push(chunkText)
+        stdoutSize += chunkText.length
       }
     })
 
     child.stderr.on("data", (chunk: Buffer | string) => {
-      if (stderr.length < MAX_STDERR_BUFFER_SIZE) {
-        stderr += chunk.toString()
+      if (stderrSize < MAX_STDERR_BUFFER_SIZE) {
+        const chunkText = chunk.toString()
+        stderrChunks.push(chunkText)
+        stderrSize += chunkText.length
       }
     })
 
@@ -196,6 +203,8 @@ async function runPythonEnricher(payload: {
 
     child.on("close", (code) => {
       clearTimeout(timeout)
+      const stdout = stdoutChunks.join("")
+      const stderr = stderrChunks.join("")
       if (code !== 0 || !stdout.trim()) {
         if (stderr) console.warn("Python enricher stderr:", stderr)
         safeResolve(null)

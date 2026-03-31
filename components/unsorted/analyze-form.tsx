@@ -6,6 +6,7 @@ import { CurrencyConverterTool } from "@/components/agents/currency-converter"
 import { ItemsDetectTool } from "@/components/agents/items-detect"
 import ToolWindow from "@/components/agents/tool-window"
 import { FormError } from "@/components/forms/error"
+import { FormWarning } from "@/components/forms/warning"
 import { FormSelectCategory } from "@/components/forms/select-category"
 import { FormSelectCurrency } from "@/components/forms/select-currency"
 import { FormSelectProject } from "@/components/forms/select-project"
@@ -186,7 +187,7 @@ export default function AnalyzeForm({
       {analysisWarnings.length > 0 && (
         <div className="mb-4 space-y-2">
           {analysisWarnings.map((warning, index) => (
-            <FormError key={`${index}-${warning}`}>{warning}</FormError>
+            <FormWarning key={`${index}-${warning}`}>{warning}</FormWarning>
           ))}
         </div>
       )}
