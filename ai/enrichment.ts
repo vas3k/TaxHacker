@@ -16,6 +16,9 @@ type PythonEnricherResponse = {
 }
 
 const CURRENCY_CODE_REGEX = /^[A-Z]{3,5}$/
+const PYTHON_ENRICHER_TIMEOUT_MS = 900
+const MAX_STDOUT_BUFFER_SIZE = 20_000
+const MAX_STDERR_BUFFER_SIZE = 4_000
 
 export async function enrichAnalysisOutput(output: Record<string, unknown>): Promise<AnalysisEnrichmentResult> {
   const normalized = normalizeOutput(output)
@@ -156,19 +159,19 @@ async function runPythonEnricher(payload: {
     const timeout = setTimeout(() => {
       child.kill("SIGKILL")
       resolve(null)
-    }, 900)
+    }, PYTHON_ENRICHER_TIMEOUT_MS)
 
     let stdout = ""
     let stderr = ""
 
     child.stdout.on("data", (chunk: Buffer | string) => {
-      if (stdout.length < 20_000) {
+      if (stdout.length < MAX_STDOUT_BUFFER_SIZE) {
         stdout += chunk.toString()
       }
     })
 
     child.stderr.on("data", (chunk: Buffer | string) => {
-      if (stderr.length < 4_000) {
+      if (stderr.length < MAX_STDERR_BUFFER_SIZE) {
         stderr += chunk.toString()
       }
     })
