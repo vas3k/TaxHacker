@@ -165,6 +165,23 @@ You can also configure LLM provider settings in the application or via environme
 - **OpenAI**: `OPENAI_MODEL_NAME` and `OPENAI_API_KEY`
 - **Google Gemini**: `GOOGLE_MODEL_NAME` and `GOOGLE_API_KEY`
 - **Mistral**: `MISTRAL_MODEL_NAME` and `MISTRAL_API_KEY`
+- **Optional Python post-enrichment hook**: `TAXHACKER_PYTHON_ENRICHER_CMD`
+
+### Optional Python AI/ML post-enrichment
+
+For teams that want lightweight Python-based heuristics or ML enrichment without changing the core extraction flow, TaxHacker can call an optional local Python command after LLM extraction.
+
+- Configure `TAXHACKER_PYTHON_ENRICHER_CMD` (for example: `python3 /app/python/enricher.py`)
+- TaxHacker sends JSON payload to `stdin`:
+  - `output`: extracted fields
+  - `warnings`: current warnings list
+  - `confidence`: current confidence score (0..1)
+- The Python command may return JSON on `stdout`:
+  - `output` (partial field overrides/normalization)
+  - `warnings` (additional warnings)
+  - `confidenceDelta` (number to add to confidence)
+
+If the command is not configured, fails, times out, or returns invalid JSON, TaxHacker safely ignores it and continues with standard extraction behavior.
 
 ## ⌨️ Local Development
 
