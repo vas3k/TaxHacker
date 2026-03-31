@@ -3,12 +3,13 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
 
-export type LLMProvider = "openai" | "google" | "mistral"
+export type LLMProvider = "openai" | "google" | "mistral" | "openai_compatible"
 
 export interface LLMConfig {
   provider: LLMProvider
   apiKey: string
   model: string
+  baseUrl?: string
 }
 
 export interface LLMSettings {
@@ -50,6 +51,15 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         model: config.model,
         temperature: temperature,
       })
+    } else if (config.provider === "openai_compatible") {
+      model = new ChatOpenAI({
+        apiKey: config.apiKey || "not-needed",
+        model: config.model,
+        temperature: temperature,
+        configuration: {
+          baseURL: config.baseUrl?.trim(),
+        },
+      })
     } else {
       return {
         output: {},
@@ -57,8 +67,6 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         error: "Unknown provider",
       }
     }
-
-    const structuredModel = model.withStructuredOutput(req.schema, { name: "transaction" })
 
     let message_content: any = [{ type: "text", text: req.prompt }]
     if (req.attachments && req.attachments.length > 0) {
@@ -72,7 +80,15 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
     }
     const messages: BaseMessage[] = [new HumanMessage({ content: message_content })]
 
-    const response = await structuredModel.invoke(messages)
+    let response: any
+    if (config.provider === "openai_compatible") {
+      const raw = await model.invoke(messages)
+      const text = typeof raw.content === "string" ? raw.content : raw.content.map((c: any) => c.text || "").join("")
+      response = JSON.parse(text.replace(/```(?:json)?\s*/g, "").trim())
+    } else {
+      const structuredModel = model.withStructuredOutput(req.schema, { name: "transaction" })
+      response = await structuredModel.invoke(messages)
+    }
 
     return {
       output: response,
@@ -89,8 +105,12 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
 
 export async function requestLLM(settings: LLMSettings, req: LLMRequest): Promise<LLMResponse> {
   for (const config of settings.providers) {
-    if (!config.apiKey || !config.model) {
-      console.info("Skipping provider:", config.provider)
+    if (!config.model) {
+      console.info("Skipping provider:", config.provider, "(no model)")
+      continue
+    }
+    if (config.provider === "openai_compatible" ? !config.baseUrl : !config.apiKey) {
+      console.info("Skipping provider:", config.provider, "(not configured)")
       continue
     }
     console.info("Use provider:", config.provider)

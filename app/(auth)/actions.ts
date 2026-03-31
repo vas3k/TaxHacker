@@ -16,7 +16,9 @@ export async function selfHostedGetStartedAction(formData: FormData) {
   const apiKeys = [
     "openai_api_key",
     "google_api_key",
-    "mistral_api_key"
+    "mistral_api_key",
+    "openai_compatible_api_key",
+    "openai_compatible_base_url",
   ]
 
   for (const key of apiKeys) {

@@ -1,4 +1,19 @@
-export const PROVIDERS = [
+export interface ProviderMeta {
+  key: string
+  label: string
+  apiKeyName: string
+  modelName: string
+  defaultModelName: string
+  baseUrlName?: string
+  defaultBaseUrl?: string
+  apiDoc: string
+  apiDocLabel: string
+  placeholder: string
+  help: { url: string; label: string }
+  logo: string
+}
+
+export const PROVIDERS: ProviderMeta[] = [
   {
     key: "openai",
     label: "OpenAI",
@@ -43,5 +58,22 @@ export const PROVIDERS = [
       label: "Mistral Admin Console"
     },
     logo: "/logo/mistral.svg"
+  },
+  {
+    key: "openai_compatible",
+    label: "OpenAI Compatible",
+    apiKeyName: "openai_compatible_api_key",
+    modelName: "openai_compatible_model_name",
+    defaultModelName: "",
+    baseUrlName: "openai_compatible_base_url",
+    defaultBaseUrl: "http://localhost:11434/v1",
+    apiDoc: "",
+    apiDocLabel: "",
+    placeholder: "(optional)",
+    help: {
+      url: "https://github.com/ollama/ollama/blob/main/docs/openai.md",
+      label: "Works with Ollama, LM Studio, vLLM, LocalAI"
+    },
+    logo: "/logo/openai.svg"
   },
 ]
