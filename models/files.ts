@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db"
 import { unlink } from "fs/promises"
+import { safePathJoin, FILE_UPLOAD_PATH } from "@/lib/files"
 import path from "path"
 import { cache } from "react"
 import { getTransactionById } from "./transactions"
@@ -74,7 +75,12 @@ export const deleteFile = async (id: string, userId: string) => {
   }
 
   try {
-    await unlink(path.resolve(path.normalize(file.path)))
+    // Use safePathJoin to prevent path traversal attacks (issue #75).
+    // file.path is relative to the user's uploads directory.
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+    const userUploadsDir = safePathJoin(FILE_UPLOAD_PATH, user.email)
+    const fullPath = safePathJoin(userUploadsDir, file.path)
+    await unlink(fullPath)
   } catch (error) {
     console.error("Error deleting file:", error)
   }
