@@ -189,17 +189,7 @@ export async function splitFileIntoItemsAction(
         metadata: originalFile.metadata,
         isSplitted: true,
         cachedParseResult: {
-          name: item.name,
-          merchant: item.merchant,
-          description: item.description,
-          total: item.total,
-          currencyCode: item.currencyCode,
-          categoryCode: item.categoryCode,
-          projectCode: item.projectCode,
-          type: item.type,
-          issuedAt: item.issuedAt,
-          note: item.note,
-          text: item.text,
+          ...item,
         },
       })
     }

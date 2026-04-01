@@ -43,20 +43,40 @@ export const ItemsDetectTool = ({ file, data }: { file?: File; data: Transaction
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col divide-y divide-border">
-        {data.items?.map((item, index) => (
-          <div
-            key={`${item.name || ""}-${item.merchant || ""}-${item.description || ""}-${index}`}
-            className="flex flex-row items-start gap-10 py-2 hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex flex-col flex-1">
-              <div className="text-sm">{item.name}</div>
-              <div className="text-xs text-muted-foreground">{item.description}</div>
+        {data.items?.map((item, index) => {
+          const itemTotal = Number(item.total || 0)
+          const itemQuantity = item.quantity !== undefined && item.quantity !== null ? Number(item.quantity) : undefined
+          const explicitUnitPrice = item.unitPrice !== undefined && item.unitPrice !== null ? Number(item.unitPrice) : undefined
+          const computedUnitPrice = !explicitUnitPrice && itemQuantity && itemQuantity > 0 ? itemTotal / itemQuantity : undefined
+
+          return (
+            <div
+              key={`${item.name || ""}-${item.merchant || ""}-${item.description || ""}-${index}`}
+              className="flex flex-row items-start gap-10 py-2 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex flex-col flex-1">
+                <div className="text-sm">{item.name}</div>
+                <div className="text-xs text-muted-foreground">{item.description}</div>
+                <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                  {itemQuantity !== undefined && <div>Qty: {itemQuantity}</div>}
+                  {explicitUnitPrice !== undefined && (
+                    <div>
+                      Unit: {formatCurrency(explicitUnitPrice * 100, item.currencyCode || data.currencyCode || "USD")}
+                    </div>
+                  )}
+                  {explicitUnitPrice === undefined && computedUnitPrice !== undefined && (
+                    <div>
+                      Unit (calc): {formatCurrency(computedUnitPrice * 100, item.currencyCode || data.currencyCode || "USD")}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="font-medium">
+                {formatCurrency(itemTotal * 100, item.currencyCode || data.currencyCode || "USD")}
+              </div>
             </div>
-            <div className="font-medium">
-              {formatCurrency((item.total || 0) * 100, item.currencyCode || data.currencyCode || "USD")}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {file && data.items && data.items.length > 1 && (
