@@ -113,7 +113,10 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     ),
     footerValue: (transactions: Transaction[]) => {
       const netTotalPerCurrency = calcNetTotalPerCurrency(transactions)
-      const turnoverPerCurrency = calcTotalPerCurrency(transactions)
+
+      // Isolate only the income to calculate accurate turnover and then Calculate the final turnover.
+      const incomeTransactions = transactions.filter((transaction) => transaction.type === 'income');
+      const turnoverPerCurrency = calcTotalPerCurrency(incomeTransactions)
 
       return (
         <div className="flex flex-col gap-3 text-right">
