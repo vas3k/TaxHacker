@@ -128,6 +128,16 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
       }
     },
   },
+  importReference: {
+    code: "importReference",
+    type: "string",
+    export: async function (userId: string, value: string | null) {
+      return value
+    },
+    import: async function (userId: string, value: string) {
+      return value
+    },
+  },
 }
 
 export const importProject = async (userId: string, name: string) => {
@@ -135,6 +145,7 @@ export const importProject = async (userId: string, name: string) => {
 
   const existingProject = await prisma.project.findFirst({
     where: {
+      userId,
       OR: [{ code }, { name }],
     },
   })
@@ -151,6 +162,7 @@ export const importCategory = async (userId: string, name: string) => {
 
   const existingCategory = await prisma.category.findFirst({
     where: {
+      userId,
       OR: [{ code }, { name }],
     },
   })

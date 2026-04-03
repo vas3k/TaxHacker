@@ -14,11 +14,17 @@ import {
   safePathJoin,
   unsortedFilePath,
 } from "@/lib/files"
+import { logTransactionCreation } from "@/lib/audit-logger"
+import { findPotentialMatches, MatchCandidate } from "@/lib/matching/finder"
+import { mergeTransaction as mergeTransactionData } from "@/lib/matching/merger"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { createFile, deleteFile, getFileById, updateFile } from "@/models/files"
-import { createTransaction, TransactionData, updateTransactionFiles } from "@/models/transactions"
+import { createImportBatch } from "@/models/import-batches"
+import { createTransactionMatch } from "@/models/transaction-matches"
+import { createTransaction, getTransactionById, TransactionData, updateTransactionFiles } from "@/models/transactions"
 import { updateUser } from "@/models/users"
 import { Category, Field, File, Project, Transaction } from "@/prisma/client"
+import { differenceInDays } from "date-fns"
 import { randomUUID } from "crypto"
 import { mkdir, readFile, rename, writeFile } from "fs/promises"
 import { revalidatePath } from "next/cache"
@@ -76,6 +82,68 @@ export async function analyzeFileAction(
     await updateUser(user.id, { aiBalance: { decrement: 1 } })
   }
 
+  // After successful AI analysis, check for potential matches
+  if (results.success && results.data && results.data.output) {
+    const extractedData = results.data.output
+
+    // Extract amount and date for matching (LLM returns cents directly)
+    const amount = extractedData.total ? Math.round(parseFloat(extractedData.total as string)) : null
+    const date = extractedData.issuedAt ? new Date(extractedData.issuedAt as string) : null
+
+    if (amount !== null && date !== null) {
+      try {
+        // Find potential matches using existing matching logic
+        const matches = await findPotentialMatches(user.id, {
+          total: amount,
+          issuedAt: date,
+          importReference: (extractedData.importReference as string) || null,
+        })
+
+        // Filter to confidence >= 70% and take top 3
+        const validMatches = matches
+          .filter(m => m.confidence >= 70)
+          .slice(0, 3)
+
+        if (validMatches.length > 0) {
+          console.log(`Found ${validMatches.length} potential matches for file ${file.id}`)
+
+          // Create ImportBatch for tracking
+          const batch = await createImportBatch(user.id, {
+            filename: file.filename,
+            status: 'processing',
+            totalRows: 1,
+            metadata: {
+              source: 'unsorted_file_analysis',
+              fileId: file.id,
+              aiAnalysisCompleted: new Date().toISOString(),
+              matchCount: validMatches.length,
+            }
+          })
+
+          // Return matches with analysis results
+          return {
+            success: true,
+            data: {
+              output: extractedData,
+              tokensUsed: results.data.tokensUsed,
+              matchData: {
+                batchId: batch.id,
+                matches: validMatches.map(m => ({
+                  transactionId: m.transaction.id,
+                  confidence: m.confidence,
+                  transaction: m.transaction,
+                }))
+              }
+            } as any // Extended AnalysisResult with matchData
+          }
+        }
+      } catch (error) {
+        console.error('Error finding matches:', error)
+        // Continue without matches if matching fails
+      }
+    }
+  }
+
   return results
 }
 
@@ -98,6 +166,13 @@ export async function saveFileAsTransactionAction(
 
     // Create transaction
     const transaction = await createTransaction(user.id, validatedForm.data)
+
+    // Log transaction creation
+    try {
+      await logTransactionCreation(transaction.id, user.id)
+    } catch (auditError) {
+      console.error("Failed to log transaction creation:", auditError)
+    }
 
     // Move file to processed location
     const userUploadsDirectory = getUserUploadsDirectory(user)
@@ -125,6 +200,133 @@ export async function saveFileAsTransactionAction(
   } catch (error) {
     console.error("Failed to save transaction:", error)
     return { success: false, error: `Failed to save transaction: ${error}` }
+  }
+}
+
+export async function mergeWithExistingTransactionAction(
+  _prevState: ActionState<{ transactionId: string }> | null,
+  formData: FormData
+): Promise<ActionState<{ transactionId: string }>> {
+  try {
+    const user = await getCurrentUser()
+
+    // Parse form data
+    const fileId = formData.get('fileId') as string
+    const transactionId = formData.get('transactionId') as string
+    const batchId = formData.get('batchId') as string
+    const confidence = parseInt(formData.get('confidence') as string)
+    const mergeData = JSON.parse(formData.get('mergeData') as string)
+
+    console.log('[Merge] Starting merge:', { fileId, transactionId, batchId, confidence })
+
+    // Validate user owns file and transaction
+    const file = await getFileById(fileId, user.id)
+    const transaction = await getTransactionById(transactionId, user.id)
+
+    if (!file) {
+      return { success: false, error: 'File not found or does not belong to you' }
+    }
+
+    if (!transaction) {
+      return { success: false, error: 'Transaction not found or does not belong to you' }
+    }
+
+    // Merge transaction using existing merge logic
+    console.log('[Merge] Merging transaction data...')
+    const mergeResult = await mergeTransactionData(
+      transaction,
+      {
+        ...mergeData,
+        receiptFileId: file.id, // Attach file to transaction
+        // LLM returns cents directly, no conversion needed
+        total: mergeData.total ? Math.round(mergeData.total) : transaction.total,
+      }
+    )
+
+    console.log('[Merge] Transaction merged, creating match record...')
+
+    // Calculate days difference
+    const matchedDate = mergeData.issuedAt ? new Date(mergeData.issuedAt) : new Date()
+    const existingDate = transaction.issuedAt || new Date()
+    const daysDifference = Math.abs(differenceInDays(matchedDate, existingDate))
+
+    // Create TransactionMatch record
+    await createTransactionMatch({
+      batchId,
+      transactionId,
+      confidence,
+      matchedAmount: mergeData.total ? Math.round(mergeData.total) : transaction.total || 0,
+      matchedDate,
+      existingDate,
+      daysDifference,
+      status: 'reviewed_merged',
+      csvData: mergeData,
+      mergedFields: mergeResult.mergedFields,
+      reviewedBy: user.id,
+      reviewedAt: new Date(),
+    })
+
+    console.log('[Merge] Match record created, moving file...')
+
+    // Move file to organized location (same logic as saveFileAsTransactionAction)
+    const userUploadsDirectory = getUserUploadsDirectory(user)
+    const originalFileName = path.basename(file.path)
+    const newRelativeFilePath = getTransactionFileUploadPath(file.id, originalFileName, transaction)
+
+    const oldFullFilePath = safePathJoin(userUploadsDirectory, file.path)
+    const newFullFilePath = safePathJoin(userUploadsDirectory, newRelativeFilePath)
+
+    // Create directories and move file
+    await mkdir(path.dirname(newFullFilePath), { recursive: true })
+    await rename(path.resolve(oldFullFilePath), path.resolve(newFullFilePath))
+
+    // Update file record
+    await updateFile(file.id, user.id, {
+      path: newRelativeFilePath,
+      isReviewed: true,
+    })
+
+    console.log('[Merge] File moved, updating transaction files...')
+
+    // Explicitly ensure file is attached to transaction
+    // Get the updated transaction to get current files
+    const updatedTransaction = await getTransactionById(transactionId, user.id)
+    if (updatedTransaction) {
+      const existingFiles = Array.isArray(updatedTransaction.files)
+        ? (updatedTransaction.files as string[])
+        : []
+
+      // Add the file if not already attached
+      if (!existingFiles.includes(file.id)) {
+        await updateTransactionFiles(transactionId, user.id, [...existingFiles, file.id])
+        console.log('[Merge] File attached to transaction')
+      } else {
+        console.log('[Merge] File already attached to transaction')
+      }
+    }
+
+    // Update ImportBatch status (mark as completed)
+    await updateUser(user.id, {}) // Touch user to update timestamp
+    // Note: We don't have updateImportBatch with just ID, need to pass userId
+    // The batch will remain in 'processing' status which is okay for single-file batches
+
+    // Revalidate paths
+    revalidatePath('/unsorted')
+    revalidatePath('/transactions')
+    revalidatePath(`/transactions/${transactionId}`)
+
+    console.log('[Merge] Merge complete!')
+
+    return {
+      success: true,
+      data: { transactionId },
+    }
+  } catch (error) {
+    console.error('[Merge] Error merging with existing transaction:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to merge transaction',
+    }
   }
 }
 

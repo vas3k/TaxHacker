@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
-import { startTransition, useActionState, useMemo, useState } from "react"
+import { startTransition, useActionState, useEffect, useMemo, useState } from "react"
 
 export default function AnalyzeForm({
   file,
@@ -25,6 +25,10 @@ export default function AnalyzeForm({
   currencies,
   fields,
   settings,
+  matchData,
+  onMatchDataChange,
+  onFormDataUpdate,
+  isMerging,
 }: {
   file: File
   categories: Category[]
@@ -32,6 +36,24 @@ export default function AnalyzeForm({
   currencies: Currency[]
   fields: Field[]
   settings: Record<string, string>
+  matchData: {
+    batchId: string
+    matches: Array<{
+      transactionId: string
+      confidence: number
+      transaction: any
+    }>
+  } | null
+  onMatchDataChange: (data: {
+    batchId: string
+    matches: Array<{
+      transactionId: string
+      confidence: number
+      transaction: any
+    }>
+  } | null) => void
+  onFormDataUpdate: (data: any) => void
+  isMerging: boolean
 }) {
   const { showNotification } = useNotification()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -96,6 +118,11 @@ export default function AnalyzeForm({
   }, [file.filename, settings, extraFields, file.cachedParseResult])
   const [formData, setFormData] = useState(initialFormState)
 
+  // Sync formData to parent whenever it changes
+  useEffect(() => {
+    onFormDataUpdate(formData)
+  }, [formData, onFormDataUpdate])
+
   async function saveAsTransaction(formData: FormData) {
     setSaveError("")
     setIsSaving(true)
@@ -132,6 +159,15 @@ export default function AnalyzeForm({
           )
         )
         setFormData({ ...formData, ...nonEmptyFields })
+
+        // Store match data if present (extended AnalysisResult)
+        const extendedData = results.data as any
+        if (extendedData?.matchData) {
+          console.log("Matches found:", extendedData.matchData)
+          onMatchDataChange(extendedData.matchData)
+        } else {
+          onMatchDataChange(null)
+        }
       }
     } catch (error) {
       console.error("Analysis failed:", error)
@@ -141,6 +177,7 @@ export default function AnalyzeForm({
       setAnalyzeStep("")
     }
   }
+
 
   return (
     <>
@@ -200,10 +237,12 @@ export default function AnalyzeForm({
             name="total"
             type="number"
             step="0.01"
-            value={formData.total || ""}
+            value={formData.total ? (formData.total / 100).toFixed(2) : ""}
             onChange={(e) => {
-              const newValue = parseFloat(e.target.value || "0")
-              !isNaN(newValue) && setFormData((prev) => ({ ...prev, total: newValue }))
+              const dollarValue = parseFloat(e.target.value || "0")
+              // Convert dollars to cents for storage
+              const centsValue = Math.round(dollarValue * 100)
+              !isNaN(centsValue) && setFormData((prev) => ({ ...prev, total: centsValue }))
             }}
             className="w-32"
             required={fieldMap.total.isRequired}
@@ -330,7 +369,7 @@ export default function AnalyzeForm({
             {isDeleting ? "⏳ Deleting..." : "Delete"}
           </Button>
 
-          <Button type="submit" disabled={isSaving} data-save-button>
+          <Button type="submit" disabled={isSaving || isMerging} data-save-button>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -339,7 +378,7 @@ export default function AnalyzeForm({
             ) : (
               <>
                 <ArrowDownToLine className="h-4 w-4" />
-                Save as Transaction
+                {matchData ? "Create New Transaction (Ignore Matches)" : "Save as Transaction"}
               </>
             )}
           </Button>

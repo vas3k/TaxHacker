@@ -15,7 +15,7 @@ import { codeFromName, randomHexColor } from "@/lib/utils"
 import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
 import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
 import { createField, deleteField, updateField } from "@/models/fields"
-import { createProject, deleteProject, updateProject } from "@/models/projects"
+import { createProject, deleteProject, mergeProjects, undoMergeProjects, updateProject } from "@/models/projects"
 import { SettingsMap, updateSettings } from "@/models/settings"
 import { updateUser } from "@/models/users"
 import { Prisma, User } from "@/prisma/client"
@@ -141,6 +141,30 @@ export async function deleteProjectAction(userId: string, code: string) {
   }
   revalidatePath("/settings/projects")
   return { success: true }
+}
+
+export async function mergeProjectAction(userId: string, sourceCode: string, targetCode: string) {
+  try {
+    const result = await mergeProjects(userId, sourceCode, targetCode)
+    revalidatePath("/settings/projects")
+    return { success: true, data: result }
+  } catch (error) {
+    return { success: false, error: "Failed to merge projects: " + error }
+  }
+}
+
+export async function undoMergeProjectAction(
+  userId: string,
+  projectData: Prisma.ProjectCreateInput,
+  transactionIds: string[]
+) {
+  try {
+    await undoMergeProjects(userId, projectData, transactionIds)
+    revalidatePath("/settings/projects")
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: "Failed to undo merge: " + error }
+  }
 }
 
 export async function addCurrencyAction(userId: string, data: Prisma.CurrencyCreateInput) {

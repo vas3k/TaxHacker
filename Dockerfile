@@ -1,5 +1,13 @@
 FROM node:23-slim AS base
 
+# Metadata labels
+LABEL org.opencontainers.image.title="Expensing"
+LABEL org.opencontainers.image.description="Self-hosted AI accountant for expense and income tracking"
+LABEL org.opencontainers.image.source="https://github.com/wingertandrew/Expensing"
+LABEL org.opencontainers.image.url="https://github.com/wingertandrew/Expensing"
+LABEL org.opencontainers.image.documentation="https://github.com/wingertandrew/Expensing/blob/main/README.md"
+LABEL org.opencontainers.image.licenses="MIT"
+
 # Default environment variables
 ENV PORT=7331
 ENV NODE_ENV=production

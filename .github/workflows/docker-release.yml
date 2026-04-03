@@ -31,7 +31,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/taxhacker
+          images: ghcr.io/${{ github.repository_owner }}/expensing
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

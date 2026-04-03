@@ -1,0 +1,101 @@
+# Expensing with Receipt Matching - Portainer Stack
+# Deploy this in Portainer: Stacks → Add Stack → Web Editor → Paste & Deploy
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: expensing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-expensing}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-expensing}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - expensing-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-expensing}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    image: ghcr.io/wingertandrew/expensing:latest
+    container_name: expensing-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Server
+      PORT: ${APP_PORT:-7331}
+      NODE_ENV: production
+      SELF_HOSTED_MODE: "true"
+      DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-expensing}:${DB_PASSWORD:-changeme}@postgres:5432/${DB_NAME:-expensing}
+
+      # Storage
+      UPLOAD_PATH: /app/data/uploads
+
+      # Auth (CHANGE THIS!)
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-please-change-this-to-random-secret}
+
+      # AI (Optional)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL_NAME: ${OPENAI_MODEL_NAME:-gpt-4o-mini}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GOOGLE_MODEL_NAME: ${GOOGLE_MODEL_NAME:-gemini-2.5-flash}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_MODEL_NAME: ${MISTRAL_MODEL_NAME:-mistral-medium-latest}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+
+      # Stripe (Optional)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+
+      # Email (Optional)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-Expensing <noreply@localhost>}
+
+      # Receipt Matching (Built-in)
+      RECEIPT_MATCH_ENABLED: ${RECEIPT_MATCH_ENABLED:-true}
+      RECEIPT_MATCH_AUTO_MERGE_THRESHOLD: ${RECEIPT_MATCH_AUTO_MERGE_THRESHOLD:-90}
+      RECEIPT_MATCH_DATE_RANGE_DAYS: ${RECEIPT_MATCH_DATE_RANGE_DAYS:-3}
+
+    ports:
+      - "${APP_PORT:-7331}:7331"
+    volumes:
+      - app_data:/app/data
+    networks:
+      - expensing-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:7331/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+  app_data:
+    driver: local
+
+networks:
+  expensing-net:
+    driver: bridge

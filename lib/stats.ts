@@ -53,7 +53,7 @@ export const incompleteTransactionFields = (fields: Field[], transaction: Transa
 
   return requiredFields.filter((field) => {
     const value = field.isExtra
-      ? (transaction.extra as Record<string, any>)?.[field.code]
+      ? (transaction.extra as Record<string, unknown>)?.[field.code]
       : transaction[field.code as keyof Transaction]
 
     return value === undefined || value === null || value === ""

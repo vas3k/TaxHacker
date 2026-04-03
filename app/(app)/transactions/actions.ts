@@ -10,6 +10,7 @@ import {
   isEnoughStorageToUploadFile,
   safePathJoin,
 } from "@/lib/files"
+import { logManualEdit, logTransactionCreation } from "@/lib/audit-logger"
 import { updateField } from "@/models/fields"
 import { createFile, deleteFile } from "@/models/files"
 import {
@@ -41,6 +42,14 @@ export async function createTransactionAction(
 
     const transaction = await createTransaction(user.id, validatedForm.data)
 
+    // Log transaction creation
+    try {
+      await logTransactionCreation(transaction.id, user.id)
+    } catch (auditError) {
+      console.error("Failed to log transaction creation:", auditError)
+      // Don't fail the transaction creation if audit logging fails
+    }
+
     revalidatePath("/transactions")
     return { success: true, data: transaction }
   } catch (error) {
@@ -62,7 +71,13 @@ export async function saveTransactionAction(
       return { success: false, error: validatedForm.error.message }
     }
 
+    const oldTransaction = await getTransactionById(transactionId, user.id)
+    if (!oldTransaction) {
+      return { success: false, error: "Transaction not found" }
+    }
+
     const transaction = await updateTransaction(transactionId, user.id, validatedForm.data)
+    await logManualEdit(transactionId, user.id, oldTransaction, validatedForm.data)
 
     revalidatePath("/transactions")
     return { success: true, data: transaction }

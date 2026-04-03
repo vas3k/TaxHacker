@@ -1,6 +1,7 @@
 import { FormTextarea } from "@/components/forms/simple"
 import TransactionEditForm from "@/components/transactions/edit"
 import TransactionFiles from "@/components/transactions/transaction-files"
+import { TransactionTimeline } from "@/components/transactions/transaction-timeline"
 import { Card } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth"
 import { incompleteTransactionFields } from "@/lib/stats"
@@ -72,6 +73,14 @@ export default async function TransactionPage({ params }: { params: Promise<{ tr
               </Card>
             </details>
           )}
+
+          {/* Transaction Timeline */}
+          <TransactionTimeline
+            matches={(transaction as any).matches || []}
+            auditLogs={(transaction as any).auditLogs || []}
+            transactionCreatedAt={transaction.createdAt}
+            transactionUpdatedAt={transaction.updatedAt}
+          />
         </div>
       </Card>
 

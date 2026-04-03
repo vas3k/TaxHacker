@@ -1,10 +1,8 @@
-import { FilePreview } from "@/components/files/preview"
 import { UploadButton } from "@/components/files/upload-button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { AnalyzeAllButton } from "@/components/unsorted/analyze-all-button"
-import AnalyzeForm from "@/components/unsorted/analyze-form"
+import { UnsortedFileCard } from "@/components/unsorted/file-card"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
 import { getCategories } from "@/models/categories"
@@ -61,28 +59,15 @@ export default async function UnsortedPage() {
 
       <main className="flex flex-col gap-5">
         {files.map((file) => (
-          <Card
+          <UnsortedFileCard
             key={file.id}
-            id={file.id}
-            className="flex flex-row flex-wrap md:flex-nowrap justify-center items-start gap-5 p-5 bg-gradient-to-br from-violet-50/80 via-indigo-50/80 to-white border-violet-200/60 rounded-2xl"
-          >
-            <div className="w-full max-w-[500px]">
-              <Card>
-                <FilePreview file={file} />
-              </Card>
-            </div>
-
-            <div className="w-full">
-              <AnalyzeForm
-                file={file}
-                categories={categories}
-                projects={projects}
-                currencies={currencies}
-                fields={fields}
-                settings={settings}
-              />
-            </div>
-          </Card>
+            file={file}
+            categories={categories}
+            projects={projects}
+            currencies={currencies}
+            fields={fields}
+            settings={settings}
+          />
         ))}
         {files.length == 0 && (
           <div className="flex flex-col items-center justify-center gap-2 h-full min-h-[600px]">

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db"
 
-export const DEFAULT_PROMPT_ANALYSE_NEW_FILE = `You are an accountant and invoice analysis assistant. Extract following information from the given invoice: 
+export const DEFAULT_PROMPT_ANALYSE_NEW_FILE = `You are an accountant and invoice analysis assistant. Extract following information from the given invoice:
 
 {fields}
 
@@ -17,7 +17,10 @@ And projects are:
 IMPORTANT RULES:
 - Do not include any other text in your response!
 - If you can't find something leave it blank, NEVER make up information
-- Return only one object`
+- Return only one object
+- For amounts (total, vat, etc): Return as CENTS (integer). Convert dollars to cents by multiplying by 100. Example: $5.30 = 530, $12.99 = 1299
+- For percentages: Use whole numbers (e.g., 20 for 20%, not 0.20)
+- For items array: Each item's total should also be in CENTS`
 
 export const DEFAULT_SETTINGS = [
   {
@@ -298,7 +301,7 @@ export const DEFAULT_FIELDS = [
     code: "description",
     name: "Description",
     type: "string",
-    llm_prompt: "description of the transaction",
+    llm_prompt: "Detailed description of what was purchased or paid for. Include specific details like product names, services, or purpose of transaction",
     isVisibleInList: false,
     isVisibleInAnalysis: false,
     isRequired: false,
@@ -358,7 +361,7 @@ export const DEFAULT_FIELDS = [
     code: "total",
     name: "Total",
     type: "number",
-    llm_prompt: "total total of the transaction",
+    llm_prompt: "The total amount in CENTS (integer). Convert dollars to cents by multiplying by 100. Examples: $5.30 = 530, $12.99 = 1299, $100.00 = 10000. Always return a whole number representing cents, never decimals.",
     isVisibleInList: true,
     isVisibleInAnalysis: true,
     isRequired: true,
@@ -378,7 +381,7 @@ export const DEFAULT_FIELDS = [
     code: "convertedTotal",
     name: "Converted Total",
     type: "number",
-    llm_prompt: "",
+    llm_prompt: "Converted total amount in CENTS (integer). Same rules as total field - multiply dollars by 100",
     isVisibleInList: false,
     isVisibleInAnalysis: false,
     isRequired: false,
@@ -418,7 +421,7 @@ export const DEFAULT_FIELDS = [
     code: "vat_rate",
     name: "VAT Rate",
     type: "number",
-    llm_prompt: "VAT rate in percentage 0-100",
+    llm_prompt: "Sales tax or VAT rate as a percentage (e.g., 20 for 20%, not 0.20). Use whole numbers 0-100",
     isVisibleInList: false,
     isVisibleInAnalysis: false,
     isRequired: false,
@@ -428,7 +431,7 @@ export const DEFAULT_FIELDS = [
     code: "vat",
     name: "VAT Amount",
     type: "number",
-    llm_prompt: "total VAT in currency of the invoice",
+    llm_prompt: "Total sales tax or VAT amount in CENTS (integer). Same rules as total field - multiply dollars by 100",
     isVisibleInList: false,
     isVisibleInAnalysis: false,
     isRequired: false,

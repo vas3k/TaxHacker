@@ -1,13 +1,13 @@
 services:
   app:
-    image: ghcr.io/vas3k/taxhacker:latest
+    image: ghcr.io/wingertandrew/expensing:latest
     ports:
       - "7331:7331"
     environment:
       - NODE_ENV=production
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/expensing
     volumes:
       - ./data:/app/data
     restart: unless-stopped
@@ -24,7 +24,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=taxhacker
+      - POSTGRES_DB=expensing
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped

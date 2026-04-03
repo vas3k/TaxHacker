@@ -1,10 +1,12 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Check, Edit, Trash2 } from "lucide-react"
+import { Check, Edit, GitMerge, Search, Trash2 } from "lucide-react"
 import { useOptimistic, useState } from "react"
+import { toast } from "sonner"
 
 interface CrudColumn<T> {
   key: keyof T
@@ -21,9 +23,11 @@ interface CrudProps<T> {
   onDelete: (id: string) => Promise<{ success: boolean; error?: string }>
   onAdd: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>
   onEdit?: (id: string, data: Partial<T>) => Promise<{ success: boolean; error?: string }>
+  onMerge?: (sourceId: string, targetId: string) => Promise<{ success: boolean; data?: any; error?: string }>
+  onUndoMerge?: (data: any, transactionIds: string[]) => Promise<{ success: boolean; error?: string }>
 }
 
-export function CrudTable<T extends { [key: string]: any }>({ items, columns, onDelete, onAdd, onEdit }: CrudProps<T>) {
+export function CrudTable<T extends { [key: string]: any }>({ items, columns, onDelete, onAdd, onEdit, onMerge, onUndoMerge }: CrudProps<T>) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newItem, setNewItem] = useState<Partial<T>>(itemDefaults(columns))
@@ -262,8 +266,86 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
     }
   }
 
+  const [mergeSource, setMergeSource] = useState<T | null>(null)
+  const [mergeSearch, setMergeSearch] = useState("")
+
+  const handleMerge = async (targetId: string) => {
+    if (!mergeSource || !onMerge || !onUndoMerge) return
+
+    const sourceId = mergeSource.code || mergeSource.id
+    try {
+      const result = await onMerge(sourceId, targetId)
+      if (result.success) {
+        setMergeSource(null)
+        toast.success("Projects merged successfully", {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const undoResult = await onUndoMerge(result.data.sourceProject, result.data.transactionIds)
+              if (undoResult.success) {
+                toast.success("Merge undone")
+              } else {
+                toast.error(undoResult.error)
+              }
+            },
+          },
+        })
+      } else {
+        toast.error(result.error)
+      }
+    } catch (error) {
+      console.error("Failed to merge items:", error)
+      toast.error("Failed to merge items")
+    }
+  }
+
+  const filteredMergeTargets = items.filter(
+    (item) =>
+      (item.code || item.id) !== (mergeSource?.code || mergeSource?.id) &&
+      (item.name || "").toLowerCase().includes(mergeSearch.toLowerCase())
+  )
+
   return (
     <div className="space-y-4">
+      <Dialog open={!!mergeSource} onOpenChange={(open) => !open && setMergeSource(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Merge {mergeSource?.name || "Project"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Select a project to merge <strong>{mergeSource?.name}</strong> into. All transactions will be moved to the
+              selected project, and <strong>{mergeSource?.name}</strong> will be deleted.
+            </p>
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search projects..."
+                value={mergeSearch}
+                onChange={(e) => setMergeSearch(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <div className="max-h-[200px] overflow-y-auto space-y-1 border rounded-md p-2">
+              {filteredMergeTargets.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No projects found</p>
+              ) : (
+                filteredMergeTargets.map((item) => (
+                  <Button
+                    key={item.code || item.id}
+                    variant="ghost"
+                    className="w-full justify-start font-normal"
+                    onClick={() => handleMerge(item.code || item.id)}
+                  >
+                    {item.name}
+                  </Button>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -306,17 +388,30 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
                           }}
                           aria-label={`Edit ${String(item.name || item.code || 'item')}`}
                         >
-                          <Edit />
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {onMerge && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setMergeSource(item)
+                            setMergeSearch("")
+                          }}
+                          aria-label={`Merge ${String(item.name || item.code || 'item')}`}
+                        >
+                          <GitMerge className="h-4 w-4" />
                         </Button>
                       )}
                       {item.isDeletable && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDelete(item.code || item.id)}
                           aria-label={`Delete ${String(item.name || item.code || 'item')}`}
                         >
-                          <Trash2 />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </>

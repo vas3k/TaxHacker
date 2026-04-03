@@ -18,9 +18,23 @@ export function formatCurrency(total: number, currency: string) {
       maximumFractionDigits: 2,
       useGrouping: true,
     }).format(total / 100)
-  } catch (error) {
+  } catch {
     // can happen with custom currencies and crypto
-    return `${currency} ${total / 100}`
+    return `${currency} ${(total / 100).toFixed(2)}`
+  }
+}
+
+export function formatCurrencyUnits(amount: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(LOCALE, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      useGrouping: true,
+    }).format(amount)
+  } catch {
+    return `${currency} ${amount.toFixed(2)}`
   }
 }
 
@@ -108,7 +122,7 @@ export function generateUUID(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     try {
       return crypto.randomUUID()
-    } catch (error) {
+    } catch {
       // Fall through to next method
     }
   }
@@ -126,7 +140,7 @@ export function generateUUID(): string {
       // Convert to UUID string format
       const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")
       return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20, 32)].join("-")
-    } catch (error) {
+    } catch {
       // Fall through to Math.random() fallback
     }
   }

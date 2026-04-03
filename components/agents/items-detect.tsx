@@ -53,7 +53,7 @@ export const ItemsDetectTool = ({ file, data }: { file?: File; data: Transaction
               <div className="text-xs text-muted-foreground">{item.description}</div>
             </div>
             <div className="font-medium">
-              {formatCurrency((item.total || 0) * 100, item.currencyCode || data.currencyCode || "USD")}
+              {formatCurrency(item.total ?? 0, item.currencyCode || data.currencyCode || "USD")}
             </div>
           </div>
         ))}

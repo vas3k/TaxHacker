@@ -40,6 +40,8 @@ model User {
   sessions            Session[]
   appData             AppData[]
   progress            Progress[]
+  importBatches       ImportBatch[]
+  transactionAuditLogs TransactionAuditLog[]
 
   @@map("users")
 }
@@ -168,29 +170,33 @@ model File {
 }
 
 model Transaction {
-  id                    String    @id @default(uuid()) @db.Uuid
-  userId                String    @map("user_id") @db.Uuid
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String             @id @default(uuid()) @db.Uuid
+  userId                String             @map("user_id") @db.Uuid
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   name                  String?
   description           String?
   merchant              String?
   total                 Int?
-  currencyCode          String?   @map("currency_code")
-  convertedTotal        Int?      @map("converted_total")
-  convertedCurrencyCode String?   @map("converted_currency_code")
-  type                  String?   @default("expense")
-  items                 Json      @default("[]")
+  currencyCode          String?            @map("currency_code")
+  convertedTotal        Int?               @map("converted_total")
+  convertedCurrencyCode String?            @map("converted_currency_code")
+  type                  String?            @default("expense")
+  items                 Json               @default("[]")
   note                  String?
-  files                 Json      @default("[]")
+  files                 Json               @default("[]")
   extra                 Json?
-  category              Category? @relation(fields: [categoryCode, userId], references: [code, userId])
-  categoryCode          String?   @map("category_code")
-  project               Project?  @relation(fields: [projectCode, userId], references: [code, userId])
-  projectCode           String?   @map("project_code")
-  issuedAt              DateTime? @map("issued_at")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  category              Category?          @relation(fields: [categoryCode, userId], references: [code, userId])
+  categoryCode          String?            @map("category_code")
+  project               Project?           @relation(fields: [projectCode, userId], references: [code, userId])
+  projectCode           String?            @map("project_code")
+  issuedAt              DateTime?          @map("issued_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
   text                  String?
+  importReference       String?            @map("import_reference")
+  lastMatchedAt         DateTime?          @map("last_matched_at")
+  matches               TransactionMatch[]
+  auditLogs             TransactionAuditLog[]
 
   @@index([userId])
   @@index([projectCode])
@@ -199,6 +205,7 @@ model Transaction {
   @@index([name])
   @@index([merchant])
   @@index([total])
+  @@index([importReference])
   @@map("transactions")
 }
 
@@ -236,4 +243,90 @@ model Progress {
 
   @@index([userId])
   @@map("progress")
+}
+
+model ImportBatch {
+  id                 String             @id @default(uuid()) @db.Uuid
+  userId             String             @map("user_id") @db.Uuid
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename           String
+  contentHash        String?            @map("content_hash")
+  status             String             @default("processing")
+  totalRows          Int                @default(0) @map("total_rows")
+  matchedCount       Int                @default(0) @map("matched_count")
+  createdCount       Int                @default(0) @map("created_count")
+  skippedCount       Int                @default(0) @map("skipped_count")
+  errorCount         Int                @default(0) @map("error_count")
+  metadata           Json?
+  createdAt          DateTime           @default(now()) @map("created_at")
+  completedAt        DateTime?          @map("completed_at")
+  importRows         ImportRow[]
+  transactionMatches TransactionMatch[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([contentHash])
+  @@map("import_batches")
+}
+
+model ImportRow {
+  id            String      @id @default(uuid()) @db.Uuid
+  batchId       String      @map("batch_id") @db.Uuid
+  batch         ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rowNumber     Int         @map("row_number")
+  rawData       Json        @map("raw_data")
+  parsedData    Json?       @map("parsed_data")
+  status        String      @default("pending")
+  errorMessage  String?     @map("error_message")
+  transactionId String?     @map("transaction_id") @db.Uuid
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([batchId])
+  @@index([status])
+  @@map("import_rows")
+}
+
+model TransactionMatch {
+  id             String      @id @default(uuid()) @db.Uuid
+  batchId        String      @map("batch_id") @db.Uuid
+  batch          ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  transactionId  String      @map("transaction_id") @db.Uuid
+  transaction    Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  confidence     Int
+  matchedAmount  Int         @map("matched_amount")
+  matchedDate    DateTime    @map("matched_date")
+  existingDate   DateTime    @map("existing_date")
+  daysDifference Int         @map("days_difference")
+  status         String      @default("auto_merged")
+  csvData        Json        @map("csv_data")
+  mergedFields   Json?       @map("merged_fields")
+  reviewedBy     String?     @map("reviewed_by") @db.Uuid
+  reviewedAt     DateTime?   @map("reviewed_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@index([batchId])
+  @@index([transactionId])
+  @@index([confidence])
+  @@index([status])
+  @@map("transaction_matches")
+}
+
+model TransactionAuditLog {
+  id            String      @id @default(uuid()) @db.Uuid
+  transactionId String      @map("transaction_id") @db.Uuid
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  userId        String      @map("user_id") @db.Uuid
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action        String      // "created", "manual_edit", "csv_merge", "match_reviewed"
+  fieldName     String?     @map("field_name")
+  oldValue      Json?       @map("old_value")
+  newValue      Json?       @map("new_value")
+  metadata      Json?       // Additional context (matchId, batchFilename)
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([transactionId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("transaction_audit_logs")
 }

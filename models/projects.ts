@@ -60,3 +60,61 @@ export const deleteProject = async (userId: string, code: string) => {
     where: { userId_code: { code, userId } },
   })
 }
+export const mergeProjects = async (userId: string, sourceCode: string, targetCode: string) => {
+  return await prisma.$transaction(async (tx) => {
+    // 1. Get the source project to return it later (for undo)
+    const sourceProject = await tx.project.findUnique({
+      where: { userId_code: { userId, code: sourceCode } },
+    })
+
+    if (!sourceProject) {
+      throw new Error("Source project not found")
+    }
+
+    // 2. Find all transactions associated with the source project
+    const transactions = await tx.transaction.findMany({
+      where: { userId, projectCode: sourceCode },
+      select: { id: true },
+    })
+    const transactionIds = transactions.map((t) => t.id)
+
+    // 3. Update transactions to the target project
+    await tx.transaction.updateMany({
+      where: { userId, projectCode: sourceCode },
+      data: { projectCode: targetCode },
+    })
+
+    // 4. Delete the source project
+    await tx.project.delete({
+      where: { userId_code: { userId, code: sourceCode } },
+    })
+
+    return { sourceProject, transactionIds }
+  })
+}
+
+export const undoMergeProjects = async (
+  userId: string,
+  projectData: Prisma.ProjectCreateInput,
+  transactionIds: string[]
+) => {
+  return await prisma.$transaction(async (tx) => {
+    // 1. Re-create the deleted project
+    const project = await tx.project.create({
+      data: projectData,
+    })
+
+    // 2. Move transactions back to the re-created project
+    if (transactionIds.length > 0) {
+      await tx.transaction.updateMany({
+        where: {
+          userId,
+          id: { in: transactionIds },
+        },
+        data: { projectCode: project.code },
+      })
+    }
+
+    return project
+  })
+}

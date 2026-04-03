@@ -1,4 +1,10 @@
-import { addProjectAction, deleteProjectAction, editProjectAction } from "@/app/(app)/settings/actions"
+import {
+  addProjectAction,
+  deleteProjectAction,
+  editProjectAction,
+  mergeProjectAction,
+  undoMergeProjectAction,
+} from "@/app/(app)/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
 import { getCurrentUser } from "@/lib/auth"
 import { randomHexColor } from "@/lib/utils"
@@ -39,6 +45,14 @@ export default async function ProjectsSettingsPage() {
         onEdit={async (code, data) => {
           "use server"
           return await editProjectAction(user.id, code, data as Prisma.ProjectUpdateInput)
+        }}
+        onMerge={async (sourceCode, targetCode) => {
+          "use server"
+          return await mergeProjectAction(user.id, sourceCode, targetCode)
+        }}
+        onUndoMerge={async (data, transactionIds) => {
+          "use server"
+          return await undoMergeProjectAction(user.id, data as Prisma.ProjectCreateInput, transactionIds)
         }}
       />
     </div>

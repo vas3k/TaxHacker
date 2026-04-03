@@ -1,12 +1,12 @@
 services:
   app:
-    image: ghcr.io/vas3k/taxhacker:latest
-    container_name: taxhacker_app
+    image: ghcr.io/wingertandrew/expensing:latest
+    container_name: expensing_app
     networks:
-      - taxhacker_network
+      - expensing_network
     environment:
       - NODE_ENV=production
-      - BASE_URL=https://taxhacker.app
+      - BASE_URL=https://expensing.app
       - SELF_HOSTED_MODE=false
       - UPLOAD_PATH=/app/data/uploads
     env_file:
@@ -25,5 +25,5 @@ services:
         max-file: "3"
 
 networks:
-  taxhacker_network:
+  expensing_network:
     driver: bridge
