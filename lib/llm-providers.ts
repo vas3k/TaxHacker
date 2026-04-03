@@ -25,9 +25,9 @@ export const PROVIDERS: ProviderMeta[] = [
     placeholder: "sk-...",
     help: {
       url: "https://platform.openai.com/settings/organization/api-keys",
-      label: "OpenAI Platform Console"
+      label: "OpenAI Platform Console",
     },
-    logo: "/logo/openai.svg"
+    logo: "/logo/openai.svg",
   },
   {
     key: "google",
@@ -40,9 +40,9 @@ export const PROVIDERS: ProviderMeta[] = [
     placeholder: "...",
     help: {
       url: "https://aistudio.google.com/apikey",
-      label: "Google AI Studio"
+      label: "Google AI Studio",
     },
-    logo: "/logo/google.svg"
+    logo: "/logo/google.svg",
   },
   {
     key: "mistral",
@@ -55,13 +55,13 @@ export const PROVIDERS: ProviderMeta[] = [
     placeholder: "...",
     help: {
       url: "https://admin.mistral.ai/organization/api-keys",
-      label: "Mistral Admin Console"
+      label: "Mistral Admin Console",
     },
-    logo: "/logo/mistral.svg"
+    logo: "/logo/mistral.svg",
   },
   {
     key: "openai_compatible",
-    label: "OpenAI Compatible",
+    label: "Ollama, LM Studio, vLLM, LocalAI",
     apiKeyName: "openai_compatible_api_key",
     modelName: "openai_compatible_model_name",
     defaultModelName: "",
@@ -72,8 +72,8 @@ export const PROVIDERS: ProviderMeta[] = [
     placeholder: "(optional)",
     help: {
       url: "https://github.com/ollama/ollama/blob/main/docs/openai.md",
-      label: "Works with Ollama, LM Studio, vLLM, LocalAI"
+      label: "Any OpenAI Compatible API endpoints",
     },
-    logo: "/logo/openai.svg"
+    logo: "/logo/openai.svg",
   },
 ]
