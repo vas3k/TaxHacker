@@ -57,7 +57,13 @@ TaxHacker automatically detects currencies in your documents and converts them t
 - **All-world coverage**: Support for 170+ world currencies and 14 popular cryptocurrencies (BTC, ETH, LTC, DOT, and more)
 - **Flexible input**: Manual entry is always available when you need more control
 
-### `3` Organize your transactions using fully customizable categories, projects and fields
+### `3` Use your own LLM: Ollama, LM Studio, vLLM, LocalAI etc
+
+It's compatible with your local LLM OpenAI-compatible API endpoint. Just make sure that your local model is good in OCR tasks, results are not guaranteed :)
+
+![Local LLMs](public/landing/local-llms.webp)
+
+### `4` Organize your transactions using fully customizable categories, projects and fields
 
 ![Transactions Table](public/landing/transactions-big.webp)
 
@@ -70,7 +76,7 @@ Adapt TaxHacker to your unique needs with unlimited customization options. Creat
 - **AI-powered extraction**: Write your own prompts to extract any custom information from documents
 - **Bulk operations**: Process multiple documents or transactions at once
 
-### `4` Customize any LLM prompt. Even system ones
+### `5` Customize any LLM prompt. Even system ones
 
 ![Custom Categories](public/landing/custom-llm.webp)
 
@@ -84,7 +90,7 @@ Take full control of how TaxHacker's AI processes your documents. Write custom A
 
 TaxHacker is 100% adaptable and tunable to your unique requirements — whether you need to extract emails, addresses, project codes, or any other custom information from your documents.
 
-### `5` Flexible data filtering and export
+### `6` Flexible data filtering and export
 
 ![Data Export](public/landing/export.webp)
 
@@ -95,7 +101,7 @@ Once your documents are processed, easily view, filter, and export your complete
 - **Tax-ready reports**: Generate comprehensive reports for your accountant or tax advisor
 - **Data portability**: Download complete data archives to migrate to other services—your data stays yours
 
-### `6` Self-hosted mode for data privacy
+### `7` Self-hosted mode for data privacy
 
 ![Self-hosting](docs/screenshots/exported_archive.png)
 
@@ -160,11 +166,6 @@ Configure TaxHacker for your specific needs with these environment variables:
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
 | `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | `your-secure-random-key` |
 
-You can also configure LLM provider settings in the application or via environment variables:
-
-- **OpenAI**: `OPENAI_MODEL_NAME` and `OPENAI_API_KEY`
-- **Google Gemini**: `GOOGLE_MODEL_NAME` and `GOOGLE_API_KEY`
-- **Mistral**: `MISTRAL_MODEL_NAME` and `MISTRAL_API_KEY`
 
 ## ⌨️ Local Development
 
