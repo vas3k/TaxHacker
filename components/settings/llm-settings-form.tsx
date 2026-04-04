@@ -6,7 +6,6 @@ import { FormError } from "@/components/forms/error"
 import { FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
-import config from "@/lib/config"
 import { PROVIDERS } from "@/lib/llm-providers"
 import { Field } from "@/prisma/client"
 import type { DragEndEvent } from "@dnd-kit/core"
@@ -30,10 +29,11 @@ function getInitialProviderOrder(settings: Record<string, string>) {
 export default function LLMSettingsForm({
   settings,
   fields,
+  isSelfHosted,
 }: {
   settings: Record<string, string>
   fields: Field[]
-  showApiKey?: boolean
+  isSelfHosted: boolean
 }) {
   const [saveState, saveAction, pending] = useActionState(saveSettingsAction, null)
   const [providerOrder, setProviderOrder] = useState<string[]>(getInitialProviderOrder(settings))
@@ -64,7 +64,7 @@ export default function LLMSettingsForm({
   return (
     <>
       <form action={saveAction} className="space-y-4">
-        {config.selfHosted.isEnabled && (
+        {isSelfHosted && (
           <div className="space-y-2">
             <label className="text-sm font-medium">LLM providers</label>
             <DndProviderBlocks
@@ -77,7 +77,7 @@ export default function LLMSettingsForm({
           </div>
         )}
 
-        {config.selfHosted.isEnabled && <input type="hidden" name="llm_providers" value={providerOrder.join(",")} />}
+        {isSelfHosted && <input type="hidden" name="llm_providers" value={providerOrder.join(",")} />}
 
         <FormTextarea
           title="Prompt for File Analysis Form"
