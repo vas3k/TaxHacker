@@ -25,6 +25,10 @@ const settingsCategories = [
     href: "/settings/llm",
   },
   {
+    title: "Paperless-ngx",
+    href: "/settings/paperless",
+  },
+  {
     title: "Fields",
     href: "/settings/fields",
   },

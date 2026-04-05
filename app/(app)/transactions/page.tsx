@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { getCategories } from "@/models/categories"
 import { getFields } from "@/models/fields"
 import { getProjects } from "@/models/projects"
+import { getSettings } from "@/models/settings"
 import { getTransactions, TransactionFilters } from "@/models/transactions"
 import { Download, Plus, Upload } from "lucide-react"
 import { Metadata } from "next"
@@ -31,6 +32,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const categories = await getCategories(user.id)
   const projects = await getProjects(user.id)
   const fields = await getFields(user.id)
+  const settings = await getSettings(user.id)
+  const isPaperlessEnabled =
+    settings.paperless_enabled === "true" && !!settings.paperless_url && !!settings.paperless_api_token
 
   // Reset page if user clicks a filter and no transactions are found
   if (page && page > 1 && transactions.length === 0) {
@@ -58,7 +62,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       <TransactionSearchAndFilters categories={categories} projects={projects} fields={fields} />
 
       <main>
-        <TransactionList transactions={transactions} fields={fields} />
+        <TransactionList transactions={transactions} fields={fields} isPaperlessEnabled={isPaperlessEnabled} />
 
         {total > TRANSACTIONS_PER_PAGE && <Pagination totalItems={total} itemsPerPage={TRANSACTIONS_PER_PAGE} />}
 

@@ -51,6 +51,12 @@ export const getFilesByTransactionId = cache(async (id: string, userId: string) 
   return []
 })
 
+export const getFileByPaperlessDocumentId = cache(async (userId: string, paperlessDocumentId: number) => {
+  return await prisma.file.findFirst({
+    where: { userId, paperlessDocumentId },
+  })
+})
+
 export const createFile = async (userId: string, data: any) => {
   return await prisma.file.create({
     data: {
