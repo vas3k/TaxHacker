@@ -167,6 +167,8 @@ Configure TaxHacker for your specific needs with these environment variables:
 | `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | `your-secure-random-key` |
 
 
+> 💡 **Need internet access with authentication?** See [docs/self-hosted-public-access.md](docs/self-hosted-public-access.md) for a workaround (yes, it's cursed).
+
 ## ⌨️ Local Development
 
 We use:
