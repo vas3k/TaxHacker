@@ -17,6 +17,9 @@ import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
+import { DuplicateModal } from "../transactions/duplicate-modal"
+import { ActionState } from "@/lib/actions"
+import { Transaction } from "@/prisma/client"
 
 export default function AnalyzeForm({
   file,
@@ -40,6 +43,9 @@ export default function AnalyzeForm({
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteUnsortedFileAction, null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false)
+  const [duplicateData, setDuplicateData] = useState<ActionState<Transaction>["duplicateData"] | null>(null)
+  const [pendingFormData, setPendingFormData] = useState<FormData | null>(null)
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -107,11 +113,35 @@ export default function AnalyzeForm({
         showNotification({ code: "global.banner", message: "Saved!", type: "success" })
         showNotification({ code: "sidebar.transactions", message: "new" })
         setTimeout(() => showNotification({ code: "sidebar.transactions", message: "" }), 3000)
+      } else if (result.error === "DUPLICATE_FOUND" && result.duplicateData) {
+        setDuplicateData(result.duplicateData)
+        setPendingFormData(formData) // Save the form data so we can retry later
+        setIsDuplicateModalOpen(true)
       } else {
         setSaveError(result.error ? result.error : "Something went wrong...")
         showNotification({ code: "global.banner", message: "Failed to save", type: "failed" })
       }
     })
+  }
+
+  const handleForceSave = () => {
+    if (!pendingFormData) return
+
+    setIsDuplicateModalOpen(false)
+
+    const newFormData = new FormData()
+    for (const [key, value] of pendingFormData.entries()) {
+      newFormData.append(key, value)
+    }
+    newFormData.append("forceSave", "true")
+
+    saveAsTransaction(newFormData)
+  }
+
+  const handleCancelDuplicate = () => {
+    setIsDuplicateModalOpen(false)
+    setPendingFormData(null)
+    setDuplicateData(null)
   }
 
   const startAnalyze = async () => {
@@ -203,7 +233,9 @@ export default function AnalyzeForm({
             value={formData.total || ""}
             onChange={(e) => {
               const newValue = parseFloat(e.target.value || "0")
-              !isNaN(newValue) && setFormData((prev) => ({ ...prev, total: newValue }))
+              if (!isNaN(newValue)) {
+                setFormData((prev) => ({ ...prev, total: newValue }))
+              }
             }}
             className="w-32"
             required={fieldMap.total.isRequired}
@@ -350,6 +382,13 @@ export default function AnalyzeForm({
           {saveError && <FormError>{saveError}</FormError>}
         </div>
       </form>
+      <DuplicateModal
+        isOpen={isDuplicateModalOpen}
+        onOpenChange={setIsDuplicateModalOpen}
+        duplicateData={duplicateData}
+        onConfirm={handleForceSave} // This should trigger the action again with forceSave: true
+        onCancel={handleCancelDuplicate} // This should just close the modal
+      />
     </>
   )
 }

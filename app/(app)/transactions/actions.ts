@@ -39,10 +39,24 @@ export async function createTransactionAction(
       return { success: false, error: validatedForm.error.message }
     }
 
-    const transaction = await createTransaction(user.id, validatedForm.data)
+    const forceSave = formData.get("forceSave") === "true"
+
+    const result = await createTransaction(user.id, validatedForm.data, forceSave)
+
+    if (result.status === "duplicate_found") {
+      return {
+        success: false,
+        error: "DUPLICATE_FOUND",
+        duplicateData: {
+          existingTransaction: result.existingTransaction,
+          newTransactionData: result.newTransactionData,
+          resumeIndex: 0,
+        },
+      }
+    }
 
     revalidatePath("/transactions")
-    return { success: true, data: transaction }
+    return { success: true, data: result.transaction }
   } catch (error) {
     console.error("Failed to create transaction:", error)
     return { success: false, error: "Failed to create transaction" }

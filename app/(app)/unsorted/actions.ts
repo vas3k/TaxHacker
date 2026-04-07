@@ -96,8 +96,22 @@ export async function saveFileAsTransactionAction(
     const file = await getFileById(fileId, user.id)
     if (!file) throw new Error("File not found")
 
-    // Create transaction
-    const transaction = await createTransaction(user.id, validatedForm.data)
+    const forceSave = formData.get("forceSave") === "true"
+    const result = await createTransaction(user.id, validatedForm.data, forceSave)
+
+    if (result.status === "duplicate_found") {
+      return {
+        success: false,
+        error: "DUPLICATE_FOUND",
+        duplicateData: {
+          existingTransaction: result.existingTransaction,
+          newTransactionData: result.newTransactionData,
+          resumeIndex: 0,
+        },
+      }
+    }
+
+    const transaction = result.transaction
 
     // Move file to processed location
     const userUploadsDirectory = getUserUploadsDirectory(user)
