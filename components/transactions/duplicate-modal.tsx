@@ -11,11 +11,19 @@ interface DuplicateModalProps {
   onOpenChange: (open: boolean) => void
   // Use the concrete Transaction type for the ActionState
   duplicateData: ActionState<Transaction>["duplicateData"] | null
-  onConfirm: () => void
+  onKeepBoth: () => void
+  onReplaceOld: () => void
   onCancel: () => void
 }
 
-export function DuplicateModal({ isOpen, onOpenChange, duplicateData, onConfirm, onCancel }: DuplicateModalProps) {
+export function DuplicateModal({
+  isOpen,
+  onOpenChange,
+  duplicateData,
+  onKeepBoth,
+  onReplaceOld,
+  onCancel,
+}: DuplicateModalProps) {
   // If no data, render nothing to avoid errors
   if (!duplicateData) return null
 
@@ -106,15 +114,34 @@ export function DuplicateModal({ isOpen, onOpenChange, duplicateData, onConfirm,
         </div>
 
         {/* ACTION BUTTONS */}
-        <div className="flex justify-between items-center mt-6">
-          <Button variant="ghost" onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-4 border-t">
+          {/* LEFT: Keep Older (Discard New) */}
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-red-900/50 dark:hover:bg-red-900/20"
+          >
             <XCircle className="h-4 w-4 mr-2" />
-            Discard New Entry
+            Keep Older
           </Button>
 
-          <Button onClick={onConfirm} className="bg-primary hover:bg-primary/90">
+          {/* MIDDLE: Keep Both (Default Green) */}
+          <Button
+            onClick={onKeepBoth}
+            className="w-full bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
+          >
             <CheckCircle2 className="h-4 w-4 mr-2" />
-            Save Anyway (Keep Both)
+            Keep Both
+          </Button>
+
+          {/* RIGHT: Keep Newer (Replace) */}
+          <Button
+            variant="outline"
+            onClick={onReplaceOld}
+            className="w-full border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-blue-900/50 dark:hover:bg-blue-900/20"
+          >
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Keep Newer
           </Button>
         </div>
       </DialogContent>

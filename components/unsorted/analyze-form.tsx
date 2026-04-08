@@ -20,6 +20,7 @@ import { startTransition, useActionState, useMemo, useState } from "react"
 import { DuplicateModal } from "../transactions/duplicate-modal"
 import { ActionState } from "@/lib/actions"
 import { Transaction } from "@/prisma/client"
+import { deleteTransactionAction } from "@/app/(app)/transactions/actions"
 
 export default function AnalyzeForm({
   file,
@@ -142,6 +143,22 @@ export default function AnalyzeForm({
     setIsDuplicateModalOpen(false)
     setPendingFormData(null)
     setDuplicateData(null)
+  }
+  const handleReplaceOld = async () => {
+    if (!duplicateData || !pendingFormData) return
+
+    setIsDuplicateModalOpen(false)
+    setIsSaving(true)
+
+    try {
+      await deleteTransactionAction(null, duplicateData.existingTransaction.id)
+
+      await saveAsTransaction(pendingFormData)
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Failed to replace transaction")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const startAnalyze = async () => {
@@ -386,7 +403,8 @@ export default function AnalyzeForm({
         isOpen={isDuplicateModalOpen}
         onOpenChange={setIsDuplicateModalOpen}
         duplicateData={duplicateData}
-        onConfirm={handleForceSave} // This should trigger the action again with forceSave: true
+        onKeepBoth={handleForceSave} // This should trigger the action again with forceSave: true
+        onReplaceOld={handleReplaceOld}
         onCancel={handleCancelDuplicate} // This should just close the modal
       />
     </>
