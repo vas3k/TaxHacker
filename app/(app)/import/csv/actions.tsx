@@ -51,7 +51,12 @@ export async function saveTransactionsAction(
   try {
     const rows = JSON.parse(formData.get("rows") as string) as Record<string, unknown>[]
 
-    for (const row of rows) {
+    const forceSave = formData.get("forceSave") === "true"
+    const startIndex = parseInt(formData.get("resumeIndex") as string) || 0
+    const rowsToProcess = rows.slice(startIndex)
+    let currentIndex = startIndex
+
+    for (const row of rowsToProcess) {
       const transactionData: Record<string, unknown> = {}
       for (const [fieldCode, value] of Object.entries(row)) {
         const fieldDef = EXPORT_AND_IMPORT_FIELD_MAP[fieldCode]
@@ -62,7 +67,21 @@ export async function saveTransactionsAction(
         }
       }
 
-      await createTransaction(user.id, transactionData)
+      const shouldForceSave = forceSave && currentIndex === startIndex
+      const result = await createTransaction(user.id, transactionData, shouldForceSave)
+
+      if (result.status === "duplicate_found") {
+        return {
+          success: false,
+          error: "DUPLICATE_FOUND",
+          duplicateData: {
+            existingTransaction: result.existingTransaction,
+            newTransactionData: result.newTransactionData,
+            resumeIndex: currentIndex,
+          },
+        }
+      }
+      currentIndex++
     }
 
     revalidatePath("/import/csv")

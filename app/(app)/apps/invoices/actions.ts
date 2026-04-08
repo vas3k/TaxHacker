@@ -9,7 +9,7 @@ import {
 } from "@/lib/files"
 import { getAppData, setAppData } from "@/models/apps"
 import { createFile } from "@/models/files"
-import { createTransaction, updateTransactionFiles } from "@/models/transactions"
+import { createTransaction, updateTransactionFiles, TransactionData } from "@/models/transactions"
 import { Transaction, User } from "@/prisma/client"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { randomUUID } from "crypto"
@@ -45,8 +45,17 @@ export async function deleteTemplateAction(user: User, templateId: string) {
 }
 
 export async function saveInvoiceAsTransactionAction(
-  formData: InvoiceFormData
-): Promise<{ success: boolean; error?: string; data?: Transaction }> {
+  formData: InvoiceFormData,
+  forceSave: boolean = false
+): Promise<{
+  success: boolean
+  error?: string
+  data?: Transaction
+  duplicateData?: {
+    existingTransaction: Transaction
+    newTransactionData: Record<string, unknown>
+  }
+}> {
   try {
     const user = await getCurrentUser()
 
@@ -60,7 +69,7 @@ export async function saveInvoiceAsTransactionAction(
     const totalAmount = (formData.taxIncluded ? subtotal : subtotal + taxes) + fees
 
     // Create transaction
-    const transaction = await createTransaction(user.id, {
+    const rawTransactionData: TransactionData = {
       name: `Invoice #${formData.invoiceNumber || "unknown"}`,
       merchant: `${formData.billTo.split("\n")[0]}`,
       total: totalAmount * 100,
@@ -70,7 +79,22 @@ export async function saveInvoiceAsTransactionAction(
       projectCode: null,
       type: "income",
       status: "pending",
-    })
+    }
+
+    const result = await createTransaction(user.id, rawTransactionData, forceSave)
+
+    if (result.status === "duplicate_found") {
+      return {
+        success: false,
+        error: "DUPLICATE_FOUND",
+        duplicateData: {
+          existingTransaction: result.existingTransaction,
+          newTransactionData: result.newTransactionData,
+        },
+      }
+    }
+
+    const transaction = result.transaction
 
     // Check storage limits
     if (!isEnoughStorageToUploadFile(user, pdfBuffer.length)) {

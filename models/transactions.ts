@@ -40,6 +40,18 @@ export type TransactionPagination = {
   offset: number
 }
 
+export type CreateTransactionSuccess = {
+  status: "success"
+  transaction: Transaction
+}
+
+export type CreateTransactionDuplicate = {
+  status: "duplicate_found"
+  existingTransaction: Transaction
+  newTransactionData: TransactionData // Assuming TransactionData is defined in this file
+}
+
+export type CreateTransactionResult = CreateTransactionSuccess | CreateTransactionDuplicate
 export const getTransactions = cache(
   async (
     userId: string,
@@ -132,10 +144,35 @@ export const getTransactionsByFileId = cache(async (fileId: string, userId: stri
   })
 })
 
-export const createTransaction = async (userId: string, data: TransactionData): Promise<Transaction> => {
+export const createTransaction = async (
+  userId: string,
+  data: TransactionData,
+  forceSave: boolean = false
+): Promise<CreateTransactionResult> => {
   const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
+  const currencyCode = standard.currencyCode || "USD"
 
-  return await prisma.transaction.create({
+  // --- The Deduplication Check ---
+  if (!forceSave && standard.total && standard.merchant && standard.issuedAt) {
+    const existingTransaction = await prisma.transaction.findFirst({
+      where: {
+        userId: userId,
+        total: standard.total,
+        merchant: standard.merchant,
+        issuedAt: standard.issuedAt,
+        currencyCode: currencyCode,
+      },
+    })
+
+    if (existingTransaction) {
+      return {
+        status: "duplicate_found" as const,
+        existingTransaction,
+        newTransactionData: data,
+      }
+    }
+  }
+  const newTransaction = await prisma.transaction.create({
     data: {
       ...standard,
       extra: extra,
@@ -143,6 +180,11 @@ export const createTransaction = async (userId: string, data: TransactionData): 
       userId,
     },
   })
+
+  return {
+    status: "success" as const,
+    transaction: newTransaction,
+  }
 }
 
 export const updateTransaction = async (id: string, userId: string, data: TransactionData): Promise<Transaction> => {
