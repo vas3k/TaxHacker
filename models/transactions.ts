@@ -150,6 +150,7 @@ export const createTransaction = async (
   forceSave: boolean = false
 ): Promise<CreateTransactionResult> => {
   const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
+  const currencyCode = standard.currencyCode || "USD"
 
   // --- The Deduplication Check ---
   if (!forceSave && standard.total && standard.merchant && standard.issuedAt) {
@@ -159,6 +160,7 @@ export const createTransaction = async (
         total: standard.total,
         merchant: standard.merchant,
         issuedAt: standard.issuedAt,
+        currencyCode: currencyCode,
       },
     })
 
