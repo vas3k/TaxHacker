@@ -3,7 +3,7 @@
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { EXPORT_AND_IMPORT_FIELD_MAP } from "@/models/export_and_import"
-import { createTransaction } from "@/models/transactions"
+import { createTransaction, findDuplicateTransaction } from "@/models/transactions"
 import { Transaction } from "@/prisma/client"
 import { parse } from "@fast-csv/parse"
 import { revalidatePath } from "next/cache"
@@ -68,19 +68,25 @@ export async function saveTransactionsAction(
       }
 
       const shouldForceSave = forceSave && currentIndex === startIndex
-      const result = await createTransaction(user.id, transactionData, shouldForceSave)
 
-      if (result.status === "duplicate_found") {
-        return {
-          success: false,
-          error: "DUPLICATE_FOUND",
-          duplicateData: {
-            existingTransaction: result.existingTransaction,
-            newTransactionData: result.newTransactionData,
-            resumeIndex: currentIndex,
-          },
+      // --- Deduplication Check ---
+      if (!shouldForceSave) {
+        const existingTransaction = await findDuplicateTransaction(user.id, transactionData)
+
+        if (existingTransaction) {
+          return {
+            success: false,
+            error: "DUPLICATE_FOUND",
+            duplicateData: {
+              existingTransaction: existingTransaction,
+              newTransactionData: transactionData,
+              resumeIndex: currentIndex,
+            },
+          }
         }
       }
+      await createTransaction(user.id, transactionData)
+
       currentIndex++
     }
 

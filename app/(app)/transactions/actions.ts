@@ -19,6 +19,7 @@ import {
   getTransactionById,
   updateTransaction,
   updateTransactionFiles,
+  findDuplicateTransaction,
 } from "@/models/transactions"
 import { updateUser } from "@/models/users"
 import { Transaction } from "@/prisma/client"
@@ -40,23 +41,29 @@ export async function createTransactionAction(
     }
 
     const forceSave = formData.get("forceSave") === "true"
+    const transactionData = validatedForm.data
 
-    const result = await createTransaction(user.id, validatedForm.data, forceSave)
+    // --- Perform the deduplication check FIRST ---
+    if (!forceSave) {
+      const existingTransaction = await findDuplicateTransaction(user.id, transactionData)
 
-    if (result.status === "duplicate_found") {
-      return {
-        success: false,
-        error: "DUPLICATE_FOUND",
-        duplicateData: {
-          existingTransaction: result.existingTransaction,
-          newTransactionData: result.newTransactionData,
-          resumeIndex: 0,
-        },
+      if (existingTransaction) {
+        return {
+          success: false,
+          error: "DUPLICATE_FOUND",
+          duplicateData: {
+            existingTransaction: existingTransaction,
+            newTransactionData: transactionData,
+            resumeIndex: 0,
+          },
+        }
       }
     }
 
+    const newTransaction = await createTransaction(user.id, transactionData)
+
     revalidatePath("/transactions")
-    return { success: true, data: result.transaction }
+    return { success: true, data: newTransaction }
   } catch (error) {
     console.error("Failed to create transaction:", error)
     return { success: false, error: "Failed to create transaction" }

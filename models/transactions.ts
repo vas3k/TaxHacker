@@ -40,18 +40,6 @@ export type TransactionPagination = {
   offset: number
 }
 
-export type CreateTransactionSuccess = {
-  status: "success"
-  transaction: Transaction
-}
-
-export type CreateTransactionDuplicate = {
-  status: "duplicate_found"
-  existingTransaction: Transaction
-  newTransactionData: TransactionData // Assuming TransactionData is defined in this file
-}
-
-export type CreateTransactionResult = CreateTransactionSuccess | CreateTransactionDuplicate
 export const getTransactions = cache(
   async (
     userId: string,
@@ -144,16 +132,12 @@ export const getTransactionsByFileId = cache(async (fileId: string, userId: stri
   })
 })
 
-export const createTransaction = async (
-  userId: string,
-  data: TransactionData,
-  forceSave: boolean = false
-): Promise<CreateTransactionResult> => {
-  const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
+// --- 1. New Dedicated Deduplication Function ---
+export const findDuplicateTransaction = async (userId: string, data: TransactionData) => {
+  const { standard } = await splitTransactionDataExtraFields(data, userId)
   const currencyCode = standard.currencyCode || "USD"
 
-  // --- The Deduplication Check ---
-  if (!forceSave && standard.total && standard.merchant && standard.issuedAt) {
+  if (standard.total && standard.merchant && standard.issuedAt) {
     const existingTransaction = await prisma.transaction.findFirst({
       where: {
         userId: userId,
@@ -164,14 +148,15 @@ export const createTransaction = async (
       },
     })
 
-    if (existingTransaction) {
-      return {
-        status: "duplicate_found" as const,
-        existingTransaction,
-        newTransactionData: data,
-      }
-    }
+    return existingTransaction
   }
+
+  return null
+}
+
+export const createTransaction = async (userId: string, data: TransactionData): Promise<Transaction> => {
+  const { standard, extra } = await splitTransactionDataExtraFields(data, userId)
+
   const newTransaction = await prisma.transaction.create({
     data: {
       ...standard,
@@ -181,10 +166,7 @@ export const createTransaction = async (
     },
   })
 
-  return {
-    status: "success" as const,
-    transaction: newTransaction,
-  }
+  return newTransaction
 }
 
 export const updateTransaction = async (id: string, userId: string, data: TransactionData): Promise<Transaction> => {

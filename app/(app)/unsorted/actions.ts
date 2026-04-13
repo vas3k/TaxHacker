@@ -16,7 +16,12 @@ import {
 } from "@/lib/files"
 import { DEFAULT_PROMPT_ANALYSE_NEW_FILE } from "@/models/defaults"
 import { createFile, deleteFile, getFileById, updateFile } from "@/models/files"
-import { createTransaction, TransactionData, updateTransactionFiles } from "@/models/transactions"
+import {
+  createTransaction,
+  TransactionData,
+  updateTransactionFiles,
+  findDuplicateTransaction,
+} from "@/models/transactions"
 import { updateUser } from "@/models/users"
 import { Category, Field, File, Project, Transaction } from "@/prisma/client"
 import { randomUUID } from "crypto"
@@ -97,21 +102,26 @@ export async function saveFileAsTransactionAction(
     if (!file) throw new Error("File not found")
 
     const forceSave = formData.get("forceSave") === "true"
-    const result = await createTransaction(user.id, validatedForm.data, forceSave)
+    const transactionData = validatedForm.data
 
-    if (result.status === "duplicate_found") {
-      return {
-        success: false,
-        error: "DUPLICATE_FOUND",
-        duplicateData: {
-          existingTransaction: result.existingTransaction,
-          newTransactionData: result.newTransactionData,
-          resumeIndex: 0,
-        },
+    // --- Deduplication Check ---
+    if (!forceSave) {
+      const existingTransaction = await findDuplicateTransaction(user.id, transactionData)
+
+      if (existingTransaction) {
+        return {
+          success: false,
+          error: "DUPLICATE_FOUND",
+          duplicateData: {
+            existingTransaction: existingTransaction,
+            newTransactionData: transactionData,
+            resumeIndex: 0,
+          },
+        }
       }
     }
 
-    const transaction = result.transaction
+    const transaction = await createTransaction(user.id, validatedForm.data)
 
     // Move file to processed location
     const userUploadsDirectory = getUserUploadsDirectory(user)

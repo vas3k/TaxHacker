@@ -9,7 +9,12 @@ import {
 } from "@/lib/files"
 import { getAppData, setAppData } from "@/models/apps"
 import { createFile } from "@/models/files"
-import { createTransaction, updateTransactionFiles, TransactionData } from "@/models/transactions"
+import {
+  createTransaction,
+  updateTransactionFiles,
+  TransactionData,
+  findDuplicateTransaction,
+} from "@/models/transactions"
 import { Transaction, User } from "@/prisma/client"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { randomUUID } from "crypto"
@@ -81,20 +86,23 @@ export async function saveInvoiceAsTransactionAction(
       status: "pending",
     }
 
-    const result = await createTransaction(user.id, rawTransactionData, forceSave)
+    // --- Deduplication Check ---
+    if (!forceSave) {
+      const existingTransaction = await findDuplicateTransaction(user.id, rawTransactionData)
 
-    if (result.status === "duplicate_found") {
-      return {
-        success: false,
-        error: "DUPLICATE_FOUND",
-        duplicateData: {
-          existingTransaction: result.existingTransaction,
-          newTransactionData: result.newTransactionData,
-        },
+      if (existingTransaction) {
+        return {
+          success: false,
+          error: "DUPLICATE_FOUND",
+          duplicateData: {
+            existingTransaction: existingTransaction,
+            newTransactionData: rawTransactionData,
+          },
+        }
       }
     }
 
-    const transaction = result.transaction
+    const transaction = await createTransaction(user.id, rawTransactionData)
 
     // Check storage limits
     if (!isEnoughStorageToUploadFile(user, pdfBuffer.length)) {
