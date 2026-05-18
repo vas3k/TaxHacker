@@ -24,7 +24,7 @@ export async function NewTransactionDialog({ children }: { children: React.React
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>{children}</Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
