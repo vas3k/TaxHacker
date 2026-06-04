@@ -10,7 +10,7 @@ import { EMAIL_PROVIDER_PRESETS } from "../presets"
 type ServerConfigFormProps = {
   server?: EmailServer
   selectedProvider?: EmailProvider | null
-  onSubmit: (data: Omit<EmailServer, "id" | "status" | "lastSync">) => void
+  onSubmit: (data: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">) => void
   onCancel: () => void
   onBack?: () => void
   isPending: boolean
@@ -33,7 +33,7 @@ export function ServerConfigForm({
     host: server?.host || preset?.host || "",
     port: server?.port || preset?.port || 993,
     username: server?.username || "",
-    password: server?.password || "",
+    password: "",
     useSSL: server?.useSSL ?? preset?.useSSL ?? true,
     isActive: server?.isActive ?? true,
     allowedExtensions: server?.allowedExtensions || [".pdf", ".jpg", ".jpeg", ".png"],
@@ -91,14 +91,17 @@ export function ServerConfigForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password/App Password</Label>
+          <Label htmlFor="password">
+            Password/App Password
+            {server && <span className="ml-1 text-xs text-muted-foreground">(leave blank to keep current)</span>}
+          </Label>
           <Input
             id="password"
             type="password"
             value={formData.password}
             onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
             placeholder="Your app password"
-            required
+            required={!server}
           />
         </div>
       </div>

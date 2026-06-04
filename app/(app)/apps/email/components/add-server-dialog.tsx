@@ -34,7 +34,7 @@ export function AddServerDialog({ isPending }: AddServerDialogProps) {
     setStep("configuration")
   }
 
-  const handleAddServer = async (serverData: Omit<EmailServer, "id" | "status" | "lastSync">) => {
+  const handleAddServer = async (serverData: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">) => {
     const result = await addEmailServerAction(serverData)
     if (result.success) {
       toast.success("Email server added successfully")

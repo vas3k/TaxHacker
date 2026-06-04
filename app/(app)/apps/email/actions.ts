@@ -1,6 +1,7 @@
 "use server"
 
 import { getCurrentUser } from "@/lib/auth"
+import { encryptSecret } from "@/lib/encryption"
 import { getAppData, setAppData } from "@/models/apps"
 import { randomUUID } from "crypto"
 import { revalidatePath } from "next/cache"
@@ -15,7 +16,7 @@ const getDefaultAppData = (): EmailAppData => ({
 })
 
 export async function addEmailServerAction(
-  serverData: Omit<EmailServer, "id" | "status" | "lastSync">
+  serverData: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser()
@@ -27,6 +28,8 @@ export async function addEmailServerAction(
       id: randomUUID(),
       status: "pending",
       lastSync: undefined,
+      addedAt: new Date().toISOString(),
+      password: encryptSecret(serverData.password),
     }
 
     const updatedData: EmailAppData = {
@@ -56,8 +59,15 @@ export async function updateEmailServerAction(
       return { success: false, error: "No email servers found" }
     }
 
+    const patch = { ...serverData }
+    if (typeof patch.password === "string" && patch.password.length > 0) {
+      patch.password = encryptSecret(patch.password)
+    } else {
+      delete patch.password
+    }
+
     const updatedServers = appData.servers.map((server) =>
-      server.id === serverId ? { ...server, ...serverData } : server
+      server.id === serverId ? { ...server, ...patch } : server
     )
 
     const updatedData: EmailAppData = {

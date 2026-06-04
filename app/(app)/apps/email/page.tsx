@@ -22,6 +22,9 @@ export type EmailServer = {
   allowedExtensions: string[]
   syncInterval: number // hours
   lastProcessedMessageId?: string
+  addedAt: string
+  lastProcessedUid?: number
+  errorMessage?: string
 }
 
 export type EmailAppData = {
@@ -37,6 +40,10 @@ export default async function EmailApp() {
   const settings = await getSettings(user.id)
   const appData = (await getAppData(user, "email")) as EmailAppData | null
 
+  const sanitizedAppData = appData
+    ? { ...appData, servers: appData.servers.map((s) => ({ ...s, password: "" })) }
+    : null
+
   return (
     <div>
       <header className="flex flex-wrap items-center justify-between gap-2 mb-8">
@@ -46,7 +53,7 @@ export default async function EmailApp() {
           </span>
         </h2>
       </header>
-      <EmailServerManager user={user} settings={settings} appData={appData} />
+      <EmailServerManager user={user} settings={settings} appData={sanitizedAppData} />
     </div>
   )
 }
