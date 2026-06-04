@@ -7,9 +7,10 @@ export function attachmentMatchesExtensions(filename: string, allowedExtensions:
   })
 }
 
-export function buildSearchCriteria(server: { addedAt: string; lastProcessedUid?: number }): any[] {
+export function buildSearchCriteria(server: { addedAt?: string; lastProcessedUid?: number }): any[] {
   if (server.lastProcessedUid && server.lastProcessedUid > 0) {
     return [["UID", `${server.lastProcessedUid + 1}:*`]]
   }
-  return ["SINCE", new Date(server.addedAt)]
+  const since = server.addedAt ? new Date(server.addedAt) : new Date(0)
+  return [["SINCE", isNaN(since.getTime()) ? new Date(0) : since]]
 }
