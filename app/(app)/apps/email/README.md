@@ -38,7 +38,7 @@ This app allows you to connect to email servers and automatically monitor incomi
 ### Automatic Sync
 - **Cron Job**: Runs every hour (configurable per server)
 - **File Processing**: Only downloads attachments with allowed extensions
-- **Duplication Prevention**: Tracks last processed message ID
+- **Duplication Prevention**: Tracks highest processed IMAP UID per server; mail is fetched read-only and never marked as read
 - **Status Updates**: Updates server status and last sync time
 
 ### Manual Sync
@@ -85,7 +85,7 @@ File: `etc/crontab`
 
 ### Sync Status
 - `lastSyncedAt`: When server was last checked
-- `lastProcessedMessageId`: Last email processed (prevents duplicates)
+- `lastProcessedUid`: Highest IMAP UID processed per server (prevents duplicates; mail is never marked as read)
 - `status`: `connected`, `error`, `pending`, `paused`
 
 ## 🔧 **Commands**
@@ -133,7 +133,7 @@ Email sync logs are available:
 
 ## 🔒 **Security**
 
-- **Passwords**: Stored encrypted in database
+- **Passwords**: Stored **encrypted at rest (AES-256-GCM)**, with the key derived from the `BETTER_AUTH_SECRET` environment variable. Decrypted only at sync/connection-test time.
 - **IMAP SSL**: Enabled by default for all preset providers
 - **Access Control**: Each user can only access their own email servers
 - **App Passwords**: Recommended for all providers supporting them 
