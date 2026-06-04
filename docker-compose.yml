@@ -19,6 +19,35 @@ services:
         max-size: "100M"
         max-file: "3"
 
+  email-sync:
+    image: ghcr.io/vas3k/taxhacker:latest
+    environment:
+      - NODE_ENV=production
+      - SELF_HOSTED_MODE=true
+      - UPLOAD_PATH=/app/data/uploads
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
+    volumes:
+      - ./data:/app/data
+      - ./etc/crontab:/etc/cron.d/email-sync:ro
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - app
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y cron &&
+        chmod 0644 /etc/cron.d/email-sync &&
+        crontab /etc/cron.d/email-sync &&
+        touch /var/log/email-sync.log &&
+        cron &&
+        tail -f /var/log/email-sync.log
+      "
+    logging:
+      driver: "local"
+      options:
+        max-size: "100M"
+        max-file: "3"
+
   postgres:
     image: postgres:17-alpine
     environment:

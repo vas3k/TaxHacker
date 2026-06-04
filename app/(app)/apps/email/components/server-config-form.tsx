@@ -1,0 +1,160 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useState } from "react"
+import { EmailProvider, EmailServer } from "../page"
+import { EMAIL_PROVIDER_PRESETS } from "../presets"
+
+type ServerConfigFormProps = {
+  server?: EmailServer
+  selectedProvider?: EmailProvider | null
+  onSubmit: (data: Omit<EmailServer, "id" | "status" | "lastSync">) => void
+  onCancel: () => void
+  onBack?: () => void
+  isPending: boolean
+}
+
+export function ServerConfigForm({
+  server,
+  selectedProvider,
+  onSubmit,
+  onCancel,
+  onBack,
+  isPending,
+}: ServerConfigFormProps) {
+  const provider = selectedProvider || server?.provider || "gmail"
+  const preset = EMAIL_PROVIDER_PRESETS[provider]
+
+  const [formData, setFormData] = useState({
+    name: server?.username || "", // Use username as name
+    provider: provider,
+    host: server?.host || preset?.host || "",
+    port: server?.port || preset?.port || 993,
+    username: server?.username || "",
+    password: server?.password || "",
+    useSSL: server?.useSSL ?? preset?.useSSL ?? true,
+    isActive: server?.isActive ?? true,
+    allowedExtensions: server?.allowedExtensions || [".pdf", ".jpg", ".jpeg", ".png"],
+    syncInterval: server?.syncInterval || 1,
+    lastProcessedMessageId: server?.lastProcessedMessageId || "",
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Auto-generate name from username if not editing existing server
+    const serverData = {
+      ...formData,
+      name: server?.name || formData.username, // Use username as server name
+    }
+
+    onSubmit(serverData)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="host">IMAP Host</Label>
+          <Input
+            id="host"
+            value={formData.host}
+            onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
+            placeholder="imap.gmail.com"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="port">Port</Label>
+          <Input
+            id="port"
+            type="number"
+            value={formData.port}
+            onChange={(e) => setFormData((prev) => ({ ...prev, port: parseInt(e.target.value) }))}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="username">Email Address</Label>
+          <Input
+            id="username"
+            type="email"
+            value={formData.username}
+            onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
+            placeholder="your-email@example.com"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password/App Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+            placeholder="Your app password"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="extensions">Allowed File Extensions (comma-separated)</Label>
+          <Input
+            id="extensions"
+            value={formData.allowedExtensions.join(", ")}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                allowedExtensions: e.target.value
+                  .split(",")
+                  .map((ext) => ext.trim())
+                  .filter(Boolean),
+              }))
+            }
+            placeholder=".pdf, .jpg, .png, .docx"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="syncInterval">Sync Interval (hours)</Label>
+          <Input
+            id="syncInterval"
+            type="number"
+            min="1"
+            max="24"
+            value={formData.syncInterval}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                syncInterval: parseInt(e.target.value) || 1,
+              }))
+            }
+            placeholder="1"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-between pt-4">
+        {onBack && (
+          <Button type="button" variant="outline" onClick={onBack}>
+            ← Back
+          </Button>
+        )}
+        <div className="flex space-x-2 ml-auto">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Saving..." : server ? "Update Server" : "Add Server"}
+          </Button>
+        </div>
+      </div>
+    </form>
+  )
+}

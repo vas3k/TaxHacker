@@ -24,6 +24,39 @@ services:
         max-size: "100M"
         max-file: "3"
 
+  email-sync:
+    image: ghcr.io/vas3k/taxhacker:latest
+    container_name: taxhacker_email_sync
+    networks:
+      - taxhacker_network
+    environment:
+      - NODE_ENV=production
+      - BASE_URL=https://taxhacker.app
+      - SELF_HOSTED_MODE=false
+      - UPLOAD_PATH=/app/data/uploads
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./etc/crontab:/etc/cron.d/email-sync:ro
+    restart: unless-stopped
+    depends_on:
+      - app
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y cron &&
+        chmod 0644 /etc/cron.d/email-sync &&
+        crontab /etc/cron.d/email-sync &&
+        touch /var/log/email-sync.log &&
+        cron &&
+        tail -f /var/log/email-sync.log
+      "
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100M"
+        max-file: "3"
+
 networks:
   taxhacker_network:
     driver: bridge

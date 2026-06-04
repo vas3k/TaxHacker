@@ -7,7 +7,8 @@
     "dev": "next dev -p 7331 --turbopack",
     "build": "next build",
     "start": "prisma migrate deploy && next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "email:sync": "npx tsx app/%28app%29/apps/email/scripts/fetch-emails.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
