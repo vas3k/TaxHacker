@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "prisma migrate deploy && next start",
     "lint": "next lint",
-    "email:sync": "npx tsx app/%28app%29/apps/email/scripts/fetch-emails.ts",
+    "email:sync": "npx tsx \"app/(app)/apps/email/scripts/fetch-emails.ts\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
