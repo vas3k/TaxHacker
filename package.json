@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "prisma migrate deploy && next start",
     "lint": "next lint",
-    "email:sync": "npx tsx app/%28app%29/apps/email/scripts/fetch-emails.ts"
+    "email:sync": "npx tsx app/%28app%29/apps/email/scripts/fetch-emails.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -19,6 +21,7 @@
     "@langchain/mistralai": "^0.2.1",
     "@langchain/openai": "^0.6.1",
     "@prisma/client": "^6.6.0",
+    "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-avatar": "^1.1.3",
     "@radix-ui/react-checkbox": "^1.1.4",
     "@radix-ui/react-collapsible": "^1.1.3",
@@ -30,7 +33,6 @@
     "@radix-ui/react-separator": "^1.1.2",
     "@radix-ui/react-slot": "^1.2.0",
     "@radix-ui/react-tooltip": "^1.1.8",
-    "@radix-ui/colors": "^3.0.0",
     "@react-pdf/renderer": "^4.3.0",
     "@sentry/nextjs": "^9.11.0",
     "@types/mime-types": "^2.1.4",
@@ -39,9 +41,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "imap-simple": "^5.1.0",
     "jszip": "^3.10.1",
     "langchain": "^0.3.30",
     "lucide-react": "^0.475.0",
+    "mailparser": "^3.9.9",
     "mime-types": "^3.0.1",
     "next": "^15.2.4",
     "next-themes": "^0.4.4",
@@ -61,6 +65,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/imap": "^0.8.43",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -69,7 +75,8 @@
     "postcss": "^8",
     "prisma": "^6.6.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "react-day-picker": {
