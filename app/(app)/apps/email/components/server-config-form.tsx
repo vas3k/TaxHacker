@@ -38,6 +38,7 @@ export function ServerConfigForm({
     isActive: server?.isActive ?? true,
     allowedExtensions: server?.allowedExtensions || [".pdf", ".jpg", ".jpeg", ".png"],
     syncInterval: server?.syncInterval || 1,
+    initialSince: server?.initialSince || "",
     lastProcessedMessageId: server?.lastProcessedMessageId || "",
   })
 
@@ -141,6 +142,19 @@ export function ServerConfigForm({
             placeholder="1"
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="initialSince">
+          Fetch emails since
+          <span className="ml-1 text-xs text-muted-foreground">(blank = entire mailbox; only applies to the first sync)</span>
+        </Label>
+        <Input
+          id="initialSince"
+          type="date"
+          value={formData.initialSince}
+          onChange={(e) => setFormData((prev) => ({ ...prev, initialSince: e.target.value }))}
+        />
       </div>
 
       <div className="flex justify-between pt-4">

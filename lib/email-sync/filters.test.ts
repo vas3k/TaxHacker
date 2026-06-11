@@ -16,19 +16,14 @@ describe("attachmentMatchesExtensions", () => {
 })
 
 describe("buildSearchCriteria", () => {
-  it("uses SINCE addedAt on first run (no lastProcessedUid)", () => {
-    const c = buildSearchCriteria({ addedAt: "2026-06-01T00:00:00.000Z" })
-    expect(Array.isArray(c[0])).toBe(true)
-    expect((c[0] as unknown[])[0]).toBe("SINCE")
-    expect((c[0] as unknown[])[1]).toBeInstanceOf(Date)
+  it("uses nested SINCE on first run when initialSince is set", () => {
+    expect(buildSearchCriteria({ initialSince: "2026-06-01" })).toEqual([["SINCE", new Date("2026-06-01")]])
   })
-  it("uses incremental UID range when a watermark exists", () => {
-    expect(buildSearchCriteria({ addedAt: "2026-06-01T00:00:00.000Z", lastProcessedUid: 42 })).toEqual([
-      ["UID", "43:*"],
-    ])
+  it("uses incremental UID range when a watermark exists (ignores initialSince)", () => {
+    expect(buildSearchCriteria({ initialSince: "2026-06-01", lastProcessedUid: 42 })).toEqual([["UID", "43:*"]])
   })
-  it("falls back to epoch SINCE when addedAt is missing or invalid", () => {
-    expect(buildSearchCriteria({})).toEqual([["SINCE", new Date(0)]])
-    expect(buildSearchCriteria({ addedAt: "not-a-date" })).toEqual([["SINCE", new Date(0)]])
+  it("defaults to ALL (entire mailbox) when initialSince is unset or invalid", () => {
+    expect(buildSearchCriteria({})).toEqual(["ALL"])
+    expect(buildSearchCriteria({ initialSince: "not-a-date" })).toEqual(["ALL"])
   })
 })

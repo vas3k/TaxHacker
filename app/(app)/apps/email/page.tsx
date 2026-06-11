@@ -23,6 +23,7 @@ export type EmailServer = {
   syncInterval: number // hours
   lastProcessedMessageId?: string
   addedAt: string
+  initialSince?: string // ISO date; bounds the first sync ("" / unset = entire mailbox)
   lastProcessedUid?: number
   errorMessage?: string
 }
