@@ -134,6 +134,7 @@ Email sync logs are available:
 ## 🔒 **Security**
 
 - **Passwords**: Stored **encrypted at rest (AES-256-GCM)**, with the key derived from the `BETTER_AUTH_SECRET` environment variable. Decrypted only at sync/connection-test time.
+  - ⚠️ **Rotating `BETTER_AUTH_SECRET` invalidates stored mailbox passwords.** After changing it, re-enter each server's password (the server shows a decryption error until you do).
 - **IMAP SSL**: Enabled by default for all preset providers
 - **Access Control**: Each user can only access their own email servers
 - **App Passwords**: Recommended for all providers supporting them 

@@ -2,9 +2,13 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- import-time mocks so importing ./ingest doesn't run config Zod validation or create a Prisma client ---
 vi.mock("@/lib/uploads", () => ({ ingestUnsortedFile: vi.fn() }))
-vi.mock("@/lib/db", () => ({
-  prisma: { appData: { findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn() } },
-}))
+vi.mock("@/lib/db", () => {
+  // applyResult now locks + re-reads inside a transaction; provide a tx with $queryRaw + update.
+  const tx = { $queryRaw: vi.fn(async () => [{ data: { servers: [] } }]), appData: { update: vi.fn() } }
+  return {
+    prisma: { appData: { findMany: vi.fn() }, $transaction: vi.fn(async (fn: any) => fn(tx)) },
+  }
+})
 vi.mock("@/lib/files", () => ({ getDirectorySize: vi.fn(), getUserUploadsDirectory: vi.fn(() => "dir") }))
 vi.mock("@/models/users", () => ({ updateUser: vi.fn() }))
 vi.mock("@/lib/email-sync/imap-client", () => ({ realImapClient: { fetchMessages: vi.fn() } }))
@@ -69,6 +73,31 @@ describe("syncServer", () => {
     expect(result.status).toBe("connected")
   })
 
+  it("skips messages at or below the watermark (defends against the IMAP `UID n:*` re-fetch quirk)", async () => {
+    const ingested: any[] = []
+    // Some servers (Gmail/Dovecot) return the highest existing UID for `UID (last+1):*`
+    // when there is no newer mail — re-delivering the watermark message.
+    const result = await syncServer(makeServer({ lastProcessedUid: 603 }), user, {
+      client: fakeClient([
+        { uid: 603, attachments: [{ filename: "dup.pdf", contentType: "application/pdf", content: Buffer.from("x"), size: 1 }] },
+      ]),
+      ingest: async (_u, input) => { ingested.push(input); return { id: "f" } as any },
+    })
+    expect(ingested).toHaveLength(0)
+    expect(result.processed).toBe(0)
+    expect(result.lastProcessedUid).toBe(603)
+  })
+
+  it("returns a friendly error when the stored password cannot be decrypted", async () => {
+    const result = await syncServer(makeServer({ password: "v1:bad:bad:bad", lastProcessedUid: 9 }), user, {
+      client: fakeClient([]),
+      ingest: async () => ({}) as any,
+    })
+    expect(result.status).toBe("error")
+    expect(result.errorMessage).toMatch(/could not be decrypted/i)
+    expect(result.lastProcessedUid).toBe(9)
+  })
+
   it("reports error status and keeps the old watermark on client failure", async () => {
     const result = await syncServer(makeServer({ lastProcessedUid: 7 }), user, {
       client: { fetchMessages: vi.fn(async () => { throw new Error("auth failed") }) },
@@ -86,8 +115,6 @@ describe("runEmailSync storage recompute guard", () => {
     vi.mocked(prisma.appData.findMany).mockResolvedValue([
       { userId: "u1", user, data: { servers: [makeServer()] } },
     ] as any)
-    vi.mocked(prisma.appData.findUnique).mockResolvedValue({ data: { servers: [makeServer()] } } as any)
-    vi.mocked(prisma.appData.update).mockResolvedValue({} as any)
   })
 
   it("skips getDirectorySize when nothing was ingested (regression: ENOENT on missing uploads dir)", async () => {

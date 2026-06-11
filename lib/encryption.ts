@@ -3,12 +3,18 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypt
 const PREFIX = "v1"
 const ALGO = "aes-256-gcm"
 
+let cachedKey: { secret: string; key: Buffer } | undefined
+
 function getKey(): Buffer {
   const secret = process.env.BETTER_AUTH_SECRET
   if (!secret) {
     throw new Error("BETTER_AUTH_SECRET is required to encrypt/decrypt email credentials")
   }
-  return scryptSync(secret, "taxhacker-email-credentials", 32)
+  // scrypt is intentionally slow; memoize per secret so a batch sync derives the key once.
+  if (cachedKey?.secret !== secret) {
+    cachedKey = { secret, key: scryptSync(secret, "taxhacker-email-credentials", 32) }
+  }
+  return cachedKey.key
 }
 
 export function isEncrypted(value: string): boolean {

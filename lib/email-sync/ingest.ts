@@ -20,11 +20,25 @@ export async function syncServer(server: any, user: User, deps: SyncDeps = {}): 
   const client = deps.client ?? realImapClient
   const ingest = deps.ingest ?? ingestUnsortedFile
 
+  let password: string
+  try {
+    password = decryptSecret(server.password)
+  } catch {
+    return {
+      serverId: server.id,
+      processed: 0,
+      lastProcessedUid: server.lastProcessedUid,
+      status: "error",
+      errorMessage:
+        "Stored password could not be decrypted — please re-enter it (this happens if BETTER_AUTH_SECRET changed).",
+    }
+  }
+
   try {
     const messages = await client.fetchMessages(
       {
         user: server.username,
-        password: decryptSecret(server.password),
+        password,
         host: server.host,
         port: server.port,
         tls: server.useSSL,
@@ -33,9 +47,13 @@ export async function syncServer(server: any, user: User, deps: SyncDeps = {}): 
     )
 
     let processed = 0
-    let maxUid = server.lastProcessedUid ?? 0
+    const watermark = server.lastProcessedUid ?? 0
+    let maxUid = watermark
 
     for (const message of [...messages].sort((a, b) => a.uid - b.uid)) {
+      // Defend against the IMAP `UID n:*` quirk: `*` matches the highest existing UID,
+      // so `(last+1):*` can re-return the watermark message when there is no newer mail.
+      if (message.uid <= watermark) continue
       for (const attachment of message.attachments) {
         if (!attachmentMatchesExtensions(attachment.filename, server.allowedExtensions)) continue
         await ingest(user, {
@@ -69,22 +87,29 @@ export async function syncServer(server: any, user: User, deps: SyncDeps = {}): 
 }
 
 async function applyResult(userId: string, result: SyncResult) {
-  const row = await prisma.appData.findUnique({ where: { userId_app: { userId, app: "email" } } })
-  if (!row) return
-  const data = row.data as any
-  const now = new Date().toISOString()
-  data.servers = (data.servers || []).map((s: any) =>
-    s.id === result.serverId
-      ? {
-          ...s,
-          status: result.status,
-          errorMessage: result.errorMessage ?? null,
-          lastSyncedAt: now,
-          lastProcessedUid: result.lastProcessedUid ?? s.lastProcessedUid,
-        }
-      : s
-  )
-  await prisma.appData.update({ where: { userId_app: { userId, app: "email" } }, data: { data } })
+  // Lock the row and re-read the CURRENT data inside the transaction so a concurrent sync
+  // (the hourly cron container vs. a manual "Sync Now" in the web app) can't clobber the
+  // other's watermark/status with a stale read-modify-write.
+  await prisma.$transaction(async (tx) => {
+    const locked = await tx.$queryRaw<{ data: any }[]>`
+      SELECT data FROM app_data WHERE user_id = ${userId}::uuid AND app = 'email' FOR UPDATE
+    `
+    if (!locked.length) return
+    const data = locked[0].data as any
+    const now = new Date().toISOString()
+    data.servers = (data.servers || []).map((s: any) =>
+      s.id === result.serverId
+        ? {
+            ...s,
+            status: result.status,
+            errorMessage: result.errorMessage ?? null,
+            lastSyncedAt: now,
+            lastProcessedUid: result.lastProcessedUid ?? s.lastProcessedUid,
+          }
+        : s
+    )
+    await tx.appData.update({ where: { userId_app: { userId, app: "email" } }, data: { data } })
+  })
 }
 
 export async function runEmailSync(scope: { userId?: string; serverId?: string } = {}): Promise<SyncResult[]> {
