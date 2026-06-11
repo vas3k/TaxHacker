@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db"
 
 async function main() {
   console.log(`🚀 Starting email sync at ${new Date().toISOString()}`)
-  const results = await runEmailSync()
+  // Cron run: honor each server's syncInterval (manual "Sync Now" bypasses it).
+  const results = await runEmailSync({ respectInterval: true })
   const total = results.reduce((acc, r) => acc + r.processed, 0)
   const errored = results.filter((r) => r.status === "error")
   console.log(`✅ Email sync complete. Servers: ${results.length}, attachments: ${total}, errors: ${errored.length}`)

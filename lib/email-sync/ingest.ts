@@ -112,7 +112,18 @@ async function applyResult(userId: string, result: SyncResult) {
   })
 }
 
-export async function runEmailSync(scope: { userId?: string; serverId?: string } = {}): Promise<SyncResult[]> {
+// Per-server throttle: when the cron runs, skip a server whose last sync is more recent
+// than its configured interval. Manual "Sync Now" passes respectInterval=false to bypass.
+function isThrottled(server: any): boolean {
+  if (!server.lastSyncedAt) return false
+  const intervalHours = server.syncInterval ?? 1
+  const elapsedHours = (Date.now() - new Date(server.lastSyncedAt).getTime()) / 3_600_000
+  return elapsedHours < intervalHours
+}
+
+export async function runEmailSync(
+  scope: { userId?: string; serverId?: string; respectInterval?: boolean } = {}
+): Promise<SyncResult[]> {
   const rows = await prisma.appData.findMany({
     where: { app: "email", ...(scope.userId ? { userId: scope.userId } : {}) },
     include: { user: true },
@@ -125,6 +136,7 @@ export async function runEmailSync(scope: { userId?: string; serverId?: string }
       (s: any) => s.isActive && (!scope.serverId || s.id === scope.serverId)
     )
     for (const server of servers) {
+      if (scope.respectInterval && isThrottled(server)) continue
       const result = await syncServer(server, row.user)
       await applyResult(row.userId, result)
       if (result.processed > 0) {

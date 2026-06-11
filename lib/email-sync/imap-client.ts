@@ -38,12 +38,16 @@ export const realImapClient: ImapClient = {
           subject: parsed.subject ?? undefined,
           from: parsed.from?.text,
           date: parsed.date ?? undefined,
-          attachments: (parsed.attachments || []).map((a) => ({
-            filename: a.filename || "attachment",
-            contentType: a.contentType || "application/octet-stream",
-            content: a.content as Buffer,
-            size: a.size ?? (a.content as Buffer).length,
-          })),
+          // Skip parts without real Buffer content (inline/streamed parts) so a missing
+          // `.content` can't throw on `.length` and crash the whole server's sync.
+          attachments: (parsed.attachments || [])
+            .filter((a) => Buffer.isBuffer(a.content))
+            .map((a) => ({
+              filename: a.filename || "attachment",
+              contentType: a.contentType || "application/octet-stream",
+              content: a.content as Buffer,
+              size: a.size ?? (a.content as Buffer).length,
+            })),
         })
       }
       return messages

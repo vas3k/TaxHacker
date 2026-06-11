@@ -132,4 +132,22 @@ describe("runEmailSync storage recompute guard", () => {
     await runEmailSync()
     expect(getDirectorySize).toHaveBeenCalledTimes(1)
   })
+
+  it("cron run (respectInterval) skips a server still within its syncInterval", async () => {
+    vi.mocked(prisma.appData.findMany).mockResolvedValue([
+      { userId: "u1", user, data: { servers: [makeServer({ lastSyncedAt: new Date().toISOString(), syncInterval: 6 })] } },
+    ] as any)
+    const results = await runEmailSync({ respectInterval: true })
+    expect(realImapClient.fetchMessages).not.toHaveBeenCalled()
+    expect(results).toHaveLength(0)
+  })
+
+  it("manual sync (no respectInterval) bypasses the interval throttle", async () => {
+    vi.mocked(prisma.appData.findMany).mockResolvedValue([
+      { userId: "u1", user, data: { servers: [makeServer({ lastSyncedAt: new Date().toISOString(), syncInterval: 6 })] } },
+    ] as any)
+    vi.mocked(realImapClient.fetchMessages).mockResolvedValue([])
+    await runEmailSync({ userId: "u1" })
+    expect(realImapClient.fetchMessages).toHaveBeenCalledTimes(1)
+  })
 })
