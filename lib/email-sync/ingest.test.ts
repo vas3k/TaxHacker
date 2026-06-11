@@ -1,13 +1,19 @@
-import { beforeAll, describe, expect, it, vi } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- import-time mocks so importing ./ingest doesn't run config Zod validation or create a Prisma client ---
 vi.mock("@/lib/uploads", () => ({ ingestUnsortedFile: vi.fn() }))
-vi.mock("@/lib/db", () => ({ prisma: {} }))
-vi.mock("@/lib/files", () => ({ getDirectorySize: vi.fn(), getUserUploadsDirectory: vi.fn() }))
+vi.mock("@/lib/db", () => ({
+  prisma: { appData: { findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn() } },
+}))
+vi.mock("@/lib/files", () => ({ getDirectorySize: vi.fn(), getUserUploadsDirectory: vi.fn(() => "dir") }))
 vi.mock("@/models/users", () => ({ updateUser: vi.fn() }))
 vi.mock("@/lib/email-sync/imap-client", () => ({ realImapClient: { fetchMessages: vi.fn() } }))
 
-const { syncServer } = await import("./ingest")
+const { syncServer, runEmailSync } = await import("./ingest")
+import { prisma } from "@/lib/db"
+import { realImapClient } from "@/lib/email-sync/imap-client"
+import { getDirectorySize } from "@/lib/files"
+import { ingestUnsortedFile } from "@/lib/uploads"
 import { ImapClient, ImapMessage } from "./types"
 
 beforeAll(() => {
@@ -71,5 +77,32 @@ describe("syncServer", () => {
     expect(result.status).toBe("error")
     expect(result.errorMessage).toContain("auth failed")
     expect(result.lastProcessedUid).toBe(7)
+  })
+})
+
+describe("runEmailSync storage recompute guard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.appData.findMany).mockResolvedValue([
+      { userId: "u1", user, data: { servers: [makeServer()] } },
+    ] as any)
+    vi.mocked(prisma.appData.findUnique).mockResolvedValue({ data: { servers: [makeServer()] } } as any)
+    vi.mocked(prisma.appData.update).mockResolvedValue({} as any)
+  })
+
+  it("skips getDirectorySize when nothing was ingested (regression: ENOENT on missing uploads dir)", async () => {
+    vi.mocked(realImapClient.fetchMessages).mockResolvedValue([]) // 0 attachments
+    await runEmailSync()
+    expect(getDirectorySize).not.toHaveBeenCalled()
+  })
+
+  it("recomputes storage when at least one attachment was ingested", async () => {
+    vi.mocked(realImapClient.fetchMessages).mockResolvedValue([
+      { uid: 20, attachments: [{ filename: "a.pdf", contentType: "application/pdf", content: Buffer.from("x"), size: 1 }] },
+    ])
+    vi.mocked(ingestUnsortedFile).mockResolvedValue({ id: "f" } as any)
+    vi.mocked(getDirectorySize).mockResolvedValue(123)
+    await runEmailSync()
+    expect(getDirectorySize).toHaveBeenCalledTimes(1)
   })
 })

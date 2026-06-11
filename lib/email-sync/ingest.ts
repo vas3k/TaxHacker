@@ -102,7 +102,9 @@ export async function runEmailSync(scope: { userId?: string; serverId?: string }
     for (const server of servers) {
       const result = await syncServer(server, row.user)
       await applyResult(row.userId, result)
-      await updateUser(row.userId, { storageUsed: await getDirectorySize(getUserUploadsDirectory(row.user)) })
+      if (result.processed > 0) {
+        await updateUser(row.userId, { storageUsed: await getDirectorySize(getUserUploadsDirectory(row.user)) })
+      }
       results.push(result)
     }
   }
