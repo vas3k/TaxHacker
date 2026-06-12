@@ -36,7 +36,7 @@ This app allows you to connect to email servers and automatically monitor incomi
 ## ⚙️ **How It Works**
 
 ### Automatic Sync
-- **Cron Job**: Runs every hour (configurable per server)
+- **Cron Job**: Fires hourly, but each server is only synced once its per-server **Sync Interval** has elapsed (the app throttles; a manual "Sync Now" bypasses it)
 - **File Processing**: Only downloads attachments with allowed extensions
 - **Duplication Prevention**: Tracks highest processed IMAP UID per server; mail is fetched read-only and never marked as read
 - **Status Updates**: Updates server status and last sync time

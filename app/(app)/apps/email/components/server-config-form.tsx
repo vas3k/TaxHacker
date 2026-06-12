@@ -39,7 +39,6 @@ export function ServerConfigForm({
     allowedExtensions: server?.allowedExtensions || [".pdf", ".jpg", ".jpeg", ".png"],
     syncInterval: server?.syncInterval || 1,
     initialSince: server?.initialSince || "",
-    lastProcessedMessageId: server?.lastProcessedMessageId || "",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
