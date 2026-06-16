@@ -28,6 +28,8 @@ services:
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
+      # Must match the app's secret: it derives the key that decrypts stored mailbox passwords.
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
     volumes:
       - ./data:/app/data
       - ./etc/crontab:/etc/cron.d/email-sync:ro
@@ -38,6 +40,7 @@ services:
     command: >
       sh -c "
         apt-get update && apt-get install -y cron &&
+        printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|UPLOAD_PATH|NODE_ENV|SELF_HOSTED_MODE|BASE_URL|PATH)=' > /etc/cron.env &&
         chmod 0644 /etc/cron.d/email-sync &&
         crontab /etc/cron.d/email-sync &&
         touch /var/log/email-sync.log &&

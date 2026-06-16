@@ -142,6 +142,19 @@ describe("runEmailSync storage recompute guard", () => {
     expect(results).toHaveLength(0)
   })
 
+  it("treats syncInterval as MINUTES: a server synced 90 min ago with interval 60 is not throttled", async () => {
+    vi.mocked(prisma.appData.findMany).mockResolvedValue([
+      {
+        userId: "u1",
+        user,
+        data: { servers: [makeServer({ lastSyncedAt: new Date(Date.now() - 90 * 60_000).toISOString(), syncInterval: 60 })] },
+      },
+    ] as any)
+    vi.mocked(realImapClient.fetchMessages).mockResolvedValue([])
+    await runEmailSync({ respectInterval: true })
+    expect(realImapClient.fetchMessages).toHaveBeenCalledTimes(1)
+  })
+
   it("manual sync (no respectInterval) bypasses the interval throttle", async () => {
     vi.mocked(prisma.appData.findMany).mockResolvedValue([
       { userId: "u1", user, data: { servers: [makeServer({ lastSyncedAt: new Date().toISOString(), syncInterval: 6 })] } },

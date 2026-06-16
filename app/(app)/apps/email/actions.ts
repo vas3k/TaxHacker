@@ -13,7 +13,7 @@ const getDefaultAppData = (): EmailAppData => ({
   servers: [],
   globalSettings: {
     defaultExtensions: [".pdf", ".jpg", ".jpeg", ".png", ".docx", ".xlsx"],
-    defaultSyncInterval: 1, // 1 hour
+    defaultSyncInterval: 60, // minutes (hourly)
   },
 })
 

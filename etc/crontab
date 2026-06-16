@@ -1,15 +1,13 @@
 # Email sync crontab
-# Runs every hour to check for new emails and attachments
 # Format: minute hour day month weekday command
-
-# Run email sync every hour at minute 0
-0 * * * * cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
-
-# Run email sync every 30 minutes (alternative for more frequent checks)
-# 0,30 * * * * cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
-
-# Run email sync every 15 minutes (for testing/high-frequency)
-# */15 * * * * cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
+#
+# This is only the HEARTBEAT. It wakes every 5 minutes; runEmailSync then honors
+# each mailbox's own "Sync frequency" (set in the UI) before actually fetching.
+# So the real cadence is UI-driven; this tick is just the resolution floor.
+#
+# Cron jobs do NOT inherit the container's environment, so we source /etc/cron.env
+# (written at container start from the runtime env, see docker-compose command:).
+*/5 * * * * set -a; . /etc/cron.env; cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
 
 # Daily log rotation at midnight
-0 0 * * * find /var/log -name "email-sync.log*" -size +10M -exec rm {} \; 
+0 0 * * * find /var/log -name "email-sync.log*" -size +10M -exec rm {} \;

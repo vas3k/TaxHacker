@@ -116,9 +116,9 @@ async function applyResult(userId: string, result: SyncResult) {
 // than its configured interval. Manual "Sync Now" passes respectInterval=false to bypass.
 function isThrottled(server: any): boolean {
   if (!server.lastSyncedAt) return false
-  const intervalHours = server.syncInterval ?? 1
-  const elapsedHours = (Date.now() - new Date(server.lastSyncedAt).getTime()) / 3_600_000
-  return elapsedHours < intervalHours
+  const intervalMinutes = server.syncInterval ?? 60
+  const elapsedMinutes = (Date.now() - new Date(server.lastSyncedAt).getTime()) / 60_000
+  return elapsedMinutes < intervalMinutes
 }
 
 export async function runEmailSync(

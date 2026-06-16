@@ -20,7 +20,7 @@ export type EmailServer = {
   lastSyncedAt?: Date
   status: "connected" | "error" | "pending" | "paused"
   allowedExtensions: string[]
-  syncInterval: number // hours
+  syncInterval: number // minutes
   addedAt: string
   initialSince?: string // ISO date; bounds the first sync ("" / unset = entire mailbox)
   lastProcessedUid?: number
@@ -31,7 +31,7 @@ export type EmailAppData = {
   servers: EmailServer[]
   globalSettings: {
     defaultExtensions: string[]
-    defaultSyncInterval: number // hours
+    defaultSyncInterval: number // minutes
   }
 }
 

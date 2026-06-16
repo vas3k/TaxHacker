@@ -3,9 +3,19 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
 import { EmailProvider, EmailServer } from "../page"
 import { EMAIL_PROVIDER_PRESETS } from "../presets"
+
+const SYNC_INTERVAL_OPTIONS = [
+  { value: 15, label: "Every 15 minutes" },
+  { value: 30, label: "Every 30 minutes" },
+  { value: 60, label: "Hourly" },
+  { value: 360, label: "Every 6 hours" },
+  { value: 720, label: "Every 12 hours" },
+  { value: 1440, label: "Daily" },
+]
 
 type ServerConfigFormProps = {
   server?: EmailServer
@@ -37,7 +47,7 @@ export function ServerConfigForm({
     useSSL: server?.useSSL ?? preset?.useSSL ?? true,
     isActive: server?.isActive ?? true,
     allowedExtensions: server?.allowedExtensions || [".pdf", ".jpg", ".jpeg", ".png"],
-    syncInterval: server?.syncInterval || 1,
+    syncInterval: server?.syncInterval || 60,
     initialSince: server?.initialSince || "",
   })
 
@@ -125,21 +135,22 @@ export function ServerConfigForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="syncInterval">Sync Interval (hours)</Label>
-          <Input
-            id="syncInterval"
-            type="number"
-            min="1"
-            max="24"
-            value={formData.syncInterval}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                syncInterval: parseInt(e.target.value) || 1,
-              }))
-            }
-            placeholder="1"
-          />
+          <Label htmlFor="syncInterval">Sync frequency</Label>
+          <Select
+            value={String(formData.syncInterval)}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, syncInterval: parseInt(value) }))}
+          >
+            <SelectTrigger id="syncInterval">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SYNC_INTERVAL_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={String(opt.value)}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
