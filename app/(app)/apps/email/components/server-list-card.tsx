@@ -170,12 +170,20 @@ export function ServerListCard({ servers, onEditServer, isPending }: ServerListC
           <CardContent className="pt-0">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-4">
-                {getStatusBadge(server.status)}
-                {server.lastSync && (
-                  <span className="text-sm text-muted-foreground">
-                    Last sync: {new Date(server.lastSync).toLocaleString()}
-                  </span>
-                )}
+                <div>
+                  {getStatusBadge(server.status)}
+                  {server.status === "error" && server.errorMessage && (
+                    <p className="text-sm text-red-600 mt-1">{server.errorMessage}</p>
+                  )}
+                </div>
+                {(() => {
+                  const lastSyncValue = server.lastSyncedAt ?? server.lastSync
+                  return lastSyncValue ? (
+                    <span className="text-sm text-muted-foreground">
+                      Last sync: {new Date(lastSyncValue).toLocaleString()}
+                    </span>
+                  ) : null
+                })()}
                 <span className="text-sm text-muted-foreground">Extensions: {server.allowedExtensions.join(", ")}</span>
               </div>
               <div className="flex space-x-2">

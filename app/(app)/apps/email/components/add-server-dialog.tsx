@@ -34,7 +34,7 @@ export function AddServerDialog({ isPending }: AddServerDialogProps) {
     setStep("configuration")
   }
 
-  const handleAddServer = async (serverData: Omit<EmailServer, "id" | "status" | "lastSync">) => {
+  const handleAddServer = async (serverData: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">) => {
     const result = await addEmailServerAction(serverData)
     if (result.success) {
       toast.success("Email server added successfully")
@@ -56,7 +56,7 @@ export function AddServerDialog({ isPending }: AddServerDialogProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => (open ? setIsOpen(true) : handleClose())}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 mr-2" />

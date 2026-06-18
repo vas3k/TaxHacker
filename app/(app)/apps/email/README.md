@@ -9,7 +9,7 @@ This app allows you to connect to email servers and automatically monitor incomi
 2. Click **"Add Server"**
 3. Choose your email provider (Gmail, Outlook, etc.)
 4. Enter your email and app password
-5. Configure sync interval (default: 1 hour)
+5. Choose a sync frequency (default: Hourly — options range from every 15 minutes to daily)
 6. Set allowed file extensions (default: `.pdf`, `.jpg`, `.jpeg`, `.png`)
 
 ### 2. Email Provider Settings
@@ -36,9 +36,9 @@ This app allows you to connect to email servers and automatically monitor incomi
 ## ⚙️ **How It Works**
 
 ### Automatic Sync
-- **Cron Job**: Runs every hour (configurable per server)
+- **Cron Job**: A heartbeat fires every 5 minutes, but each server is only synced once its per-server **Sync frequency** (set in the UI, 15 min – daily) has elapsed (the app throttles; a manual "Sync Now" bypasses it). The 5-minute heartbeat is the resolution floor — the per-mailbox frequency is the real cadence.
 - **File Processing**: Only downloads attachments with allowed extensions
-- **Duplication Prevention**: Tracks last processed message ID
+- **Duplication Prevention**: Tracks highest processed IMAP UID per server; mail is fetched read-only and never marked as read
 - **Status Updates**: Updates server status and last sync time
 
 ### Manual Sync
@@ -59,16 +59,23 @@ email-sync:
     - ./etc/crontab:/etc/cron.d/email-sync:ro
   environment:
     - DATABASE_URL=postgresql://...
-  command: > 
-    sh -c "cron && tail -f /var/log/email-sync.log"
+    # Must match the app's secret — it derives the key that decrypts stored mailbox passwords.
+    - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+  command: >
+    sh -c "... && printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|...)=' > /etc/cron.env && cron && tail -f /var/log/email-sync.log"
 ```
 
 ### Cron Configuration
 File: `etc/crontab`
 ```bash
-# Run every hour
-0 * * * * cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
+# Heartbeat every 5 minutes; runEmailSync honors each mailbox's UI sync frequency before fetching.
+# Cron jobs don't inherit the container env, so we source /etc/cron.env (written at container start).
+*/5 * * * * set -a; . /etc/cron.env; cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
 ```
+
+> **Env propagation:** cron strips the environment, so the container's startup command dumps the
+> needed vars to `/etc/cron.env` and each job sources it. `BETTER_AUTH_SECRET` **must** match the
+> app's — otherwise stored mailbox passwords can't be decrypted and every sync fails.
 
 ## 📊 **Data Storage**
 
@@ -85,7 +92,7 @@ File: `etc/crontab`
 
 ### Sync Status
 - `lastSyncedAt`: When server was last checked
-- `lastProcessedMessageId`: Last email processed (prevents duplicates)
+- `lastProcessedUid`: Highest IMAP UID processed per server (prevents duplicates; mail is never marked as read)
 - `status`: `connected`, `error`, `pending`, `paused`
 
 ## 🔧 **Commands**
@@ -114,13 +121,13 @@ docker exec taxhacker_email_sync crontab -l
 - Test connection using "Test Connection" button
 
 ### No Emails Found
-- Check if sync interval has passed since last sync
-- Verify email server has new unread emails
+- Check if the sync frequency has elapsed since the last sync
+- Verify the mailbox has new messages (above the last processed UID) carrying attachments — fetch is read-only and does not depend on unread status
 - Check allowed file extensions match your attachments
 - Review logs: `docker logs taxhacker_email_sync`
 
 ### Performance
-- Default sync interval is 1 hour - reduce if needed
+- Default sync frequency is Hourly — pick a shorter one (down to every 15 min) in the UI if needed
 - Large attachments may take time to download
 - Monitor storage usage for attachment files
 
@@ -133,7 +140,8 @@ Email sync logs are available:
 
 ## 🔒 **Security**
 
-- **Passwords**: Stored encrypted in database
+- **Passwords**: Stored **encrypted at rest (AES-256-GCM)**, with the key derived from the `BETTER_AUTH_SECRET` environment variable. Decrypted only at sync/connection-test time.
+  - ⚠️ **Rotating `BETTER_AUTH_SECRET` invalidates stored mailbox passwords.** After changing it, re-enter each server's password (the server shows a decryption error until you do).
 - **IMAP SSL**: Enabled by default for all preset providers
 - **Access Control**: Each user can only access their own email servers
 - **App Passwords**: Recommended for all providers supporting them 

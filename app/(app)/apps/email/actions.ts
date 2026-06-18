@@ -1,6 +1,9 @@
 "use server"
 
 import { getCurrentUser } from "@/lib/auth"
+import { encryptSecret, decryptSecret } from "@/lib/encryption"
+import { testImapConnection } from "@/lib/email-sync/imap-client"
+import { runEmailSync } from "@/lib/email-sync/ingest"
 import { getAppData, setAppData } from "@/models/apps"
 import { randomUUID } from "crypto"
 import { revalidatePath } from "next/cache"
@@ -10,12 +13,12 @@ const getDefaultAppData = (): EmailAppData => ({
   servers: [],
   globalSettings: {
     defaultExtensions: [".pdf", ".jpg", ".jpeg", ".png", ".docx", ".xlsx"],
-    defaultSyncInterval: 1, // 1 hour
+    defaultSyncInterval: 60, // minutes (hourly)
   },
 })
 
 export async function addEmailServerAction(
-  serverData: Omit<EmailServer, "id" | "status" | "lastSync">
+  serverData: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser()
@@ -27,6 +30,8 @@ export async function addEmailServerAction(
       id: randomUUID(),
       status: "pending",
       lastSync: undefined,
+      addedAt: new Date().toISOString(),
+      password: encryptSecret(serverData.password),
     }
 
     const updatedData: EmailAppData = {
@@ -56,8 +61,15 @@ export async function updateEmailServerAction(
       return { success: false, error: "No email servers found" }
     }
 
+    const patch = { ...serverData }
+    if (typeof patch.password === "string" && patch.password.length > 0) {
+      patch.password = encryptSecret(patch.password)
+    } else {
+      delete patch.password
+    }
+
     const updatedServers = appData.servers.map((server) =>
-      server.id === serverId ? { ...server, ...serverData } : server
+      server.id === serverId ? { ...server, ...patch } : server
     )
 
     const updatedData: EmailAppData = {
@@ -103,30 +115,36 @@ export async function deleteEmailServerAction(serverId: string): Promise<{ succe
 
 export async function testEmailConnectionAction(serverId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Mock implementation - in real app this would test IMAP connection
-    await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulate connection test
-
     const user = await getCurrentUser()
     const appData = (await getAppData(user, "email")) as EmailAppData | null
+    if (!appData) return { success: false, error: "No email servers found" }
+    const server = appData.servers.find((s) => s.id === serverId)
+    if (!server) return { success: false, error: "Server not found" }
 
-    if (!appData) {
-      return { success: false, error: "No email servers found" }
+    let status: EmailServer["status"] = "connected"
+    let errorMessage: string | undefined
+    try {
+      await testImapConnection({
+        user: server.username,
+        password: decryptSecret(server.password),
+        host: server.host,
+        port: server.port,
+        tls: server.useSSL,
+      })
+    } catch (e) {
+      status = "error"
+      errorMessage = e instanceof Error ? e.message : String(e)
     }
-
-    // Update server status
-    const updatedServers = appData.servers.map((server) =>
-      server.id === serverId ? { ...server, status: "connected" as const, lastSync: new Date() } : server
-    )
 
     const updatedData: EmailAppData = {
       ...appData,
-      servers: updatedServers,
+      servers: appData.servers.map((s) =>
+        s.id === serverId ? { ...s, status, errorMessage, lastSync: new Date() } : s
+      ),
     }
-
     await setAppData(user, "email", updatedData)
     revalidatePath("/apps/email")
-
-    return { success: true }
+    return status === "connected" ? { success: true } : { success: false, error: errorMessage }
   } catch (error) {
     console.error("Error testing email connection:", error)
     return { success: false, error: "Connection test failed" }
@@ -135,29 +153,11 @@ export async function testEmailConnectionAction(serverId: string): Promise<{ suc
 
 export async function syncEmailNowAction(serverId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Mock implementation - in real app this would trigger email sync
-    await new Promise((resolve) => setTimeout(resolve, 2000)) // Simulate sync
-
     const user = await getCurrentUser()
-    const appData = (await getAppData(user, "email")) as EmailAppData | null
-
-    if (!appData) {
-      return { success: false, error: "No email servers found" }
-    }
-
-    // Update last sync time
-    const updatedServers = appData.servers.map((server) =>
-      server.id === serverId ? { ...server, lastSync: new Date() } : server
-    )
-
-    const updatedData: EmailAppData = {
-      ...appData,
-      servers: updatedServers,
-    }
-
-    await setAppData(user, "email", updatedData)
+    const results = await runEmailSync({ userId: user.id, serverId })
     revalidatePath("/apps/email")
-
+    const failed = results.find((r) => r.status === "error")
+    if (failed) return { success: false, error: failed.errorMessage || "Sync failed" }
     return { success: true }
   } catch (error) {
     console.error("Error syncing emails:", error)

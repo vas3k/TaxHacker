@@ -3,14 +3,24 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
 import { EmailProvider, EmailServer } from "../page"
 import { EMAIL_PROVIDER_PRESETS } from "../presets"
 
+const SYNC_INTERVAL_OPTIONS = [
+  { value: 15, label: "Every 15 minutes" },
+  { value: 30, label: "Every 30 minutes" },
+  { value: 60, label: "Hourly" },
+  { value: 360, label: "Every 6 hours" },
+  { value: 720, label: "Every 12 hours" },
+  { value: 1440, label: "Daily" },
+]
+
 type ServerConfigFormProps = {
   server?: EmailServer
   selectedProvider?: EmailProvider | null
-  onSubmit: (data: Omit<EmailServer, "id" | "status" | "lastSync">) => void
+  onSubmit: (data: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">) => void
   onCancel: () => void
   onBack?: () => void
   isPending: boolean
@@ -33,12 +43,12 @@ export function ServerConfigForm({
     host: server?.host || preset?.host || "",
     port: server?.port || preset?.port || 993,
     username: server?.username || "",
-    password: server?.password || "",
+    password: "",
     useSSL: server?.useSSL ?? preset?.useSSL ?? true,
     isActive: server?.isActive ?? true,
     allowedExtensions: server?.allowedExtensions || [".pdf", ".jpg", ".jpeg", ".png"],
-    syncInterval: server?.syncInterval || 1,
-    lastProcessedMessageId: server?.lastProcessedMessageId || "",
+    syncInterval: server?.syncInterval || 60,
+    initialSince: server?.initialSince || "",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -91,14 +101,17 @@ export function ServerConfigForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password/App Password</Label>
+          <Label htmlFor="password">
+            Password/App Password
+            {server && <span className="ml-1 text-xs text-muted-foreground">(leave blank to keep current)</span>}
+          </Label>
           <Input
             id="password"
             type="password"
             value={formData.password}
             onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
             placeholder="Your app password"
-            required
+            required={!server}
           />
         </div>
       </div>
@@ -122,22 +135,36 @@ export function ServerConfigForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="syncInterval">Sync Interval (hours)</Label>
-          <Input
-            id="syncInterval"
-            type="number"
-            min="1"
-            max="24"
-            value={formData.syncInterval}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                syncInterval: parseInt(e.target.value) || 1,
-              }))
-            }
-            placeholder="1"
-          />
+          <Label htmlFor="syncInterval">Sync frequency</Label>
+          <Select
+            value={String(formData.syncInterval)}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, syncInterval: parseInt(value) }))}
+          >
+            <SelectTrigger id="syncInterval">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SYNC_INTERVAL_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={String(opt.value)}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="initialSince">
+          Fetch emails since
+          <span className="ml-1 text-xs text-muted-foreground">(blank = entire mailbox; only applies to the first sync)</span>
+        </Label>
+        <Input
+          id="initialSince"
+          type="date"
+          value={formData.initialSince}
+          onChange={(e) => setFormData((prev) => ({ ...prev, initialSince: e.target.value }))}
+        />
       </div>
 
       <div className="flex justify-between pt-4">

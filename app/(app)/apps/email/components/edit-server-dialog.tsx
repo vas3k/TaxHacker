@@ -14,7 +14,7 @@ type EditServerDialogProps = {
 }
 
 export function EditServerDialog({ server, isOpen, onClose, isPending }: EditServerDialogProps) {
-  const handleUpdateServer = async (serverData: Omit<EmailServer, "id" | "status" | "lastSync">) => {
+  const handleUpdateServer = async (serverData: Omit<EmailServer, "id" | "status" | "lastSync" | "addedAt">) => {
     if (!server) return
 
     const result = await updateEmailServerAction(server.id, serverData)

@@ -20,15 +20,18 @@ export type EmailServer = {
   lastSyncedAt?: Date
   status: "connected" | "error" | "pending" | "paused"
   allowedExtensions: string[]
-  syncInterval: number // hours
-  lastProcessedMessageId?: string
+  syncInterval: number // minutes
+  addedAt: string
+  initialSince?: string // ISO date; bounds the first sync ("" / unset = entire mailbox)
+  lastProcessedUid?: number
+  errorMessage?: string
 }
 
 export type EmailAppData = {
   servers: EmailServer[]
   globalSettings: {
     defaultExtensions: string[]
-    defaultSyncInterval: number // hours
+    defaultSyncInterval: number // minutes
   }
 }
 
@@ -36,6 +39,10 @@ export default async function EmailApp() {
   const user = await getCurrentUser()
   const settings = await getSettings(user.id)
   const appData = (await getAppData(user, "email")) as EmailAppData | null
+
+  const sanitizedAppData = appData
+    ? { ...appData, servers: appData.servers.map((s) => ({ ...s, password: "" })) }
+    : null
 
   return (
     <div>
@@ -46,7 +53,7 @@ export default async function EmailApp() {
           </span>
         </h2>
       </header>
-      <EmailServerManager user={user} settings={settings} appData={appData} />
+      <EmailServerManager user={user} settings={settings} appData={sanitizedAppData} />
     </div>
   )
 }
