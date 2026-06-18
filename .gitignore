@@ -56,3 +56,6 @@ pgdata
 *.db-journal
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Local git worktrees
+.worktrees/

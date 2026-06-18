@@ -1,9 +1,11 @@
-import { User } from "@/prisma/client"
-import { mkdir } from "fs/promises"
+import { File as PrismaFile, User } from "@/prisma/client"
+import { createFile } from "@/models/files"
+import { randomUUID } from "crypto"
+import { mkdir, writeFile } from "fs/promises"
 import path from "path"
 import sharp from "sharp"
 import config from "./config"
-import { getStaticDirectory, isEnoughStorageToUploadFile, safePathJoin } from "./files"
+import { getStaticDirectory, getUserUploadsDirectory, isEnoughStorageToUploadFile, safePathJoin, unsortedFilePath } from "./files"
 
 export async function uploadStaticImage(
   user: User,
@@ -57,4 +59,28 @@ export async function uploadStaticImage(
   }
 
   return uploadFilePath
+}
+
+export async function ingestUnsortedFile(
+  user: User,
+  input: { buffer: Buffer; filename: string; mimetype: string; metadata?: Record<string, unknown> }
+): Promise<PrismaFile> {
+  if (!isEnoughStorageToUploadFile(user, input.buffer.length)) {
+    throw new Error("Not enough space to upload the file")
+  }
+
+  const fileUuid = randomUUID()
+  const relativeFilePath = unsortedFilePath(fileUuid, input.filename)
+  const fullFilePath = safePathJoin(getUserUploadsDirectory(user), relativeFilePath)
+
+  await mkdir(path.dirname(fullFilePath), { recursive: true })
+  await writeFile(fullFilePath, input.buffer)
+
+  return await createFile(user.id, {
+    id: fileUuid,
+    filename: input.filename,
+    path: relativeFilePath,
+    mimetype: input.mimetype,
+    metadata: { size: input.buffer.length, ...input.metadata },
+  })
 }
