@@ -57,10 +57,10 @@ export const PLANS: Record<string, Plan> = {
   early_monthly: {
     code: "early_monthly",
     name: "Early Adopter",
-    description: "Monthly plan for our first users who can forgive us bugs and childish problems :)",
+    description: "Monthly plan for our first beloved users",
     benefits: [
       "Special price for early adopters",
-      "512 Mb of storage",
+      "1 GB of storage",
       "1000 AI file analyses per month",
       "Unlimited transactions",
       "Unlimited fields, categories and projects",
@@ -68,7 +68,7 @@ export const PLANS: Record<string, Plan> = {
     price: "€10/month",
     stripePriceId: "price_1TjxlsAs8DS4NhOzicshNQjq",
     limits: {
-      storage: 512 * 1024 * 1024,
+      storage: 1024 * 1024 * 1024,
       ai: 1000,
     },
     isAvailable: true,
