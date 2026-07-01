@@ -1,0 +1,63 @@
+version: 2
+
+updates:
+  # npm dependencies — keep package.json and package-lock.json in sync
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Jakarta
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    cooldown:
+      default-days: 7
+    groups:
+      # Minor + patch updates land in a single PR to reduce noise
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+      # Major bumps are grouped separately so they get reviewed intentionally
+      major:
+        update-types:
+          - major
+
+  # GitHub Actions used in workflows
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(ci)
+      include: scope
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        update-types:
+          - minor
+          - patch
+
+  # Dockerfile base images
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(docker)
+      include: scope
+    cooldown:
+      default-days: 7
