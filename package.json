@@ -40,7 +40,7 @@
     "@types/mailparser": "^3.4.6",
     "@types/mime-types": "^2.1.4",
     "@types/sharp": "^0.31.1",
-    "better-auth": "^1.2.10",
+    "better-auth": "^1.6.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
