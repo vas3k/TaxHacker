@@ -61,7 +61,7 @@
     "sharp": "^0.33.5",
     "slugify": "^1.6.6",
     "sonner": "^2.0.1",
-    "stripe": "^18.0.0",
+    "stripe": "^22.2.3",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.4.3"
