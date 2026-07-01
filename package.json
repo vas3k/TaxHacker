@@ -47,7 +47,7 @@
     "imap-simple": "^5.1.0",
     "jszip": "^3.10.1",
     "langchain": "^1.5.2",
-    "lucide-react": "^0.475.0",
+    "lucide-react": "^1.21.0",
     "mailparser": "^3.9.9",
     "mime-types": "^3.0.2",
     "next": "^16.2.9",
