@@ -1,14 +1,13 @@
 version: 2
 
 updates:
-  # npm dependencies — keep package.json and package-lock.json in sync
+  # npm dependencies — group by domain so each PR touches one concern
   - package-ecosystem: npm
     directory: "/"
+    target-branch: main
     schedule:
       interval: weekly
       day: monday
-      time: "09:00"
-      timezone: Asia/Jakarta
     versioning-strategy: increase
     open-pull-requests-limit: 10
     commit-message:
@@ -17,24 +16,74 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      # Minor + patch updates land in a single PR to reduce noise
-      minor-and-patch:
-        update-types:
-          - minor
-          - patch
-      # Major bumps are grouped separately so they get reviewed intentionally
-      major:
-        update-types:
-          - major
+      nextjs:
+        patterns:
+          - next
+          - next-themes
+          - eslint-config-next
+      react:
+        patterns:
+          - react
+          - react-dom
+          - react-day-picker
+          - react-resizable-panels
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      langchain:
+        patterns:
+          - langchain
+          - "@langchain/*"
+      prisma:
+        patterns:
+          - prisma
+          - "@prisma/client"
+      styling:
+        patterns:
+          - tailwindcss
+          - tailwind-merge
+          - tailwindcss-animate
+          - class-variance-authority
+          - clsx
+          - postcss
+      email:
+        patterns:
+          - imap-simple
+          - mailparser
+          - resend
+      pdf:
+        patterns:
+          - "@react-pdf/renderer"
+          - pdf2pic
+      dnd-kit:
+        patterns:
+          - "@dnd-kit/*"
+      testing:
+        patterns:
+          - vitest
+          - "@vitest/*"
+      linting:
+        patterns:
+          - eslint*
+          - "@eslint/*"
+      typescript:
+        patterns:
+          - typescript
+          - "@types/*"
+      sentry:
+        patterns:
+          - "@sentry/*"
+      payments:
+        patterns:
+          - stripe
 
   # GitHub Actions used in workflows
   - package-ecosystem: github-actions
     directory: "/"
+    target-branch: main
     schedule:
       interval: weekly
       day: monday
-      time: "09:00"
-      timezone: Asia/Jakarta
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(ci)
@@ -42,19 +91,18 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      actions:
-        update-types:
-          - minor
-          - patch
+      github-actions:
+        patterns:
+          - actions/*
+          - docker/*
 
-  # Dockerfile base images
+  # Dockerfile base image
   - package-ecosystem: docker
     directory: "/"
+    target-branch: main
     schedule:
       interval: weekly
       day: monday
-      time: "09:00"
-      timezone: Asia/Jakarta
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(docker)
