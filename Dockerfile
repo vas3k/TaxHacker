@@ -6,6 +6,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # ── Dependencies (cached unless package.json or prisma schema changes) ──
 FROM base AS deps
+ENV NODE_ENV=development
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends openssl
