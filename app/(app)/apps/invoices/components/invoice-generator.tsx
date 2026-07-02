@@ -115,7 +115,7 @@ export function InvoiceGenerator({
       const pdfBuffer = await generateInvoicePDF(formData)
 
       // Create a blob from the buffer
-      const blob = new Blob([pdfBuffer], { type: "application/pdf" })
+      const blob = new Blob([pdfBuffer as BlobPart], { type: "application/pdf" })
 
       // Create a URL for the blob
       const url = URL.createObjectURL(blob)
@@ -222,7 +222,7 @@ export function InvoiceGenerator({
             <Button
               variant={selectedTemplate === template.name ? "default" : "outline"}
               className={`
-                  whitespace-nowrap p-4 
+                  whitespace-nowrap p-4
                   ${selectedTemplate === template.name ? "bg-black hover:bg-gray-900" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
                 `}
               onClick={() => handleTemplateSelect(template.name)}
