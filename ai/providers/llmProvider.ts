@@ -111,10 +111,95 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
       ...(error?.error ? { body: error.error } : {}),
     })
 
+    const isVisionError =
+      detail.includes("content.type") ||
+      (detail.includes("image_url") && detail.includes("not supported"))
+
+    const visionHint = isVisionError
+      ? " — This model does not support image input. Use a vision-capable model or test the provider in Settings."
+      : ""
+
     return {
       output: {},
       provider: config.provider,
-      error: `${detail}${status}${body}`,
+      error: `${detail}${status}${body}${visionHint}`,
+    }
+  }
+}
+
+export interface LLMTestResult {
+  success: boolean
+  supportsVision: boolean
+  message: string
+}
+
+const TINY_TEST_IMAGE_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+
+export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult> {
+  try {
+    const temperature = 0
+    let model: any
+    if (config.provider === "openai") {
+      model = new ChatOpenAI({ apiKey: config.apiKey, model: config.model, temperature })
+    } else if (config.provider === "google") {
+      model = new ChatGoogleGenerativeAI({ apiKey: config.apiKey, model: config.model, temperature })
+    } else if (config.provider === "mistral") {
+      model = new ChatMistralAI({ apiKey: config.apiKey, model: config.model, temperature })
+    } else if (config.provider === "openai_compatible") {
+      model = new ChatOpenAI({
+        apiKey: config.apiKey || "not-needed",
+        model: config.model,
+        temperature,
+        configuration: { baseURL: config.baseUrl?.trim() },
+      })
+    } else {
+      return { success: false, supportsVision: false, message: `Unknown provider: ${config.provider}` }
+    }
+
+    const messages: BaseMessage[] = [
+      new HumanMessage({
+        content: [
+          { type: "text", text: "Reply with the single word: ok" },
+          { type: "image_url", image_url: { url: `data:image/png;base64,${TINY_TEST_IMAGE_BASE64}` } },
+        ],
+      }),
+    ]
+
+    const raw = await model.invoke(messages)
+    const text =
+      typeof raw.content === "string"
+        ? raw.content
+        : Array.isArray(raw.content)
+          ? raw.content.map((c: any) => c.text || "").join("")
+          : ""
+
+    return {
+      success: true,
+      supportsVision: true,
+      message: `Model responded: "${text.trim().slice(0, 100)}"`,
+    }
+  } catch (error: any) {
+    const causeMsg = error?.cause instanceof Error ? error.cause.message : error?.cause ? String(error.cause) : null
+    const combined = [error?.message, causeMsg].filter(Boolean).join(" | ")
+
+    const isVisionRejection =
+      combined.includes("content.type") ||
+      combined.includes("image_url") ||
+      combined.includes("image") && combined.includes("not supported")
+
+    if (isVisionRejection) {
+      return {
+        success: false,
+        supportsVision: false,
+        message: "This model does not support image input. Invoice analysis requires a vision-capable model.",
+      }
+    }
+
+    return {
+      success: false,
+      supportsVision: false,
+      message: `Connection failed: ${combined}`,
     }
   }
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { fieldsToJsonSchema } from "@/ai/schema"
-import { saveSettingsAction } from "@/app/(app)/settings/actions"
+import { saveSettingsAction, testLLMProviderAction } from "@/app/(app)/settings/actions"
 import { FormError } from "@/components/forms/error"
 import { FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Field } from "@/prisma/client"
 import type { DragEndEvent } from "@dnd-kit/core"
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { CircleCheckBig, Edit, GripVertical } from "lucide-react"
+import { CircleCheckBig, Edit, GripVertical, Loader2, Plug, X } from "lucide-react"
 import Link from "next/link"
 import { useActionState, useState } from "react"
 
@@ -175,11 +175,34 @@ type SortableProviderBlockProps = {
   handleValueChange: (providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) => void
 }
 
+type TestState = {
+  status: "idle" | "testing" | "success" | "error"
+  message?: string
+}
+
 function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange }: SortableProviderBlockProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const [testState, setTestState] = useState<TestState>({ status: "idle" })
 
   const provider = PROVIDERS.find((p) => p.key === providerKey)
   if (!provider) return null
+
+  async function handleTest() {
+    setTestState({ status: "testing" })
+    try {
+      const result = await testLLMProviderAction(providerKey, value.apiKey, value.model, value.baseUrl || undefined)
+      setTestState({
+        status: result.success ? "success" : "error",
+        message: result.message,
+      })
+    } catch (error) {
+      setTestState({
+        status: "error",
+        message: error instanceof Error ? error.message : "Test failed unexpectedly",
+      })
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -201,6 +224,21 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           <GripVertical className="w-5 h-5 text-muted-foreground" />
         </span>
         <span className="font-semibold">{provider.label}</span>
+        <span className="text-xs text-muted-foreground">#{idx + 1}</span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleTest}
+          disabled={testState.status === "testing" || !value.model}
+          className="ml-auto h-7 text-xs"
+        >
+          {testState.status === "testing" ? (
+            <><Loader2 className="w-3 h-3 animate-spin" /> Testing...</>
+          ) : (
+            <><Plug className="w-3 h-3" /> Test</>
+          )}
+        </Button>
       </div>
       <div className="flex flex-row gap-4 items-center">
         <input
@@ -229,6 +267,16 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           className="w-full border rounded px-2 py-1"
           placeholder="Base URL (e.g. http://localhost:11434/v1)"
         />
+      )}
+      {testState.status === "success" && (
+        <p className="text-sm text-green-600 flex flex-row items-center gap-1">
+          <CircleCheckBig className="w-4 h-4 flex-shrink-0" /> {testState.message}
+        </p>
+      )}
+      {testState.status === "error" && (
+        <p className="text-sm text-red-500 flex flex-row items-start gap-1">
+          <X className="w-4 h-4 flex-shrink-0 mt-0.5" /> {testState.message}
+        </p>
       )}
       {provider.apiDoc && (
         <small className="text-muted-foreground">

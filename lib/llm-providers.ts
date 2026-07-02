@@ -61,7 +61,7 @@ export const PROVIDERS: ProviderMeta[] = [
   },
   {
     key: "openai_compatible",
-    label: "Ollama, LM Studio, vLLM, LocalAI",
+    label: "OpenAI-compatible (Ollama, vLLM, z.ai, etc.)",
     apiKeyName: "openai_compatible_api_key",
     modelName: "openai_compatible_model_name",
     defaultModelName: "",
@@ -72,7 +72,7 @@ export const PROVIDERS: ProviderMeta[] = [
     placeholder: "(optional)",
     help: {
       url: "https://github.com/ollama/ollama/blob/main/docs/openai.md",
-      label: "Any OpenAI Compatible API endpoints",
+      label: "Any OpenAI-compatible API endpoint (z.ai, Ollama, vLLM, LM Studio, etc.)",
     },
     logo: "/logo/openai.svg",
   },

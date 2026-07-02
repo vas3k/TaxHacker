@@ -12,6 +12,7 @@ import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { uploadStaticImage } from "@/lib/uploads"
 import { codeFromName, randomHexColor } from "@/lib/utils"
+import { LLMConfig, LLMProvider, testLLMProvider } from "@/ai/providers/llmProvider"
 import { createCategory, deleteCategory, updateCategory } from "@/models/categories"
 import { createCurrency, deleteCurrency, updateCurrency } from "@/models/currencies"
 import { createField, deleteField, updateField } from "@/models/fields"
@@ -42,6 +43,21 @@ export async function saveSettingsAction(
 
   revalidatePath("/settings")
   return { success: true }
+}
+
+export async function testLLMProviderAction(
+  provider: string,
+  apiKey: string,
+  model: string,
+  baseUrl?: string
+): Promise<{ success: boolean; supportsVision: boolean; message: string }> {
+  const config: LLMConfig = {
+    provider: provider as LLMProvider,
+    apiKey,
+    model,
+    baseUrl,
+  }
+  return testLLMProvider(config)
 }
 
 export async function saveProfileAction(
