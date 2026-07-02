@@ -68,7 +68,7 @@ export default async function AI() {
       </p>
       <p className="text-gray-700 leading-relaxed mb-6">
         We store <strong>structured outputs</strong> from the AI (e.g., parsed fields, categorization) in your account
-        for future use. We do <strong>not</strong> store raw AI prompts or responses beyond what's necessary to populate
+        for future use. We do <strong>not</strong> store raw AI prompts or responses beyond what&#39;s necessary to populate
         your data.
       </p>
 

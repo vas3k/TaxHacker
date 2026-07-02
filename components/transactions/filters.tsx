@@ -21,7 +21,7 @@ export function TransactionSearchAndFilters({
 }) {
   const [filters, setFilters] = useTransactionFilters()
 
-  const handleFilterChange = (name: keyof TransactionFilters, value: any) => {
+  const handleFilterChange = (name: keyof TransactionFilters, value: string | number | boolean | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [name]: value,
@@ -86,8 +86,8 @@ export function TransactionSearchAndFilters({
             to: filters.dateTo ? new Date(filters.dateTo) : undefined,
           }}
           onChange={(date) => {
-            handleFilterChange("dateFrom", date ? date.from : undefined)
-            handleFilterChange("dateTo", date ? date.to : undefined)
+            handleFilterChange("dateFrom", date?.from ? date.from.toISOString() : undefined)
+            handleFilterChange("dateTo", date?.to ? date.to.toISOString() : undefined)
           }}
         />
 
