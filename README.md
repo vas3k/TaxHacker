@@ -12,7 +12,7 @@
 
 </div>
 
-> [!NOTE]  
+> [!NOTE]
 > ☝️ I'm currently looking for a job! Particularly interested in companies in Berlin or remote positions in Germany. Here's [my CV](https://raw.githubusercontent.com/vas3k/vas3k/master/cv.pdf) and [Linkedin profile](https://www.linkedin.com/in/vas3k/). Thank you 🙏
 
 TaxHacker is a self-hosted accounting app designed for freelancers, indie-hackers, and small businesses who want to save time and automate expense and income tracking using the power of modern AI.
@@ -120,16 +120,29 @@ TaxHacker can be easily self-hosted on your own infrastructure for complete cont
 ```bash
 curl -O https://raw.githubusercontent.com/vas3k/TaxHacker/main/docker-compose.yml
 
+# Create a .env file with your secrets (compose will refuse to start without these)
+cat > .env <<EOF
+POSTGRES_PASSWORD=$(openssl rand -hex 24)
+BETTER_AUTH_SECRET=$(openssl rand -hex 32)
+EOF
+
 docker compose up
 ```
 
+> [!IMPORTANT]
+> **Set strong passwords before first launch.** The compose file requires
+> `POSTGRES_PASSWORD` and `BETTER_AUTH_SECRET` — it will refuse to start without
+> them. Generate strong values with `openssl rand -hex 32`.
+> If you need to change the Postgres password on an existing volume, run
+> `docker compose exec postgres psql -U postgres -c "ALTER USER postgres PASSWORD 'newpass'"`.
+
 The Docker Compose setup includes:
 
-- TaxHacker application container
+- TaxHacker application container (bound to `127.0.0.1` — use a reverse proxy for remote access)
 - PostgreSQL 17+ database (or connect to your existing database)
 - Automatic database migrations on startup
 - Volume mounts for persistent data storage
-- Production-ready configuration
+- `no-new-privileges` security option on all containers
 
 New Docker images are automatically built and published with every release. You can use specific version tags (e.g., `v1.0.0`) or `latest` for the most recent version.
 
@@ -142,14 +155,16 @@ services:
   app:
     image: ghcr.io/vas3k/taxhacker:latest
     ports:
-      - "7331:7331"
+      - "127.0.0.1:7331:7331"
     environment:
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
-      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/taxhacker
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-taxhacker}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
 ```
 
 ### Environment Variables
@@ -160,11 +175,14 @@ Configure TaxHacker for your specific needs with these environment variables:
 |----------|----------|-------------|---------|
 | `UPLOAD_PATH` | Yes | Local directory for file uploads and storage | `./data/uploads` |
 | `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://user@localhost:5432/taxhacker` |
+| `POSTGRES_PASSWORD` | Yes (compose) | Password for the bundled Postgres — used in both `POSTGRES_PASSWORD` and `DATABASE_URL` | output of `openssl rand -hex 24` |
+| `POSTGRES_USER` | No (compose) | Database user (defaults to `postgres`) | `postgres` |
+| `POSTGRES_DB` | No (compose) | Database name (defaults to `taxhacker`) | `taxhacker` |
+| `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | output of `openssl rand -hex 32` |
 | `PORT` | No | Port to run the application on | `7331` (default) |
 | `BASE_URL` | No | Base URL for the application | `http://localhost:7331` |
 | `SELF_HOSTED_MODE` | No | Set to "true" for self-hosting: enables auto-login, custom API keys, and additional features | `true` |
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
-| `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | `your-secure-random-key` |
 
 
 ## ⌨️ Local Development

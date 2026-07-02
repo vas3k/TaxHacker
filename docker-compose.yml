@@ -2,17 +2,19 @@ services:
   app:
     image: ghcr.io/vas3k/taxhacker:latest
     ports:
-      - "7331:7331"
+      - "127.0.0.1:7331:7331"
     environment:
       - NODE_ENV=production
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-taxhacker}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
     depends_on:
       - postgres
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: "local"
       options:
@@ -25,9 +27,9 @@ services:
       - NODE_ENV=production
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-taxhacker}
       # Must match the app's secret: it derives the key that decrypts stored mailbox passwords.
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in your .env file}
     volumes:
       - ./data:/app/data
       - ./etc/crontab:/etc/cron.d/email-sync:ro
@@ -35,9 +37,10 @@ services:
     depends_on:
       - postgres
       - app
+    security_opt:
+      - no-new-privileges:true
     command: >
       sh -c "
-        apt-get update && apt-get install -y cron &&
         printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|UPLOAD_PATH|NODE_ENV|SELF_HOSTED_MODE|BASE_URL|PATH)=' > /etc/cron.env &&
         chmod 0644 /etc/cron.d/email-sync &&
         crontab /etc/cron.d/email-sync &&
@@ -54,12 +57,14 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=taxhacker
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your .env file}
+      - POSTGRES_DB=${POSTGRES_DB:-taxhacker}
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: "local"
       options:
