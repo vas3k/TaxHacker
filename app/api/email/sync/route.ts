@@ -2,7 +2,7 @@ import { fetchEmails } from "@/app/(app)/apps/email/scripts/fetch-emails"
 import { getCurrentUser } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Verify user is authenticated
     const user = await getCurrentUser()
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verify user is authenticated
     const user = await getCurrentUser()
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       methods: ["POST"],
       description: "Trigger manual email synchronization",
     })
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: "Failed to get sync status" }, { status: 500 })
   }
 }

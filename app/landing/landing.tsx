@@ -306,7 +306,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Download full data archive to migrate to another service. We don't take away or limit what you do with
+                  Download full data archive to migrate to another service. We don&#39;t take away or limit what you do with
                   your data
                 </li>
               </ul>
@@ -377,7 +377,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700 mb-8">
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🎯</span>
-                  SaaS version if you don't want to hassle with own servers and deployments
+                  SaaS version if you don&#39;t want to hassle with own servers and deployments
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🤖</span>
