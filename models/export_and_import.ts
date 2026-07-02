@@ -116,14 +116,14 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
 
       try {
         return formatDate(value, "yyyy-MM-dd")
-      } catch (error) {
+      } catch (_error) {
         return null
       }
     },
     import: async function (userId: string, value: string) {
       try {
         return new Date(value)
-      } catch (error) {
+      } catch (_error) {
         return null
       }
     },

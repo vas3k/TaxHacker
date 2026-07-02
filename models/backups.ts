@@ -301,7 +301,7 @@ function preprocessRowData(row: Record<string, any>): Record<string, any> {
       try {
         processedRow[key] = JSON.parse(value)
         continue
-      } catch (e) {
+      } catch (_e) {
         // Not valid JSON, continue with normal processing
       }
     }
