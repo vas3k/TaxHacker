@@ -221,7 +221,7 @@ export const FormDate = ({
               onChange={handleManualInputChange}
               className="text-center"
             />
-            <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus {...props} />
+            <Calendar mode="single" selected={date} onSelect={handleDateSelect} autoFocus {...props} />
           </PopoverContent>
         </Popover>
       </div>
