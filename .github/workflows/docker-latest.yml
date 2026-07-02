@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: docker-latest-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-push:
     name: Build and Push to GHCR
@@ -16,6 +20,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
