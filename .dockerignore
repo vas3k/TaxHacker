@@ -2,6 +2,7 @@
 .github
 node_modules
 .next
+prisma/client
 *.log
 .env*
 .DS_Store

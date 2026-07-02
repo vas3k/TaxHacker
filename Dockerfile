@@ -22,7 +22,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Generate the Prisma client (needs prisma.config.ts, present only after the COPY above)
+# Generate the Prisma client (needs prisma.config.ts, present only after the COPY above;
+# also regenerates in case COPY brought in a stale local client)
 RUN npx prisma generate
 
 # Build the application
