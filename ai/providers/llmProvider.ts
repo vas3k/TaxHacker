@@ -95,10 +95,26 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
       provider: config.provider,
     }
   } catch (error: any) {
+    const cause = error?.cause
+    const causeMsg = cause instanceof Error ? cause.message : cause ? String(cause) : null
+    const status = error?.status ? ` (HTTP ${error.status})` : ""
+    const body = error?.error ? ` ${JSON.stringify(error.error)}` : ""
+    const detail = [
+      error instanceof Error ? error.message : `${config.provider} request failed`,
+      causeMsg && causeMsg !== error?.message ? `cause: ${causeMsg}` : null,
+    ].filter(Boolean).join(" | ")
+
+    console.error(`[${config.provider}] LLM request failed${status}:`, {
+      message: error?.message,
+      status: error?.status,
+      cause: cause ?? undefined,
+      ...(error?.error ? { body: error.error } : {}),
+    })
+
     return {
       output: {},
       provider: config.provider,
-      error: error instanceof Error ? error.message : `${config.provider} request failed`,
+      error: `${detail}${status}${body}`,
     }
   }
 }
