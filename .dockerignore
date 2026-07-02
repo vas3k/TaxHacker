@@ -15,6 +15,7 @@ data
 pgdata
 coverage
 docs
+ai
 docker-compose*.yml
 README.md
 LICENSE

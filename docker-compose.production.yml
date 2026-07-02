@@ -18,6 +18,8 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:7331:7331"
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: "json-file"
       options:
@@ -42,6 +44,8 @@ services:
     restart: unless-stopped
     depends_on:
       - app
+    security_opt:
+      - no-new-privileges:true
     command: >
       sh -c "
         printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|UPLOAD_PATH|NODE_ENV|SELF_HOSTED_MODE|BASE_URL|PATH)=' > /etc/cron.env &&
