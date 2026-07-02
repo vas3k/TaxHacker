@@ -44,7 +44,6 @@ services:
       - app
     command: >
       sh -c "
-        apt-get update && apt-get install -y cron &&
         printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|UPLOAD_PATH|NODE_ENV|SELF_HOSTED_MODE|BASE_URL|PATH)=' > /etc/cron.env &&
         chmod 0644 /etc/cron.d/email-sync &&
         crontab /etc/cron.d/email-sync &&

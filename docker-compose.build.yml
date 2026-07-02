@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: taxhacker:local
     ports:
       - "7331:7331"
     environment:
@@ -20,9 +21,7 @@ services:
         max-file: "3"
 
   email-sync:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: taxhacker:local
     environment:
       - NODE_ENV=production
       - SELF_HOSTED_MODE=true
@@ -39,7 +38,6 @@ services:
       - app
     command: >
       sh -c "
-        apt-get update && apt-get install -y cron &&
         printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|UPLOAD_PATH|NODE_ENV|SELF_HOSTED_MODE|BASE_URL|PATH)=' > /etc/cron.env &&
         chmod 0644 /etc/cron.d/email-sync &&
         crontab /etc/cron.d/email-sync &&
