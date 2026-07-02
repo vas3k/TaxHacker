@@ -22,6 +22,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Regenerate Prisma client (COPY may overwrite with stale local files)
+RUN npx prisma generate
+
 # Build the application
 RUN npm run build
 
