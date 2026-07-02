@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1
-FROM node:23-slim AS base
+FROM node:26-slim AS base
 
 ENV PORT=7331
 ENV NODE_ENV=production
