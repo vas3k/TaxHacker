@@ -1,3 +1,4 @@
+import { Prisma } from "@/prisma/client"
 import { prisma } from "@/lib/db"
 import { decryptSecret } from "@/lib/encryption"
 import { ingestUnsortedFile } from "@/lib/uploads"
@@ -6,7 +7,7 @@ import { updateUser } from "@/models/users"
 import { File, User } from "@/prisma/client"
 import { attachmentMatchesExtensions, buildSearchCriteria } from "./filters"
 import { realImapClient } from "./imap-client"
-import { ImapClient, SyncResult } from "./types"
+import { EmailServer, ImapClient, SyncResult } from "./types"
 
 type SyncDeps = {
   client?: ImapClient
@@ -16,7 +17,7 @@ type SyncDeps = {
   ) => Promise<File>
 }
 
-export async function syncServer(server: any, user: User, deps: SyncDeps = {}): Promise<SyncResult> {
+export async function syncServer(server: EmailServer, user: User, deps: SyncDeps = {}): Promise<SyncResult> {
   const client = deps.client ?? realImapClient
   const ingest = deps.ingest ?? ingestUnsortedFile
 
@@ -91,13 +92,13 @@ async function applyResult(userId: string, result: SyncResult) {
   // (the hourly cron container vs. a manual "Sync Now" in the web app) can't clobber the
   // other's watermark/status with a stale read-modify-write.
   await prisma.$transaction(async (tx) => {
-    const locked = await tx.$queryRaw<{ data: any }[]>`
+    const locked = await tx.$queryRaw<{ data: Record<string, unknown> }[]>`
       SELECT data FROM app_data WHERE user_id = ${userId}::uuid AND app = 'email' FOR UPDATE
     `
     if (!locked.length) return
-    const data = locked[0].data as any
+    const data = locked[0].data as Record<string, unknown>
     const now = new Date().toISOString()
-    data.servers = (data.servers || []).map((s: any) =>
+    data.servers = ((data.servers as EmailServer[]) || []).map((s) =>
       s.id === result.serverId
         ? {
             ...s,
@@ -108,13 +109,13 @@ async function applyResult(userId: string, result: SyncResult) {
           }
         : s
     )
-    await tx.appData.update({ where: { userId_app: { userId, app: "email" } }, data: { data } })
+    await tx.appData.update({ where: { userId_app: { userId, app: "email" } }, data: { data: data as Prisma.InputJsonValue } })
   })
 }
 
 // Per-server throttle: when the cron runs, skip a server whose last sync is more recent
 // than its configured interval. Manual "Sync Now" passes respectInterval=false to bypass.
-function isThrottled(server: any): boolean {
+function isThrottled(server: EmailServer): boolean {
   if (!server.lastSyncedAt) return false
   const intervalMinutes = server.syncInterval ?? 60
   const elapsedMinutes = (Date.now() - new Date(server.lastSyncedAt).getTime()) / 60_000
@@ -131,9 +132,9 @@ export async function runEmailSync(
 
   const results: SyncResult[] = []
   for (const row of rows) {
-    const data = row.data as any
-    const servers: any[] = (data?.servers || []).filter(
-      (s: any) => s.isActive && (!scope.serverId || s.id === scope.serverId)
+    const data = row.data as Record<string, unknown>
+    const servers: EmailServer[] = ((data?.servers as EmailServer[]) || []).filter(
+      (s) => s.isActive && (!scope.serverId || s.id === scope.serverId)
     )
     for (const server of servers) {
       if (scope.respectInterval && isThrottled(server)) continue

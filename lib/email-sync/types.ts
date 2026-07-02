@@ -22,8 +22,25 @@ export type ImapConnectConfig = {
   tls: boolean
 }
 
+export type ImapSearchCriteria = Array<string | string[] | Date>
+
+export type EmailServer = {
+  id: string
+  username: string
+  password: string
+  host: string
+  port: number
+  useSSL: boolean
+  isActive: boolean
+  lastProcessedUid?: number
+  allowedExtensions: string[]
+  lastSyncedAt?: string
+  syncInterval?: number
+  status: string
+}
+
 export type ImapClient = {
-  fetchMessages: (config: ImapConnectConfig, criteria: any[]) => Promise<ImapMessage[]>
+  fetchMessages: (config: ImapConnectConfig, criteria: ImapSearchCriteria[]) => Promise<ImapMessage[]>
 }
 
 export type SyncResult = {

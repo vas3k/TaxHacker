@@ -90,7 +90,7 @@ export default function AnalyzeForm({
     const cachedResults = file.cachedParseResult
       ? Object.fromEntries(
           Object.entries(file.cachedParseResult as Record<string, string>).filter(
-            ([_, value]) => value !== null && value !== undefined && value !== ""
+            ([, value]) => value !== null && value !== undefined && value !== ""
           )
         )
       : {}
@@ -175,7 +175,7 @@ export default function AnalyzeForm({
       } else {
         const nonEmptyFields = Object.fromEntries(
           Object.entries(results.data?.output || {}).filter(
-            ([_, value]) => value !== null && value !== undefined && value !== ""
+            ([, value]) => value !== null && value !== undefined && value !== ""
           )
         )
         setFormData({ ...formData, ...nonEmptyFields })

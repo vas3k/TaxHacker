@@ -2,6 +2,7 @@ import { ChatOpenAI } from "@langchain/openai"
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
+import type { AnalyzeAttachment } from "@/ai/attachments"
 
 export type LLMProvider = "openai" | "google" | "mistral" | "openai_compatible"
 
@@ -19,7 +20,7 @@ export interface LLMSettings {
 export interface LLMRequest {
   prompt: string
   schema?: Record<string, unknown>
-  attachments?: any[]
+  attachments?: AnalyzeAttachment[]
 }
 
 export interface LLMResponse {
@@ -29,10 +30,29 @@ export interface LLMResponse {
   error?: string
 }
 
+type LLMModel = ChatOpenAI | ChatGoogleGenerativeAI | ChatMistralAI
+
+type MessageContent = Array<{ type: string; text?: string; image_url?: { url: string } }>
+
+function extractErrorInfo(error: unknown): {
+  message: string | undefined
+  cause: unknown
+  status: number | undefined
+  errorBody: unknown
+} {
+  const obj = error as Record<string, unknown>
+  return {
+    message: typeof obj?.message === "string" ? obj.message : undefined,
+    cause: obj?.cause,
+    status: obj?.status as number | undefined,
+    errorBody: obj?.error,
+  }
+}
+
 async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LLMResponse> {
   try {
     const temperature = 0
-    let model: any
+    let model: LLMModel
     if (config.provider === "openai") {
       model = new ChatOpenAI({
         apiKey: config.apiKey,
@@ -68,7 +88,7 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
       }
     }
 
-    let message_content: any = [{ type: "text", text: req.prompt }]
+    const messageContent: MessageContent = [{ type: "text", text: req.prompt }]
     if (req.attachments && req.attachments.length > 0) {
       const images = req.attachments.map((att) => ({
         type: "image_url",
@@ -76,39 +96,44 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
           url: `data:${att.contentType};base64,${att.base64}`,
         },
       }))
-      message_content.push(...images)
+      messageContent.push(...images)
     }
-    const messages: BaseMessage[] = [new HumanMessage({ content: message_content })]
+    const messages: BaseMessage[] = [new HumanMessage({ content: messageContent })]
 
-    let response: any
+    let response: Record<string, unknown>
     if (config.provider === "openai_compatible") {
       const raw = await model.invoke(messages)
-      const text = typeof raw.content === "string" ? raw.content : raw.content.map((c: any) => c.text || "").join("")
+      const rawContent = raw as { content: string | Array<{ text?: string }> }
+      const text = typeof rawContent.content === "string"
+        ? rawContent.content
+        : Array.isArray(rawContent.content)
+          ? rawContent.content.map((c: { text?: string }) => c.text || "").join("")
+          : ""
       response = JSON.parse(text.replace(/```(?:json)?\s*/g, "").trim())
     } else {
-      const structuredModel = model.withStructuredOutput(req.schema, { name: "transaction" })
-      response = await structuredModel.invoke(messages)
+      const structuredModel = model.withStructuredOutput(req.schema!, { name: "transaction" })
+      response = await structuredModel.invoke(messages) as Record<string, unknown>
     }
 
     return {
-      output: response,
+      output: response as Record<string, string>,
       provider: config.provider,
     }
-  } catch (error: any) {
-    const cause = error?.cause
-    const causeMsg = cause instanceof Error ? cause.message : cause ? String(cause) : null
-    const status = error?.status ? ` (HTTP ${error.status})` : ""
-    const body = error?.error ? ` ${JSON.stringify(error.error)}` : ""
+  } catch (error: unknown) {
+    const info = extractErrorInfo(error)
+    const causeMsg = info.cause instanceof Error ? info.cause.message : info.cause ? String(info.cause) : null
+    const status = info.status ? ` (HTTP ${info.status})` : ""
+    const body = info.errorBody ? ` ${JSON.stringify(info.errorBody)}` : ""
     const detail = [
-      error instanceof Error ? error.message : `${config.provider} request failed`,
-      causeMsg && causeMsg !== error?.message ? `cause: ${causeMsg}` : null,
+      info.message ?? `${config.provider} request failed`,
+      causeMsg && causeMsg !== info.message ? `cause: ${causeMsg}` : null,
     ].filter(Boolean).join(" | ")
 
     console.error(`[${config.provider}] LLM request failed${status}:`, {
-      message: error?.message,
-      status: error?.status,
-      cause: cause ?? undefined,
-      ...(error?.error ? { body: error.error } : {}),
+      message: info.message,
+      status: info.status,
+      cause: info.cause ?? undefined,
+      ...(info.errorBody ? { body: info.errorBody } : {}),
     })
 
     const isVisionError =
@@ -139,7 +164,7 @@ const TINY_TEST_IMAGE_BASE64 =
 export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult> {
   try {
     const temperature = 0
-    let model: any
+    let model: LLMModel
     if (config.provider === "openai") {
       model = new ChatOpenAI({ apiKey: config.apiKey, model: config.model, temperature })
     } else if (config.provider === "google") {
@@ -167,11 +192,12 @@ export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult>
     ]
 
     const raw = await model.invoke(messages)
+    const rawContent = raw as { content: string | Array<{ text?: string }> }
     const text =
-      typeof raw.content === "string"
-        ? raw.content
-        : Array.isArray(raw.content)
-          ? raw.content.map((c: any) => c.text || "").join("")
+      typeof rawContent.content === "string"
+        ? rawContent.content
+        : Array.isArray(rawContent.content)
+          ? rawContent.content.map((c: { text?: string }) => c.text || "").join("")
           : ""
 
     return {
@@ -179,14 +205,20 @@ export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult>
       supportsVision: true,
       message: `Model responded: "${text.trim().slice(0, 100)}"`,
     }
-  } catch (error: any) {
-    const causeMsg = error?.cause instanceof Error ? error.cause.message : error?.cause ? String(error.cause) : null
-    const combined = [error?.message, causeMsg].filter(Boolean).join(" | ")
+  } catch (error: unknown) {
+    const causeMsg =
+      error instanceof Error && error.cause instanceof Error
+        ? error.cause.message
+        : (error as Record<string, unknown>)?.cause
+          ? String((error as Record<string, unknown>).cause)
+          : null
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    const combined = [errorMsg, causeMsg].filter(Boolean).join(" | ")
 
     const isVisionRejection =
       combined.includes("content.type") ||
       combined.includes("image_url") ||
-      combined.includes("image") && combined.includes("not supported")
+      (combined.includes("image") && combined.includes("not supported"))
 
     if (isVisionRejection) {
       return {

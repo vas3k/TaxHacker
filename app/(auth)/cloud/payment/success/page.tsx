@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/com
 import { ColoredText } from "@/components/ui/colored-text"
 import config from "@/lib/config"
 import { PLANS, stripeClient } from "@/lib/stripe"
-import { createUserDefaults, isDatabaseEmpty } from "@/models/defaults"
 import { getOrCreateCloudUser } from "@/models/users"
 import { Cake, Ghost } from "lucide-react"
 import Link from "next/link"
