@@ -3,6 +3,7 @@ FROM node:26-slim AS base
 ENV PORT=7331
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 # ── Dependencies (cached unless package.json or prisma schema changes) ──
 FROM base AS deps
@@ -16,6 +17,21 @@ COPY prisma ./prisma/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
+# ── Prisma codegen (pinned to the native build platform so get-dmmf never runs
+#    under QEMU; the generated client is platform-independent TypeScript) ──
+FROM --platform=$BUILDPLATFORM base AS codegen
+ENV NODE_ENV=development
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends openssl
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
+COPY prisma.config.ts ./
+RUN npx prisma generate
+
 # ── Build ──
 FROM base AS builder
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -25,8 +41,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
 COPY prisma ./prisma/
+COPY --from=codegen /app/prisma/client ./prisma/client
+COPY prisma.config.ts ./
 COPY . .
-RUN npx prisma generate
 RUN npm run build
 
 # ── Runtime ──
