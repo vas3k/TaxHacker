@@ -263,7 +263,8 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
       params.delete("ordering")
     }
     router.push(`/transactions?${params.toString()}`)
-  }, [sorting])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams intentionally omitted to avoid sync loop
+  }, [sorting, router])
 
   const getSortIcon = (field: string) => {
     if (sorting.field !== field) return null

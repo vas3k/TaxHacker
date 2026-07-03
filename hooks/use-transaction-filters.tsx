@@ -16,7 +16,8 @@ export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   useEffect(() => {
     const newSearchParams = filtersToSearchParams(filters, searchParams)
     router.push(`?${newSearchParams.toString()}`)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams intentionally omitted to avoid sync loop with URL→filters effect
+  }, [filters, router])
 
   useEffect(() => {
     setFilters(searchParamsToFilters(searchParams))

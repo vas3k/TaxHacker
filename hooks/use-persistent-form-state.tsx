@@ -10,13 +10,13 @@ export function usePersistentFormState(key: string, defaultState = {}) {
       setFormState(JSON.parse(saved))
     }
     setIsLoaded(true)
-  }, [])
+  }, [key])
 
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem(key, JSON.stringify(formState))
     }
-  }, [formState, isLoaded])
+  }, [formState, isLoaded, key])
 
   return [formState, setFormState] as const
 }

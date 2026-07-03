@@ -6,7 +6,7 @@ interface Progress {
   current: number
   total: number
   type: string
-  data: any
+  data: unknown
   createdAt: string
 }
 
