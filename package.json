@@ -58,7 +58,7 @@
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.7",
     "react-resizable-panels": "^4.11.2",
-    "resend": "^6.14.0",
+    "resend": "^6.16.0",
     "sharp": "^0.33.5",
     "slugify": "^1.6.6",
     "sonner": "^2.0.1",
