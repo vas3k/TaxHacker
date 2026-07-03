@@ -265,6 +265,7 @@ export const FormAvatar = ({
       <div className={cn("relative group", className)}>
         <div className="absolute inset-0 flex items-center justify-center bg-background rounded-lg overflow-hidden">
           {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- data URL preview not supported by next/image
             <img src={preview} alt="Avatar preview" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-muted flex items-center justify-center">
