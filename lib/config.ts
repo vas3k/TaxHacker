@@ -22,7 +22,11 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().default(""),
 })
 
-const env = envSchema.parse(process.env)
+const env = envSchema.parse(
+  Object.fromEntries(
+    Object.entries(process.env).filter(([, value]) => value !== ""),
+  ),
+)
 
 const config = {
   app: {
