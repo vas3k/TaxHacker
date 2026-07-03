@@ -3,6 +3,20 @@ FROM node:26-slim AS base
 # Default environment variables
 ENV PORT=7331
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ── Prisma codegen (pinned to the native build platform so get-dmmf never runs
+#    under QEMU; the generated client is platform-independent TypeScript) ──
+FROM --platform=$BUILDPLATFORM base AS codegen
+ENV NODE_ENV=development
+RUN apt-get update && apt-get install -y --no-install-recommends openssl
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN npm ci
+COPY prisma.config.ts ./
+RUN npx prisma generate
 
 # Build stage
 FROM base AS builder
@@ -20,11 +34,9 @@ COPY prisma ./prisma/
 RUN npm ci
 
 # Copy source code
+COPY --from=codegen /app/prisma/client ./prisma/client
+COPY prisma.config.ts ./
 COPY . .
-
-# Generate the Prisma client (needs prisma.config.ts, present only after the COPY above;
-# also regenerates in case COPY brought in a stale local client)
-RUN npx prisma generate
 
 # Build the application
 RUN npm run build
