@@ -6,18 +6,6 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
-# ── Prisma codegen (pinned to the native build platform so get-dmmf never runs
-#    under QEMU; the generated client is platform-independent TypeScript) ──
-FROM --platform=$BUILDPLATFORM base AS codegen
-ENV NODE_ENV=development
-RUN apt-get update && apt-get install -y --no-install-recommends openssl
-WORKDIR /app
-COPY package*.json ./
-COPY prisma ./prisma/
-RUN npm ci
-COPY prisma.config.ts ./
-RUN npx prisma generate
-
 # Build stage
 FROM base AS builder
 
@@ -30,16 +18,28 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
+# Install dependencies, including devDependencies (the `prisma` CLI needed
+# below by `prisma generate` is a devDependency; production stage never sees
+# this override since it starts fresh `FROM base`)
+ENV NODE_ENV=development
 RUN npm ci
 
 # Copy source code
-COPY --from=codegen /app/prisma/client ./prisma/client
 COPY prisma.config.ts ./
 COPY . .
 
+# CI pre-generates prisma/client natively (see workflows) and sets
+# SKIP_PRISMA_GENERATE=true so get-dmmf never runs under QEMU emulation.
+# Local single-platform builds run prisma generate here (natively, safe).
+ARG SKIP_PRISMA_GENERATE=false
+RUN if [ "${SKIP_PRISMA_GENERATE}" != "true" ]; then npx prisma generate; fi
+
 # Build the application
 RUN npm run build
+
+# Drop devDependencies before the runtime image copies node_modules
+ENV NODE_ENV=production
+RUN npm prune --omit=dev
 
 # Production stage
 FROM base
@@ -63,6 +63,7 @@ RUN mkdir -p /app/upload
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/app ./app
