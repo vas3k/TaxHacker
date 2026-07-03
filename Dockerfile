@@ -17,22 +17,10 @@ COPY prisma ./prisma/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
-# ── Prisma codegen (pinned to the native build platform so get-dmmf never runs
-#    under QEMU; the generated client is platform-independent TypeScript) ──
-FROM --platform=$BUILDPLATFORM base AS codegen
-ENV NODE_ENV=development
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends openssl
-WORKDIR /app
-COPY package*.json ./
-COPY prisma ./prisma/
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci
-COPY prisma.config.ts ./
-RUN npx prisma generate
-
 # ── Build ──
+# CI pre-generates prisma/client (see workflows) and sets
+# SKIP_PRISMA_GENERATE=true so get-dmmf never runs under QEMU emulation.
+# Local single-platform builds run prisma generate here (natively, safe).
 FROM base AS builder
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -41,9 +29,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
 COPY prisma ./prisma/
-COPY --from=codegen /app/prisma/client ./prisma/client
 COPY prisma.config.ts ./
 COPY . .
+ARG SKIP_PRISMA_GENERATE=false
+RUN if [ "${SKIP_PRISMA_GENERATE}" != "true" ]; then npx prisma generate; fi
 RUN npm run build
 
 # ── Runtime ──
