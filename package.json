@@ -21,6 +21,7 @@
     "@langchain/google-genai": "^0.2.14",
     "@langchain/mistralai": "^0.2.1",
     "@langchain/openai": "^0.6.1",
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-avatar": "^1.1.3",
