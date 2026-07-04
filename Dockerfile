@@ -24,6 +24,13 @@ COPY prisma ./prisma/
 ENV NODE_ENV=development
 RUN npm ci
 
+# Restore NODE_ENV=production for the rest of this stage: `next build` treats
+# a non-production NODE_ENV as a dev build, which breaks static export of
+# /_error and /404 ("<Html> should not be imported outside of pages/_document").
+# The already-installed devDependencies (e.g. the `prisma` CLI) stay on disk
+# regardless of this env var.
+ENV NODE_ENV=production
+
 # Copy source code
 COPY prisma.config.ts ./
 COPY . .
@@ -36,10 +43,6 @@ RUN if [ "${SKIP_PRISMA_GENERATE}" != "true" ]; then npx prisma generate; fi
 
 # Build the application
 RUN npm run build
-
-# Drop devDependencies before the runtime image copies node_modules
-ENV NODE_ENV=production
-RUN npm prune --omit=dev
 
 # Production stage
 FROM base
