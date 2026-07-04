@@ -307,6 +307,7 @@ export function InvoicePDF({ data }: { data: InvoiceFormData }): ReactElement {
             </View>
             {data.businessLogo && (
               <View style={styles.headerRight}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop, this isn't an HTML img */}
                 <Image src={data.businessLogo} style={styles.logo} />
               </View>
             )}

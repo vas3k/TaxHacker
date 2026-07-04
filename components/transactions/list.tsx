@@ -263,6 +263,10 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
       params.delete("ordering")
     }
     router.push(`/transactions?${params.toString()}`)
+    // router and searchParams are intentionally omitted: including searchParams would
+    // re-run this effect after every router.push it triggers, since navigation produces
+    // a new searchParams object each time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sorting])
 
   const getSortIcon = (field: string) => {

@@ -152,11 +152,10 @@ function DndProviderBlocks({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={providerOrder} strategy={verticalListSortingStrategy}>
-        {providerOrder.map((providerKey, idx) => (
+        {providerOrder.map((providerKey) => (
           <SortableProviderBlock
             key={providerKey}
             id={providerKey}
-            idx={idx}
             providerKey={providerKey}
             value={providerValues[providerKey]}
             handleValueChange={handleProviderValueChange}
@@ -169,13 +168,12 @@ function DndProviderBlocks({
 
 type SortableProviderBlockProps = {
   id: string
-  idx: number
   providerKey: string
   value: { apiKey: string; model: string; baseUrl: string }
   handleValueChange: (providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) => void
 }
 
-function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange }: SortableProviderBlockProps) {
+function SortableProviderBlock({ id, providerKey, value, handleValueChange }: SortableProviderBlockProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
 
   const provider = PROVIDERS.find((p) => p.key === providerKey)
