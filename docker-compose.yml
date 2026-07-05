@@ -13,6 +13,8 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: "local"
       options:
@@ -27,7 +29,7 @@ services:
       - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/taxhacker
       # Must match the app's secret: it derives the key that decrypts stored mailbox passwords.
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in your .env file}
     volumes:
       - ./data:/app/data
       - ./etc/crontab:/etc/cron.d/email-sync:ro
@@ -35,6 +37,8 @@ services:
     depends_on:
       - postgres
       - app
+    security_opt:
+      - no-new-privileges:true
     command: >
       sh -c "
         apt-get update && apt-get install -y cron &&
@@ -60,6 +64,8 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: "local"
       options:

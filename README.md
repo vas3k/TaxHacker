@@ -130,6 +130,7 @@ The Docker Compose setup includes:
 - Automatic database migrations on startup
 - Volume mounts for persistent data storage
 - Production-ready configuration
+- `no-new-privileges` security option on all containers
 
 New Docker images are automatically built and published with every release. You can use specific version tags (e.g., `v1.0.0`) or `latest` for the most recent version.
 
@@ -165,6 +166,9 @@ Configure TaxHacker for your specific needs with these environment variables:
 | `SELF_HOSTED_MODE` | No | Set to "true" for self-hosting: enables auto-login, custom API keys, and additional features | `true` |
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
 | `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | `your-secure-random-key` |
+| `POSTGRES_PASSWORD` | Yes (`docker-compose.build.yml`) | Password for the bundled Postgres when building locally — used in both `POSTGRES_PASSWORD` and `DATABASE_URL` | output of `openssl rand -hex 24` |
+| `POSTGRES_USER` | No (`docker-compose.build.yml`) | Database user (defaults to `postgres`) | `postgres` |
+| `POSTGRES_DB` | No (`docker-compose.build.yml`) | Database name (defaults to `taxhacker`) | `taxhacker` |
 
 
 ## ⌨️ Local Development
