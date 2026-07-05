@@ -25,7 +25,7 @@ export async function uploadFilesAction(formData: FormData): Promise<ActionState
   }
 
   // Process each file
-  const uploadedFiles = await Promise.all(
+  await Promise.all(
     files.map(async (file) => {
       if (!(file instanceof File)) {
         return { success: false, error: "Invalid file" }

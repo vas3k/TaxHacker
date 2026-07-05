@@ -1,6 +1,6 @@
 import imaps from "imap-simple"
 import { simpleParser } from "mailparser"
-import { ImapClient, ImapConnectConfig, ImapMessage } from "./types"
+import { ImapClient, ImapConnectConfig, ImapMessage, ImapSearchCriteria } from "./types"
 
 function buildImapConfig(config: ImapConnectConfig) {
   return {
@@ -18,7 +18,7 @@ function buildImapConfig(config: ImapConnectConfig) {
 }
 
 export const realImapClient: ImapClient = {
-  async fetchMessages(config: ImapConnectConfig, criteria: any[]): Promise<ImapMessage[]> {
+  async fetchMessages(config: ImapConnectConfig, criteria: ImapSearchCriteria[]): Promise<ImapMessage[]> {
     const connection = await imaps.connect(buildImapConfig(config))
 
     try {
@@ -29,7 +29,7 @@ export const realImapClient: ImapClient = {
       const messages: ImapMessage[] = []
       for (const item of results) {
         const uid = item.attributes.uid as number
-        const rawPart = item.parts.find((p: any) => p.which === "")
+        const rawPart = item.parts.find((p: { which: string }) => p.which === "")
         if (!rawPart) continue
         const parsed = await simpleParser(rawPart.body as string)
         messages.push({

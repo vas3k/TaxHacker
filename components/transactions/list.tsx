@@ -12,12 +12,14 @@ import { ArrowDownIcon, ArrowUpIcon, File } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 
+type TransactionWithRelations = Transaction & { project?: Project; category?: Category }
+
 type FieldRenderer = {
   name: string
   code: string
   classes?: string
   sortable: boolean
-  formatValue?: (transaction: Transaction & any) => React.ReactNode
+  formatValue?: (transaction: TransactionWithRelations) => React.ReactNode
   footerValue?: (transactions: Transaction[]) => React.ReactNode
 }
 
@@ -50,7 +52,7 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     name: "Project",
     code: "projectCode",
     sortable: true,
-    formatValue: (transaction: Transaction & { project: Project }) =>
+    formatValue: (transaction: Transaction & { project?: Project }) =>
       transaction.projectCode ? (
         <Badge className="whitespace-nowrap" style={{ backgroundColor: transaction.project?.color }}>
           {transaction.project?.name || ""}
@@ -63,7 +65,7 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     name: "Category",
     code: "categoryCode",
     sortable: true,
-    formatValue: (transaction: Transaction & { category: Category }) =>
+    formatValue: (transaction: Transaction & { category?: Category }) =>
       transaction.categoryCode ? (
         <Badge className="whitespace-nowrap" style={{ backgroundColor: transaction.category?.color }}>
           {transaction.category?.name || ""}
@@ -261,6 +263,10 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
       params.delete("ordering")
     }
     router.push(`/transactions?${params.toString()}`)
+    // router and searchParams are intentionally omitted: including searchParams would
+    // re-run this effect after every router.push it triggers, since navigation produces
+    // a new searchParams object each time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sorting])
 
   const getSortIcon = (field: string) => {

@@ -64,10 +64,16 @@ export const CurrencyConverterTool = ({
 
   useEffect(() => {
     fetchAndUpdateRates()
+    // fetchAndUpdateRates is intentionally omitted: it's redefined every render and only
+    // needs to re-run when the values below actually change, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originalCurrencyCode, targetCurrencyCode, normalizedDateString, originalTotal])
 
   useEffect(() => {
     onChange?.(convertedTotal)
+    // onChange is intentionally omitted: callers often pass a new inline function each
+    // render, which would otherwise cause this effect to fire on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [convertedTotal])
 
   if (!originalTotal || !originalCurrencyCode || !targetCurrencyCode || originalCurrencyCode === targetCurrencyCode) {
@@ -94,7 +100,9 @@ export const CurrencyConverterTool = ({
               value={convertedTotal}
               onChange={(e) => {
                 const newValue = parseFloat(e.target.value || "0")
-                !isNaN(newValue) && setConvertedTotal(Math.round(newValue * 100) / 100)
+                if (!isNaN(newValue)) {
+                  setConvertedTotal(Math.round(newValue * 100) / 100)
+                }
               }}
               className="w-32 rounded-md border border-input px-2 py-1"
             />

@@ -128,7 +128,7 @@ export default async function Cookie() {
       <h2 className="text-2xl font-semibold text-slate-800 mb-4">5. Updates to This Policy</h2>
       <p className="text-slate-700 mb-6 leading-relaxed">
         We may update this Cookie Policy from time to time. The latest version will always be available on this page,
-        with the "Effective Date" updated accordingly.
+        with the &quot;Effective Date&quot; updated accordingly.
       </p>
 
       <h2 className="text-2xl font-semibold text-slate-800 mb-4">6. Contact</h2>

@@ -1,5 +1,6 @@
 "use server"
 
+import * as React from "react"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import {
   getTransactionFileUploadPath,
@@ -29,7 +30,7 @@ import { InvoiceAppData } from "./page"
 
 export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Array> {
   const pdfElement = createElement(InvoicePDF, { data })
-  const buffer = await renderToBuffer(pdfElement as any)
+  const buffer = await renderToBuffer(pdfElement as unknown as React.ReactElement<Record<string, never>>)
   return new Uint8Array(buffer)
 }
 

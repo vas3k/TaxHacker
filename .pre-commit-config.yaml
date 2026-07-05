@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: lint
+        name: ESLint
+        entry: npm run lint
+        language: system
+        pass_filenames: false
+        types: [ts, tsx]
+      - id: typecheck
+        name: TypeScript Type Check
+        entry: npx tsc --noEmit
+        language: system
+        pass_filenames: false
+        types: [ts, tsx]
+      - id: test
+        name: Tests
+        entry: npm run test
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

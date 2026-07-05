@@ -23,7 +23,7 @@ describe("buildSearchCriteria", () => {
     expect(buildSearchCriteria({ initialSince: "2026-06-01", lastProcessedUid: 42 })).toEqual([["UID", "43:*"]])
   })
   it("defaults to ALL (entire mailbox) when initialSince is unset or invalid", () => {
-    expect(buildSearchCriteria({})).toEqual(["ALL"])
-    expect(buildSearchCriteria({ initialSince: "not-a-date" })).toEqual(["ALL"])
+    expect(buildSearchCriteria({})).toEqual([["ALL"]])
+    expect(buildSearchCriteria({ initialSince: "not-a-date" })).toEqual([["ALL"]])
   })
 })

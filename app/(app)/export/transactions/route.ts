@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
     if (!includeAttachments) {
       const stream = Readable.from(csvStream)
-      return new NextResponse(stream as any, {
+      return new NextResponse(stream as unknown as BodyInit, {
         headers: {
           "Content-Type": "text/csv",
           "Content-Disposition": `attachment; filename="transactions.csv"`,

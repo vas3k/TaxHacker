@@ -23,10 +23,10 @@ const getDefaultAppData = (): EmailAppData => ({
   },
 })
 
-export function EmailServerManager({ user, settings, appData }: EmailServerManagerProps) {
+export function EmailServerManager({ appData }: EmailServerManagerProps) {
   const data = appData || getDefaultAppData()
   const [editingServer, setEditingServer] = useState<EmailServer | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [isPending] = useTransition()
 
   return (
     <div className="space-y-6">

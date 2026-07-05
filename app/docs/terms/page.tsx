@@ -152,7 +152,7 @@ export default async function Terms() {
 
       <h2 className="text-2xl font-semibold text-slate-800 mb-4">10. Changes to These Terms</h2>
       <p className="text-slate-700 mb-6 leading-relaxed">
-        We may revise these Terms at any time. If we make material changes, we'll notify users via email or in-app
+        We may revise these Terms at any time. If we make material changes, we&#39;ll notify users via email or in-app
         notification. Continued use after changes constitutes acceptance of the new Terms.
       </p>
     </div>

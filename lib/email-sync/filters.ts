@@ -1,3 +1,5 @@
+import { ImapSearchCriteria } from "./types"
+
 export function attachmentMatchesExtensions(filename: string, allowedExtensions: string[]): boolean {
   if (!filename) return false
   const lower = filename.toLowerCase()
@@ -7,7 +9,7 @@ export function attachmentMatchesExtensions(filename: string, allowedExtensions:
   })
 }
 
-export function buildSearchCriteria(server: { initialSince?: string; lastProcessedUid?: number }): any[] {
+export function buildSearchCriteria(server: { initialSince?: string; lastProcessedUid?: number }): ImapSearchCriteria[] {
   // Once we have a watermark, only fetch newer messages by UID.
   if (server.lastProcessedUid && server.lastProcessedUid > 0) {
     return [["UID", `${server.lastProcessedUid + 1}:*`]]
@@ -20,5 +22,5 @@ export function buildSearchCriteria(server: { initialSince?: string; lastProcess
     }
   }
   // Default: no window set → scan the entire mailbox.
-  return ["ALL"]
+  return [["ALL"]]
 }

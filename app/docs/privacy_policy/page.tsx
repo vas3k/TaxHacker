@@ -190,7 +190,7 @@ export default async function PrivacyPolicy() {
       <hr className="my-8 border-slate-200" />
 
       <h3 className="text-2xl font-semibold text-slate-800 mb-4">
-        9. <strong>Children's Privacy</strong>
+        9. <strong>Children&#39;s Privacy</strong>
       </h3>
       <p className="text-slate-700 mb-6 leading-relaxed">
         TaxHacker is <strong className="text-slate-800">not intended for users under the age of 18</strong>. We do not

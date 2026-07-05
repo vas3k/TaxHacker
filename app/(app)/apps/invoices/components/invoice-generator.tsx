@@ -16,9 +16,9 @@ import {
 } from "../actions"
 import defaultTemplates, { InvoiceTemplate } from "../default-templates"
 import { InvoiceAppData } from "../page"
-import { InvoiceFormData, InvoicePage } from "./invoice-page"
+import { InvoiceFormAction, InvoiceFormData, InvoicePage } from "./invoice-page"
 
-function invoiceFormReducer(state: InvoiceFormData, action: any): InvoiceFormData {
+function invoiceFormReducer(state: InvoiceFormData, action: InvoiceFormAction): InvoiceFormData {
   switch (action.type) {
     case "SET_FORM":
       return action.payload
@@ -82,7 +82,7 @@ export function InvoiceGenerator({
 }) {
   const templates: InvoiceTemplate[] = useMemo(
     () => [...defaultTemplates(user, settings), ...(appData?.templates || [])],
-    [appData]
+    [user, settings, appData]
   )
 
   const [selectedTemplate, setSelectedTemplate] = useState<string>(templates[0].name)
@@ -222,7 +222,7 @@ export function InvoiceGenerator({
             <Button
               variant={selectedTemplate === template.name ? "default" : "outline"}
               className={`
-                  whitespace-nowrap p-4 
+                  whitespace-nowrap p-4
                   ${selectedTemplate === template.name ? "bg-black hover:bg-gray-900" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
                 `}
               onClick={() => handleTemplateSelect(template.name)}
