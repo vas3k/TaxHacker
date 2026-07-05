@@ -122,7 +122,7 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
 
       {isDragging && (
         <div
-          className="fixed inset-0 bg-opacity-20 backdrop-blur-sm z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center"
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -139,7 +139,7 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
       )}
 
       {isUploading && (
-        <div className="fixed inset-0 bg-opacity-20 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center">
             <Loader2 className="h-16 w-16 mx-auto mb-4 text-primary animate-spin" />
             <h3 className="text-xl font-semibold mb-2">
@@ -150,7 +150,7 @@ export default function ScreenDropArea({ children }: { children: React.ReactNode
       )}
 
       {uploadError && (
-        <div className="fixed inset-0 bg-opacity-20 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center">
             <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
             <h3 className="text-xl font-semibold mb-2">Upload Error</h3>
