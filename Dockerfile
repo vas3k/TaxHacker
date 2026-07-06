@@ -3,6 +3,8 @@ FROM node:26-slim AS base
 # Default environment variables
 ENV PORT=7331
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Build stage
 FROM base AS builder
@@ -16,14 +18,28 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
+# Install dependencies, including devDependencies (the `prisma` CLI needed
+# below by `prisma generate` is a devDependency; production stage never sees
+# this override since it starts fresh `FROM base`)
+ENV NODE_ENV=development
 RUN npm ci
 
+# Restore NODE_ENV=production for the rest of this stage: `next build` treats
+# a non-production NODE_ENV as a dev build, which breaks static export of
+# /_error and /404 ("<Html> should not be imported outside of pages/_document").
+# The already-installed devDependencies (e.g. the `prisma` CLI) stay on disk
+# regardless of this env var.
+ENV NODE_ENV=production
+
 # Copy source code
+COPY prisma.config.ts ./
 COPY . .
 
-# Generate the Prisma client (needs prisma.config.ts, present only after the COPY above)
-RUN npx prisma generate
+# CI pre-generates prisma/client natively (see workflows) and sets
+# SKIP_PRISMA_GENERATE=true so get-dmmf never runs under QEMU emulation.
+# Local single-platform builds run prisma generate here (natively, safe).
+ARG SKIP_PRISMA_GENERATE=false
+RUN if [ "${SKIP_PRISMA_GENERATE}" != "true" ]; then npx prisma generate; fi
 
 # Build the application
 RUN npm run build
@@ -50,6 +66,7 @@ RUN mkdir -p /app/upload
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/app ./app
