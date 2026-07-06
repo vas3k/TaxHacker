@@ -175,7 +175,7 @@ export async function GET(request: Request) {
       },
     })
 
-    return new NextResponse(zipContent, {
+    return new NextResponse(zipContent as BodyInit, {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="transactions.zip"`,

@@ -38,7 +38,7 @@
     "@sentry/nextjs": "^9.11.0",
     "@types/imap": "^0.8.43",
     "@types/mailparser": "^3.4.6",
-    "@types/mime-types": "^2.1.4",
+    "@types/mime-types": "^3.0.1",
     "@types/sharp": "^0.31.1",
     "better-auth": "^1.2.10",
     "class-variance-authority": "^0.7.1",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -76,7 +76,7 @@
     "postcss": "^8",
     "prisma": "^6.6.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
+    "typescript": "^6",
     "vitest": "^4.1.8"
   },
   "overrides": {
