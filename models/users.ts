@@ -38,7 +38,7 @@ export async function getOrCreateCloudUser(email: string, data: Prisma.UserCreat
   if (await isDatabaseEmpty(user.id)) {
     await createUserDefaults(user.id)
   }
-  
+
   return user
 }
 

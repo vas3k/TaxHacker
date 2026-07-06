@@ -1,0 +1,111 @@
+version: 2
+
+updates:
+  # npm dependencies — group by domain so each PR touches one concern
+  - package-ecosystem: npm
+    directory: "/"
+    target-branch: main
+    schedule:
+      interval: weekly
+      day: monday
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    cooldown:
+      default-days: 7
+    groups:
+      nextjs:
+        patterns:
+          - next
+          - next-themes
+          - eslint-config-next
+      react:
+        patterns:
+          - react
+          - react-dom
+          - react-day-picker
+          - react-resizable-panels
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      langchain:
+        patterns:
+          - langchain
+          - "@langchain/*"
+      prisma:
+        patterns:
+          - prisma
+          - "@prisma/client"
+      styling:
+        patterns:
+          - tailwindcss
+          - tailwind-merge
+          - tailwindcss-animate
+          - class-variance-authority
+          - clsx
+          - postcss
+      email:
+        patterns:
+          - imap-simple
+          - mailparser
+          - resend
+      pdf:
+        patterns:
+          - "@react-pdf/renderer"
+          - pdf2pic
+      dnd-kit:
+        patterns:
+          - "@dnd-kit/*"
+      testing:
+        patterns:
+          - vitest
+          - "@vitest/*"
+      linting:
+        patterns:
+          - eslint*
+          - "@eslint/*"
+      typescript:
+        patterns:
+          - typescript
+          - "@types/*"
+      sentry:
+        patterns:
+          - "@sentry/*"
+      payments:
+        patterns:
+          - stripe
+
+  # GitHub Actions used in workflows
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: main
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(ci)
+      include: scope
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - actions/*
+          - docker/*
+
+  # Dockerfile base image
+  - package-ecosystem: docker
+    directory: "/"
+    target-branch: main
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(docker)
+      include: scope
+    cooldown:
+      default-days: 7

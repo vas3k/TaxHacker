@@ -1,3 +1,4 @@
+import { NewsletterForm } from "@/app/landing/newsletter"
 import { ColoredText } from "@/components/ui/colored-text"
 import config from "@/lib/config"
 import Image from "next/image"
@@ -21,12 +22,20 @@ export default function LandingPage() {
             </div>
             <ColoredText className="text-2xl font-bold">TaxHacker</ColoredText>
           </Link>
-          <Link
-            href="/enter"
-            className="cursor-pointer font-medium px-4 py-2 rounded-full border-2 border-gradient-to-r from-pink-300 to-indigo-300 hover:from-pink-400 hover:to-indigo-400 bg-white/80 hover:bg-white transition-all duration-300 hover:scale-105 text-xs md:text-sm"
-          >
-            Log In
-          </Link>
+          <div className="flex gap-1 md:gap-4 text-xs md:text-sm">
+            <Link
+              href="/enter"
+              className="cursor-pointer font-medium px-4 py-2 rounded-full border-2 border-gradient-to-r from-pink-300 to-indigo-300 hover:from-pink-400 hover:to-indigo-400 bg-white/80 hover:bg-white transition-all duration-300 hover:scale-105"
+            >
+              Log In
+            </Link>
+            <Link
+              href="/cloud"
+              className="cursor-pointer font-medium bg-gradient-to-r from-pink-600 to-indigo-600 text-white px-4 py-2 rounded-full hover:from-pink-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              Sign Up
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -297,7 +306,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center">
                   <span className="text-orange-600 mr-3 text-lg">📤</span>
-                  Download full data archive to migrate to another service. We don't take away or limit what you do with
+                  Download full data archive to migrate to another service. We don&#39;t take away or limit what you do with
                   your data
                 </li>
               </ul>
@@ -368,7 +377,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-gray-700 mb-8">
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🎯</span>
-                  SaaS version if you don't want to hassle with own servers and deployments
+                  SaaS version if you don&#39;t want to hassle with own servers and deployments
                 </li>
                 <li className="flex items-center">
                   <span className="text-purple-600 mr-3 text-lg">🤖</span>
@@ -383,13 +392,12 @@ export default function LandingPage() {
                   Automatic updates and new features
                 </li>
               </ul>
-              <button
-                type="button"
-                disabled
-                className="block w-full text-center px-6 py-4 bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 font-bold rounded-full shadow-xl opacity-80 cursor-not-allowed"
+              <Link
+                href="/cloud"
+                className="block w-full text-center px-6 py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold rounded-full hover:from-pink-700 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-110"
               >
-                Temporarily unavailable
-              </button>
+                Early Access: €10/month 💎
+              </Link>
             </div>
           </div>
         </div>
@@ -512,28 +520,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Stay Tuned / GitHub CTA */}
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-8 rounded-2xl shadow-sm ring-1 ring-gray-100">
-            <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-semibold mb-4">Stay Tuned</h3>
-              <p className="text-gray-600 mb-6">
-                We&apos;re working hard on making TaxHacker useful for everyone. Star and watch our GitHub repo to get
-                notified about new features and releases.
-              </p>
-              <div className="flex flex-col gap-4 max-w-md mx-auto">
-                <div className="flex flex-wrap items-center justify-center gap-4">
-                  <a
-                    href="https://github.com/vas3k/TaxHacker"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-full hover:opacity-90 transition-all shadow-lg shadow-purple-500/20"
-                  >
-                    Open GitHub repo
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Newsletter Signup */}
+          <NewsletterForm />
         </div>
       </section>
 

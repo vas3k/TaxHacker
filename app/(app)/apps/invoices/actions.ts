@@ -1,5 +1,6 @@
 "use server"
 
+import * as React from "react"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import {
   getTransactionFileUploadPath,
@@ -9,7 +10,12 @@ import {
 } from "@/lib/files"
 import { getAppData, setAppData } from "@/models/apps"
 import { createFile } from "@/models/files"
-import { createTransaction, updateTransactionFiles } from "@/models/transactions"
+import {
+  createTransaction,
+  updateTransactionFiles,
+  TransactionData,
+  findDuplicateTransaction,
+} from "@/models/transactions"
 import { Transaction, User } from "@/prisma/client"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { randomUUID } from "crypto"
@@ -24,7 +30,7 @@ import { InvoiceAppData } from "./page"
 
 export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Array> {
   const pdfElement = createElement(InvoicePDF, { data })
-  const buffer = await renderToBuffer(pdfElement as any)
+  const buffer = await renderToBuffer(pdfElement as unknown as React.ReactElement<Record<string, never>>)
   return new Uint8Array(buffer)
 }
 
@@ -45,8 +51,17 @@ export async function deleteTemplateAction(user: User, templateId: string) {
 }
 
 export async function saveInvoiceAsTransactionAction(
-  formData: InvoiceFormData
-): Promise<{ success: boolean; error?: string; data?: Transaction }> {
+  formData: InvoiceFormData,
+  forceSave: boolean = false
+): Promise<{
+  success: boolean
+  error?: string
+  data?: Transaction
+  duplicateData?: {
+    existingTransaction: Transaction
+    newTransactionData: Record<string, unknown>
+  }
+}> {
   try {
     const user = await getCurrentUser()
 
@@ -60,7 +75,7 @@ export async function saveInvoiceAsTransactionAction(
     const totalAmount = (formData.taxIncluded ? subtotal : subtotal + taxes) + fees
 
     // Create transaction
-    const transaction = await createTransaction(user.id, {
+    const rawTransactionData: TransactionData = {
       name: `Invoice #${formData.invoiceNumber || "unknown"}`,
       merchant: `${formData.billTo.split("\n")[0]}`,
       total: totalAmount * 100,
@@ -70,7 +85,25 @@ export async function saveInvoiceAsTransactionAction(
       projectCode: null,
       type: "income",
       status: "pending",
-    })
+    }
+
+    // --- Deduplication Check ---
+    if (!forceSave) {
+      const existingTransaction = await findDuplicateTransaction(user.id, rawTransactionData)
+
+      if (existingTransaction) {
+        return {
+          success: false,
+          error: "DUPLICATE_FOUND",
+          duplicateData: {
+            existingTransaction: existingTransaction,
+            newTransactionData: rawTransactionData,
+          },
+        }
+      }
+    }
+
+    const transaction = await createTransaction(user.id, rawTransactionData)
 
     // Check storage limits
     if (!isEnoughStorageToUploadFile(user, pdfBuffer.length)) {

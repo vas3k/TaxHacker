@@ -1,5 +1,6 @@
 "use server"
 
+import { LLMConfig, LLMProvider, testLLMProvider } from "@/ai/providers/llmProvider"
 import {
   categoryFormSchema,
   currencyFormSchema,
@@ -42,6 +43,21 @@ export async function saveSettingsAction(
 
   revalidatePath("/settings")
   return { success: true }
+}
+
+export async function testLLMProviderAction(
+  provider: string,
+  apiKey: string,
+  model: string,
+  baseUrl?: string
+): Promise<{ success: boolean; supportsVision: boolean; message: string }> {
+  const config: LLMConfig = {
+    provider: provider as LLMProvider,
+    apiKey,
+    model,
+    baseUrl,
+  }
+  return testLLMProvider(config)
 }
 
 export async function saveProfileAction(

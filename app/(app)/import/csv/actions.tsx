@@ -3,7 +3,7 @@
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser } from "@/lib/auth"
 import { EXPORT_AND_IMPORT_FIELD_MAP } from "@/models/export_and_import"
-import { createTransaction } from "@/models/transactions"
+import { createTransaction, findDuplicateTransaction } from "@/models/transactions"
 import { Transaction } from "@/prisma/client"
 import { parse } from "@fast-csv/parse"
 import { revalidatePath } from "next/cache"
@@ -51,7 +51,12 @@ export async function saveTransactionsAction(
   try {
     const rows = JSON.parse(formData.get("rows") as string) as Record<string, unknown>[]
 
-    for (const row of rows) {
+    const forceSave = formData.get("forceSave") === "true"
+    const startIndex = parseInt(formData.get("resumeIndex") as string) || 0
+    const rowsToProcess = rows.slice(startIndex)
+    let currentIndex = startIndex
+
+    for (const row of rowsToProcess) {
       const transactionData: Record<string, unknown> = {}
       for (const [fieldCode, value] of Object.entries(row)) {
         const fieldDef = EXPORT_AND_IMPORT_FIELD_MAP[fieldCode]
@@ -62,7 +67,27 @@ export async function saveTransactionsAction(
         }
       }
 
+      const shouldForceSave = forceSave && currentIndex === startIndex
+
+      // --- Deduplication Check ---
+      if (!shouldForceSave) {
+        const existingTransaction = await findDuplicateTransaction(user.id, transactionData)
+
+        if (existingTransaction) {
+          return {
+            success: false,
+            error: "DUPLICATE_FOUND",
+            duplicateData: {
+              existingTransaction: existingTransaction,
+              newTransactionData: transactionData,
+              resumeIndex: currentIndex,
+            },
+          }
+        }
+      }
       await createTransaction(user.id, transactionData)
+
+      currentIndex++
     }
 
     revalidatePath("/import/csv")

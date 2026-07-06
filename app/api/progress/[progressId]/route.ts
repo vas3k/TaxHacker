@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prog
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
-      let lastSent: any = null
+      let lastSent: unknown = null
       let stopped = false
 
       req.signal.addEventListener("abort", () => {

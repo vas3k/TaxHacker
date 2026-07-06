@@ -14,7 +14,7 @@ services:
     image: ghcr.io/vas3k/taxhacker:v0.3.0
     ports:
       - "7331:7331"
-      
+
 // everything else stays the same
 ```
 
@@ -27,7 +27,7 @@ docker compose up -d
 
 Go to your app -> Settings -> Backups -> Download Data Archive
 
-Save .zip archive on your machine. 
+Save .zip archive on your machine.
 
 ## Step 3: Upgrade your TaxHacker instance
 
@@ -39,7 +39,7 @@ services:
     image: ghcr.io/vas3k/taxhacker:latest
     ports:
       - "7331:7331"
-      
+
 // everything else stays the same
 ```
 

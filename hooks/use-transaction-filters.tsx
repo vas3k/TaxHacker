@@ -1,12 +1,21 @@
 import { TransactionFilters } from "@/models/transactions"
 import { format } from "date-fns"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
 const filterKeys = ["search", "dateFrom", "dateTo", "ordering", "categoryCode", "projectCode"]
 
+export function areSearchParamsEqual(a: URLSearchParams, b: URLSearchParams) {
+  const keys = new Set([...a.keys(), ...b.keys()])
+  for (const key of keys) {
+    if (a.get(key) !== b.get(key)) return false
+  }
+  return true
+}
+
 export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [filters, setFilters] = useState<TransactionFilters>({
     ...defaultFilters,
@@ -15,21 +24,33 @@ export function useTransactionFilters(defaultFilters?: TransactionFilters) {
 
   useEffect(() => {
     const newSearchParams = filtersToSearchParams(filters, searchParams)
-    router.push(`?${newSearchParams.toString()}`)
-  }, [filters])
+    if (areSearchParamsEqual(newSearchParams, searchParams)) return
+
+    const query = newSearchParams.toString()
+    router.push(query ? `${pathname}?${query}` : pathname)
+  }, [filters, pathname, router, searchParams])
 
   useEffect(() => {
-    setFilters(searchParamsToFilters(searchParams))
+    const next = searchParamsToFilters(searchParams)
+    setFilters((prev) => {
+      if (filterKeys.every((key) => prev[key as keyof TransactionFilters] === next[key as keyof TransactionFilters])) {
+        return prev
+      }
+      return next
+    })
   }, [searchParams])
 
   return [filters, setFilters] as const
 }
 
 export function searchParamsToFilters(searchParams: URLSearchParams) {
-  return filterKeys.reduce((acc, filter) => {
-    acc[filter] = searchParams.get(filter) || ""
-    return acc
-  }, {} as Record<string, string>) as TransactionFilters
+  return filterKeys.reduce(
+    (acc, filter) => {
+      acc[filter] = searchParams.get(filter) || ""
+      return acc
+    },
+    {} as Record<string, string>
+  ) as TransactionFilters
 }
 
 export function filtersToSearchParams(

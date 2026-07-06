@@ -3,7 +3,7 @@ import config from "./config"
 
 export const stripeClient: Stripe | null = config.stripe.secretKey
   ? new Stripe(config.stripe.secretKey, {
-      apiVersion: "2025-03-31.basil",
+      apiVersion: "2025-08-27.basil",
     })
   : null
 
@@ -50,6 +50,25 @@ export const PLANS: Record<string, Plan> = {
     stripePriceId: "price_1RHTj1As8DS4NhOzhejpTN3I",
     limits: {
       storage: 512 * 1024 * 1024,
+      ai: 1000,
+    },
+    isAvailable: false,
+  },
+  early_monthly: {
+    code: "early_monthly",
+    name: "Early Adopter",
+    description: "Monthly plan for our first beloved users",
+    benefits: [
+      "Special price for early adopters",
+      "1 GB of storage",
+      "1000 AI file analyses per month",
+      "Unlimited transactions",
+      "Unlimited fields, categories and projects",
+    ],
+    price: "€10/month",
+    stripePriceId: "price_1TjxlsAs8DS4NhOzicshNQjq",
+    limits: {
+      storage: 1024 * 1024 * 1024,
       ai: 1000,
     },
     isAvailable: true,

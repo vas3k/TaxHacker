@@ -23,12 +23,12 @@ interface CrudProps<T> {
   onEdit?: (id: string, data: Partial<T>) => Promise<{ success: boolean; error?: string }>
 }
 
-export function CrudTable<T extends { [key: string]: any }>({ items, columns, onDelete, onAdd, onEdit }: CrudProps<T>) {
+export function CrudTable<T extends Record<string, unknown>>({ items, columns, onDelete, onAdd, onEdit }: CrudProps<T>) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newItem, setNewItem] = useState<Partial<T>>(itemDefaults(columns))
   const [editingItem, setEditingItem] = useState<Partial<T>>(itemDefaults(columns))
-  const [optimisticItems, addOptimisticItem] = useOptimistic(items, (state, newItem: T) => [...state, newItem])
+  const [optimisticItems, _addOptimisticItem] = useOptimistic(items, (state, newItem: T) => [...state, newItem])
 
   const FormCell = (item: T, column: CrudColumn<T>) => {
     if (column.type === "checkbox") {
@@ -43,7 +43,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
         </div>
       )
     }
-    return item[column.key]
+    return item[column.key] as React.ReactNode
   }
 
   const EditFormCell = (item: T, column: CrudColumn<T>) => {
@@ -51,7 +51,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
       return (
         <input
           type="checkbox"
-          checked={editingItem[column.key]}
+          checked={Boolean(editingItem[column.key])}
           aria-label={String(column.label)}
           onChange={(e) =>
             setEditingItem({
@@ -64,7 +64,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
     } else if (column.type === "select") {
       return (
         <select
-          value={editingItem[column.key]}
+          value={editingItem[column.key] as string}
           className="p-2 rounded-md border bg-transparent"
           aria-label={String(column.label)}
           onChange={(e) =>
@@ -120,7 +120,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
     return (
       <Input
         type="text"
-        value={editingItem[column.key] || ""}
+        value={(editingItem[column.key] as string) || ""}
         aria-label={String(column.label)}
         onChange={(e) =>
           setEditingItem({
@@ -247,7 +247,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
   }
 
   const startEditing = (item: T) => {
-    setEditingId(item.code || item.id)
+    setEditingId((item.code || item.id) as string)
     setEditingItem(item)
   }
 
@@ -287,7 +287,7 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
                 <div className="flex gap-2">
                   {editingId === (item.code || item.id) ? (
                     <>
-                      <Button size="sm" onClick={() => handleEdit(item.code || item.id)} aria-label="Save changes">
+                      <Button size="sm" onClick={() => handleEdit((item.code || item.id) as string)} aria-label="Save changes">
                         Save
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setEditingId(null)} aria-label="Cancel editing">
@@ -310,10 +310,10 @@ export function CrudTable<T extends { [key: string]: any }>({ items, columns, on
                         </Button>
                       )}
                       {item.isDeletable && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleDelete(item.code || item.id)}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete((item.code || item.id) as string)}
                           aria-label={`Delete ${String(item.name || item.code || 'item')}`}
                         >
                           <Trash2 />

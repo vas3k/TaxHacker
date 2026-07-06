@@ -60,7 +60,7 @@ export function useProgress(options: UseProgressOptions = {}) {
         }
       }
 
-      source.onerror = (error) => {
+      source.onerror = (_error) => {
         source.close()
         setIsLoading(false)
         const err = new Error("Progress tracking failed")

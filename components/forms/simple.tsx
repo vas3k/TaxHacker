@@ -221,7 +221,7 @@ export const FormDate = ({
               onChange={handleManualInputChange}
               className="text-center"
             />
-            <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus {...props} />
+            <Calendar mode="single" selected={date} onSelect={handleDateSelect} autoFocus {...props} />
           </PopoverContent>
         </Popover>
       </div>
@@ -265,6 +265,9 @@ export const FormAvatar = ({
       <div className={cn("relative group", className)}>
         <div className="absolute inset-0 flex items-center justify-center bg-background rounded-lg overflow-hidden">
           {preview ? (
+            // next/image doesn't support arbitrary user-uploaded data/blob URLs without
+            // extra config; this is a lightweight client-side avatar preview.
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="Avatar preview" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-muted flex items-center justify-center">

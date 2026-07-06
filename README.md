@@ -4,18 +4,18 @@
 
 <br>
 
-# TaxHacker — self-hosted AI accountant
+# TaxHacker: Self-Hosted AI Accounting
 
 [![GitHub Stars](https://img.shields.io/github/stars/vas3k/TaxHacker?color=ffcb47&labelColor=black&style=flat-square)](https://github.com/vas3k/TaxHacker/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-ffcb47?labelColor=black&style=flat-square)](https://github.com/vas3k/TaxHacker/blob/main/LICENSE)
-[![GitHub Issues](https://img.shields.io/github/issues/vas3k/TaxHacker?color=ff80eb&labelColor=black&style=flat-square)](https://github.com/vas3k/TaxHacker/issues)
-[![Donate](https://img.shields.io/badge/-Donate-f04f88?logo=githubsponsors&logoColor=white&style=flat-square)](https://vas3k.com/donate/)
+[![Support Us](https://img.shields.io/badge/-Donate-f04f88?logo=githubsponsors&logoColor=white&style=flat-square)](https://vas3k.com/donate/)
 
 </div>
 
-> 🙏 I'm currently looking for a job! Here's [my CV](https://raw.githubusercontent.com/vas3k/vas3k/master/cv.pdf) and my [Github profile](https://github.com/vas3k).
+> [!NOTE]
+> ☝️ I'm currently looking for a job! Particularly interested in companies in Berlin or remote positions in Germany. Here's [my CV](https://raw.githubusercontent.com/vas3k/vas3k/master/cv.pdf) and [Linkedin profile](https://www.linkedin.com/in/vas3k/). Thank you 🙏
 
-TaxHacker is a self-hosted accounting app designed for freelancers, indie hackers, and small businesses who want to save time and automate expense and income tracking using the power of modern AI.
+TaxHacker is a self-hosted accounting app designed for freelancers, indie-hackers, and small businesses who want to save time and automate expense and income tracking using the power of modern AI.
 
 Upload photos of receipts, invoices, or PDFs, and TaxHacker will automatically recognize and extract all the important data you need for accounting: product names, amounts, items, dates, merchants, taxes, and save it into a structured Excel-like database. You can even create custom fields with your own AI prompts to extract any specific information you need.
 
@@ -42,7 +42,7 @@ Snap a photo of any receipt or upload an invoice PDF, and TaxHacker will automat
 - **Auto-categorization**: Transactions are automatically sorted into relevant categories based on their content
 - **Item splitting**: Extract individual items from invoices and split them into separate transactions when needed
 - **Structured storage**: Everything gets saved in an organized database for easy filtering and retrieval
-- **Customizable AI providers**: Choose from OpenAI, Google Gemini, or Mistral (local LLM support coming soon)
+- **Choose your LLM**: You can use OpenAI, Google Gemini, or Mistral or even your local LLM (in the self-hosted version). Only you're responsible for the quality and privacy of your data.
 
 TaxHacker works with a wide variety of documents, including store receipts, restaurant bills, invoices, bank statements, letters, even handwritten receipts. It handles any language and any currency with ease.
 
@@ -57,7 +57,13 @@ TaxHacker automatically detects currencies in your documents and converts them t
 - **All-world coverage**: Support for 170+ world currencies and 14 popular cryptocurrencies (BTC, ETH, LTC, DOT, and more)
 - **Flexible input**: Manual entry is always available when you need more control
 
-### `3` Organize your transactions using fully customizable categories, projects and fields
+### `3` Use your own LLM: Ollama, LM Studio, vLLM, LocalAI etc
+
+It's compatible with your local LLM OpenAI-compatible API endpoint. Just make sure that your local model is good in OCR tasks, results are not guaranteed :)
+
+![Local LLMs](public/landing/local-llms.webp)
+
+### `4` Organize your transactions using fully customizable categories, projects and fields
 
 ![Transactions Table](public/landing/transactions-big.webp)
 
@@ -70,7 +76,7 @@ Adapt TaxHacker to your unique needs with unlimited customization options. Creat
 - **AI-powered extraction**: Write your own prompts to extract any custom information from documents
 - **Bulk operations**: Process multiple documents or transactions at once
 
-### `4` Customize any LLM prompt. Even system ones
+### `5` Customize any LLM prompt. Even system ones
 
 ![Custom Categories](public/landing/custom-llm.webp)
 
@@ -84,7 +90,7 @@ Take full control of how TaxHacker's AI processes your documents. Write custom A
 
 TaxHacker is 100% adaptable and tunable to your unique requirements — whether you need to extract emails, addresses, project codes, or any other custom information from your documents.
 
-### `5` Flexible data filtering and export
+### `6` Flexible data filtering and export
 
 ![Data Export](public/landing/export.webp)
 
@@ -95,7 +101,7 @@ Once your documents are processed, easily view, filter, and export your complete
 - **Tax-ready reports**: Generate comprehensive reports for your accountant or tax advisor
 - **Data portability**: Download complete data archives to migrate to other services—your data stays yours
 
-### `6` Self-hosted mode for data privacy
+### `7` Self-hosted mode for data privacy
 
 ![Self-hosting](docs/screenshots/exported_archive.png)
 
@@ -120,10 +126,11 @@ docker compose up
 The Docker Compose setup includes:
 
 - TaxHacker application container
-- PostgreSQL 17 database (or connect to your existing database)
+- PostgreSQL 17+ database (or connect to your existing database)
 - Automatic database migrations on startup
 - Volume mounts for persistent data storage
 - Production-ready configuration
+- `no-new-privileges` security option on all containers
 
 New Docker images are automatically built and published with every release. You can use specific version tags (e.g., `v1.0.0`) or `latest` for the most recent version.
 
@@ -159,12 +166,10 @@ Configure TaxHacker for your specific needs with these environment variables:
 | `SELF_HOSTED_MODE` | No | Set to "true" for self-hosting: enables auto-login, custom API keys, and additional features | `true` |
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
 | `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | `your-secure-random-key` |
+| `POSTGRES_PASSWORD` | Yes (`docker-compose.build.yml`) | Password for the bundled Postgres when building locally — used in both `POSTGRES_PASSWORD` and `DATABASE_URL` | output of `openssl rand -hex 24` |
+| `POSTGRES_USER` | No (`docker-compose.build.yml`) | Database user (defaults to `postgres`) | `postgres` |
+| `POSTGRES_DB` | No (`docker-compose.build.yml`) | Database name (defaults to `taxhacker`) | `taxhacker` |
 
-You can also configure LLM provider settings in the application or via environment variables:
-
-- **OpenAI**: `OPENAI_MODEL_NAME` and `OPENAI_API_KEY`
-- **Google Gemini**: `GOOGLE_MODEL_NAME` and `GOOGLE_API_KEY`
-- **Mistral**: `MISTRAL_MODEL_NAME` and `MISTRAL_API_KEY`
 
 ## ⌨️ Local Development
 
@@ -213,21 +218,13 @@ npm run start
 
 ## 🤝 Contributing
 
-We welcome contributions to TaxHacker! Here's how you can help make it even better:
+No AI-slop PRs. Please open a new Issue and discuss the details with maintainers before sending new changes.
 
-- **🐛 Bug Reports**: File detailed issues when you encounter problems
-- **💡 Feature Requests**: Share your ideas for new features and improvements
-- **🔧 Code Contributions**: Submit pull requests to improve the application
-- **📚 Documentation**: Help improve documentation and guides
-- **🎥 Content Creation**: Videos, tutorials, and reviews help us reach more users!
 
-All development happens on GitHub through issues and pull requests. We appreciate any help.
-
-[![PRs Welcome](https://img.shields.io/badge/🤯_PRs-welcome-ffcb47?labelColor=black&style=for-the-badge)](https://github.com/vas3k/TaxHacker/pulls)
 
 ## ❤️ Support the Project
 
-If TaxHacker has helped you save time or manage your finances better, consider supporting its continued development! Your donations help us maintain the project, add new features, and keep it free and open source. Every contribution helps ensure we can keep improving and maintaining this tool for the community.
+If TaxHacker has helped you save time or manage your finances better, consider supporting its development! Your donations help us maintain the project, add new features, and keep it free and open source. Every contribution helps ensure we can keep improving and maintaining this tool for the community: <https://vas3k.com/donate/>
 
 [![Thank the TaxHacker devs](https://img.shields.io/badge/❤️-donate%20to%20Taxhacker%20devs-f08080?labelColor=black&style=for-the-badge)](https://vas3k.com/donate/)
 

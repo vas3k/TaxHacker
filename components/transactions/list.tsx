@@ -12,12 +12,14 @@ import { ArrowDownIcon, ArrowUpIcon, File } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 
+type TransactionWithRelations = Transaction & { project?: Project; category?: Category }
+
 type FieldRenderer = {
   name: string
   code: string
   classes?: string
   sortable: boolean
-  formatValue?: (transaction: Transaction & any) => React.ReactNode
+  formatValue?: (transaction: TransactionWithRelations) => React.ReactNode
   footerValue?: (transactions: Transaction[]) => React.ReactNode
 }
 
@@ -50,7 +52,7 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     name: "Project",
     code: "projectCode",
     sortable: true,
-    formatValue: (transaction: Transaction & { project: Project }) =>
+    formatValue: (transaction: Transaction & { project?: Project }) =>
       transaction.projectCode ? (
         <Badge className="whitespace-nowrap" style={{ backgroundColor: transaction.project?.color }}>
           {transaction.project?.name || ""}
@@ -63,7 +65,7 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     name: "Category",
     code: "categoryCode",
     sortable: true,
-    formatValue: (transaction: Transaction & { category: Category }) =>
+    formatValue: (transaction: Transaction & { category?: Category }) =>
       transaction.categoryCode ? (
         <Badge className="whitespace-nowrap" style={{ backgroundColor: transaction.category?.color }}>
           {transaction.category?.name || ""}
@@ -113,7 +115,11 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     ),
     footerValue: (transactions: Transaction[]) => {
       const netTotalPerCurrency = calcNetTotalPerCurrency(transactions)
-      const turnoverPerCurrency = calcTotalPerCurrency(transactions)
+
+      // Isolate only the income to calculate accurate turnover and then Calculate the final turnover.
+      const turnoverPerCurrency = calcTotalPerCurrency(
+        transactions.filter((transaction) => transaction.type === "income")
+      )
 
       return (
         <div className="flex flex-col gap-3 text-right">
@@ -251,14 +257,26 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
   }
 
   useEffect(() => {
+    const nextOrdering =
+      sorting.field && sorting.direction
+        ? sorting.direction === "desc"
+          ? `-${sorting.field}`
+          : sorting.field
+        : null
+    const currentOrdering = searchParams.get("ordering") || null
+
+    if (nextOrdering === currentOrdering) return
+
     const params = new URLSearchParams(searchParams.toString())
-    if (sorting.field && sorting.direction) {
-      const ordering = sorting.direction === "desc" ? `-${sorting.field}` : sorting.field
-      params.set("ordering", ordering)
+    if (nextOrdering) {
+      params.set("ordering", nextOrdering)
     } else {
       params.delete("ordering")
     }
-    router.push(`/transactions?${params.toString()}`)
+
+    const query = params.toString()
+    router.push(query ? `/transactions?${query}` : "/transactions")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sorting])
 
   const getSortIcon = (field: string) => {

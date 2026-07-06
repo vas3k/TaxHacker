@@ -56,7 +56,7 @@ export default function TransactionEditForm({
         acc[field.code] = transaction.extra?.[field.code as keyof typeof transaction.extra] || ""
         return acc
       },
-      {} as Record<string, any>
+      {} as Record<string, unknown>
     ),
   })
 

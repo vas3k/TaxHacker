@@ -59,11 +59,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           <p className="text-muted-foreground">Customize your settings here</p>
         </div>
         <Separator className="my-6" />
-        <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-          <aside className="-mx-4 lg:w-1/5">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <aside className="-mx-4 w-fit max-w-[300px] shrink-0 lg:mx-0 lg:mr-12">
             <SideNav items={settingsCategories} />
           </aside>
-          <div className="flex w-full">{children}</div>
+          <div className="min-w-0 flex-1">{children}</div>
         </div>
       </div>
     </>
