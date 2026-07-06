@@ -1,20 +1,15 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextConfig from "eslint-config-next";
 
 const eslintConfig = [
+  ...nextConfig,
   {
     ignores: ["prisma/client/**"],
   },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    files: ["**/*.{ts,tsx}"],
+    plugins: {
+      "@typescript-eslint": nextConfig[1].plugins["@typescript-eslint"],
+    },
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -24,6 +19,10 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/immutability": "warn",
     },
   },
 ];
