@@ -23,9 +23,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "24"
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
       - run: npm run lint
 
   test:
@@ -37,9 +38,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "24"
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
       - run: npm run test
 
   typecheck:
@@ -51,9 +53,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "24"
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
       - run: npx tsc --noEmit
 
   docker-build:

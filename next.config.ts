@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true, // FIXME: bug on prod, images always empty, investigate later
   },
+  serverExternalPackages: ["@prisma/adapter-pg"],
   experimental: {
     serverActions: {
       bodySizeLimit: "256mb",
