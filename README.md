@@ -171,6 +171,8 @@ Configure TaxHacker for your specific needs with these environment variables:
 | `POSTGRES_DB` | No (`docker-compose.build.yml`) | Database name (defaults to `taxhacker`) | `taxhacker` |
 
 
+> 💡 **Need internet access with authentication?** See [docs/self-hosted-public-access.md](docs/self-hosted-public-access.md) for a workaround (yes, it's cursed).
+
 ## ⌨️ Local Development
 
 We use:
