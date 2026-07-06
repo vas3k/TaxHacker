@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "26"
           cache: npm
       - run: npm ci
       - run: npm run lint
@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "26"
           cache: npm
       - run: npm ci
       - run: npm run test
@@ -51,7 +51,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "26"
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
