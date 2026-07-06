@@ -35,11 +35,8 @@ ENV NODE_ENV=production
 COPY prisma.config.ts ./
 COPY . .
 
-# CI pre-generates prisma/client natively (see workflows) and sets
-# SKIP_PRISMA_GENERATE=true so get-dmmf never runs under QEMU emulation.
-# Local single-platform builds run prisma generate here (natively, safe).
-ARG SKIP_PRISMA_GENERATE=false
-RUN if [ "${SKIP_PRISMA_GENERATE}" != "true" ]; then npx prisma generate; fi
+# Generate the Prisma client (needs prisma.config.ts, present only after the COPY above)
+RUN npx prisma generate
 
 # Build the application
 RUN npm run build
