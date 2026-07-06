@@ -1,0 +1,89 @@
+name: Build and Publish Branch Docker Image
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+concurrency:
+  group: docker-branch-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: ${{ github.event.action != 'closed' }}
+
+jobs:
+  build:
+    if: github.event.action != 'closed'
+    name: Build and Push (amd64)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Generate Prisma client natively
+        run: npm ci && npx prisma generate
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.1.0
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v6.1.0
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/taxhacker
+          tags: |
+            type=ref,event=pr
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7.2.0
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            SKIP_PRISMA_GENERATE=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  cleanup:
+    if: github.event.action == 'closed'
+    name: Delete Branch Image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Delete PR image from GHCR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          TAG="pr-${{ github.event.pull_request.number }}"
+          echo "Looking for image versions tagged '${TAG}'"
+          VIDS=$(gh api --paginate "/orgs/${OWNER_LC}/packages/container/taxhacker/versions" \
+            --jq ".[] | select((.metadata.container.tags // []) | index(\"${TAG}\")) | .id" || true)
+          VID=$(echo "${VIDS}" | head -1)
+          if [ -n "${VID}" ]; then
+            echo "Deleting version ${VID} (tag: ${TAG})"
+            gh api --method DELETE "/orgs/${OWNER_LC}/packages/container/taxhacker/versions/${VID}"
+          else
+            echo "No version found for tag: ${TAG} (already cleaned up)"
+          fi
