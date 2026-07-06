@@ -65,7 +65,7 @@ export default function LLMSettingsForm({
     <>
       <form action={saveAction} className="space-y-4">
         {isSelfHosted && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label className="text-sm font-medium">LLM providers</label>
             <DndProviderBlocks
               providerOrder={providerOrder}
@@ -152,16 +152,18 @@ function DndProviderBlocks({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={providerOrder} strategy={verticalListSortingStrategy}>
-        {providerOrder.map((providerKey, idx) => (
-          <SortableProviderBlock
-            key={providerKey}
-            id={providerKey}
-            idx={idx}
-            providerKey={providerKey}
-            value={providerValues[providerKey]}
-            handleValueChange={handleProviderValueChange}
-          />
-        ))}
+        <div className="my-6 flex flex-col gap-4">
+          {providerOrder.map((providerKey, idx) => (
+            <SortableProviderBlock
+              key={providerKey}
+              id={providerKey}
+              idx={idx}
+              providerKey={providerKey}
+              value={providerValues[providerKey]}
+              handleValueChange={handleProviderValueChange}
+            />
+          ))}
+        </div>
       </SortableContext>
     </DndContext>
   )
@@ -204,14 +206,14 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
   }
 
   return (
-    <div
+    <Card
       ref={setNodeRef}
       style={{
         transform: transform ? `translateY(${transform.y}px)` : undefined,
         transition,
         opacity: isDragging ? 0.6 : 1,
       }}
-      className={`bg-muted rounded-lg p-4 shadow flex flex-col gap-2 mb-2`}
+      className="flex flex-col gap-2 p-4"
     >
       <div className="flex flex-row items-center gap-2 mb-2">
         {/* Drag handle */}
@@ -286,6 +288,6 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           </a>
         </small>
       )}
-    </div>
+    </Card>
   )
 }

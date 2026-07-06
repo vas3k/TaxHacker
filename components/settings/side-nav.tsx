@@ -16,7 +16,7 @@ export function SideNav({ className, items, ...props }: SidebarNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className={cn("flex flex-wrap space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1", className)} {...props}>
+    <nav className={cn("flex flex-wrap gap-2 lg:flex-col lg:gap-1", className)} {...props}>
       {items.map((item) => (
         <Link
           key={item.href}
@@ -24,7 +24,7 @@ export function SideNav({ className, items, ...props }: SidebarNavProps) {
           className={cn(
             buttonVariants({ variant: "ghost" }),
             pathname === item.href ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline",
-            "justify-start"
+            "w-fit justify-start whitespace-nowrap lg:w-full"
           )}
         >
           {item.title}
