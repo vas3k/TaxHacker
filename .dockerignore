@@ -9,7 +9,6 @@
 *.log
 *.tsbuildinfo
 node_modules
-prisma/client
 upload
 data
 pgdata
