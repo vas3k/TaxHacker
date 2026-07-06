@@ -84,7 +84,7 @@ File: `etc/crontab`
 - Each user can have multiple email servers
 - Settings include sync interval, file extensions, credentials
 
-### Downloaded Files  
+### Downloaded Files
 - Saved to `UPLOAD_PATH` directory
 - Created as `File` records in database
 - Metadata includes email details (subject, sender, date)
@@ -144,4 +144,4 @@ Email sync logs are available:
   - ⚠️ **Rotating `BETTER_AUTH_SECRET` invalidates stored mailbox passwords.** After changing it, re-enter each server's password (the server shows a decryption error until you do).
 - **IMAP SSL**: Enabled by default for all preset providers
 - **Access Control**: Each user can only access their own email servers
-- **App Passwords**: Recommended for all providers supporting them 
+- **App Passwords**: Recommended for all providers supporting them
