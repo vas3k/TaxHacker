@@ -1,21 +1,26 @@
 import { getCurrentUser } from "@/lib/auth"
-import { fileExists, fullPathForFile } from "@/lib/files"
+import {
+  fileExists,
+  fullPathForFile,
+  getTransactionExportFileName,
+  getTransactionExportFilePath,
+  getTransactionExportRelativeFolder,
+} from "@/lib/files"
 import { EXPORT_AND_IMPORT_FIELD_MAP, ExportFields, ExportFilters } from "@/models/export_and_import"
 import { getFields } from "@/models/fields"
 import { getFilesByTransactionId } from "@/models/files"
 import { updateProgress } from "@/models/progress"
 import { getTransactions } from "@/models/transactions"
 import { format } from "@fast-csv/format"
-import { formatDate } from "date-fns"
 import fs from "fs/promises"
 import JSZip from "jszip"
 import { NextResponse } from "next/server"
-import path from "path"
 import { Readable } from "stream"
 
 const TRANSACTIONS_CHUNK_SIZE = 300
 const FILES_CHUNK_SIZE = 50
 const PROGRESS_UPDATE_INTERVAL_MS = 2000 // 2 seconds
+const EXPORT_FILE_PATH_SEPARATOR = ";"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -30,6 +35,7 @@ export async function GET(request: Request) {
 
   try {
     const fieldKeys = fields.filter((field) => existingFields.some((f) => f.code === field))
+    const includeFilePaths = includeAttachments && fieldKeys.includes("files")
 
     // Create a transform stream for CSV generation
     const csvStream = format({ headers: fieldKeys, writeBOM: true, writeHeaders: false })
@@ -47,7 +53,25 @@ export async function GET(request: Request) {
 
       for (const transaction of chunk) {
         const row: Record<string, unknown> = {}
+        const transactionFiles = includeFilePaths ? await getFilesByTransactionId(transaction.id, user.id) : []
+
         for (const field of existingFields) {
+          if (field.code === "files") {
+            if (includeFilePaths) {
+              const paths: string[] = []
+              for (const file of transactionFiles) {
+                const fullFilePath = fullPathForFile(user, file)
+                if (await fileExists(fullFilePath)) {
+                  paths.push(getTransactionExportFilePath(transaction, file, transactionFiles.length))
+                }
+              }
+              row.files = paths.join(EXPORT_FILE_PATH_SEPARATOR)
+            } else {
+              row.files = ""
+            }
+            continue
+          }
+
           let value
           if (field.isExtra) {
             value = transaction.extra?.[field.code as keyof typeof transaction.extra] ?? ""
@@ -122,12 +146,7 @@ export async function GET(request: Request) {
       for (const transaction of chunk) {
         const transactionFiles = await getFilesByTransactionId(transaction.id, user.id)
 
-        const transactionFolder = filesFolder.folder(
-          path.join(
-            transaction.issuedAt ? formatDate(transaction.issuedAt, "yyyy/MM") : "",
-            transactionFiles.length > 1 ? transaction.name || transaction.id : ""
-          )
-        )
+        const transactionFolder = filesFolder.folder(getTransactionExportRelativeFolder(transaction, transactionFiles.length))
 
         if (!transactionFolder) continue
 
@@ -138,13 +157,7 @@ export async function GET(request: Request) {
               `Processing file ${++totalFilesProcessed}/${totalFilesToProcess}: ${file.filename} for transaction ${transaction.id}`
             )
             const fileData = await fs.readFile(fullFilePath)
-            const fileExtension = path.extname(fullFilePath)
-            transactionFolder.file(
-              `${formatDate(transaction.issuedAt || new Date(), "yyyy-MM-dd")} - ${
-                transaction.name || transaction.id
-              }${fileExtension}`,
-              fileData
-            )
+            transactionFolder.file(getTransactionExportFileName(transaction, file), fileData)
 
             // Update progress every PROGRESS_UPDATE_INTERVAL_MS milliseconds
             const now = Date.now()
