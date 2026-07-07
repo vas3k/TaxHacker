@@ -14,7 +14,7 @@ import { authClient } from "@/lib/auth-client"
 import config from "@/lib/config"
 import { PLANS } from "@/lib/stripe"
 import { formatBytes } from "@/lib/utils"
-import { CreditCard, LogOut, MoreVertical, Settings, Sparkles, User } from "lucide-react"
+import { CreditCard, LogOut, MoreVertical, Sparkles, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -77,22 +77,16 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-          </DropdownMenuItem>
-          {!isSelfHosted && (
+        {!isSelfHosted && (
+          <DropdownMenuGroup>
             <DropdownMenuItem asChild>
               <Link href="/api/stripe/portal" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Billing
               </Link>
             </DropdownMenuItem>
-          )}
-        </DropdownMenuGroup>
+          </DropdownMenuGroup>
+        )}
         {!isSelfHosted && (
           <>
             <DropdownMenuSeparator />

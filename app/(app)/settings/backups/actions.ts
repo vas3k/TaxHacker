@@ -5,9 +5,11 @@ import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { getUserUploadsDirectory, safePathJoin } from "@/lib/files"
 import { MODEL_BACKUP, modelFromJSON } from "@/models/backups"
+import { DEFAULT_CATEGORIES, DEFAULT_CURRENCIES, DEFAULT_FIELDS, DEFAULT_SETTINGS } from "@/models/defaults"
 import fs from "fs/promises"
 import JSZip from "jszip"
 import path from "path"
+import { redirect } from "next/navigation"
 
 const SUPPORTED_BACKUP_VERSIONS = ["1.0"]
 const REMOVE_EXISTING_DATA = true
@@ -160,4 +162,67 @@ async function cleanupUserTables(userId: string) {
       console.error(`Error clearing table:`, error)
     }
   }
+}
+
+export async function resetLLMSettingsAction() {
+  const user = await getCurrentUser()
+  const llmSettings = DEFAULT_SETTINGS.filter((setting) => setting.code === "prompt_analyse_new_file")
+
+  for (const setting of llmSettings) {
+    await prisma.setting.upsert({
+      where: { userId_code: { code: setting.code, userId: user.id } },
+      update: { value: setting.value },
+      create: { ...setting, userId: user.id },
+    })
+  }
+
+  redirect("/settings/backups")
+}
+
+export async function resetFieldsAndCategoriesAction() {
+  const user = await getCurrentUser()
+
+  for (const category of DEFAULT_CATEGORIES) {
+    await prisma.category.upsert({
+      where: { userId_code: { code: category.code, userId: user.id } },
+      update: { name: category.name, color: category.color, llm_prompt: category.llm_prompt, createdAt: new Date() },
+      create: { ...category, userId: user.id, createdAt: new Date() },
+    })
+  }
+  await prisma.category.deleteMany({
+    where: { userId: user.id, code: { notIn: DEFAULT_CATEGORIES.map((category) => category.code) } },
+  })
+
+  for (const currency of DEFAULT_CURRENCIES) {
+    await prisma.currency.upsert({
+      where: { userId_code: { code: currency.code, userId: user.id } },
+      update: { name: currency.name },
+      create: { ...currency, userId: user.id },
+    })
+  }
+  await prisma.currency.deleteMany({
+    where: { userId: user.id, code: { notIn: DEFAULT_CURRENCIES.map((currency) => currency.code) } },
+  })
+
+  for (const field of DEFAULT_FIELDS) {
+    await prisma.field.upsert({
+      where: { userId_code: { code: field.code, userId: user.id } },
+      update: {
+        name: field.name,
+        type: field.type,
+        llm_prompt: field.llm_prompt,
+        createdAt: new Date(),
+        isVisibleInList: field.isVisibleInList,
+        isVisibleInAnalysis: field.isVisibleInAnalysis,
+        isRequired: field.isRequired,
+        isExtra: field.isExtra,
+      },
+      create: { ...field, userId: user.id, createdAt: new Date() },
+    })
+  }
+  await prisma.field.deleteMany({
+    where: { userId: user.id, code: { notIn: DEFAULT_FIELDS.map((field) => field.code) } },
+  })
+
+  redirect("/settings/backups")
 }

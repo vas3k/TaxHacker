@@ -1,5 +1,6 @@
 import { addFieldAction, deleteFieldAction, editFieldAction } from "@/app/(app)/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
+import { SettingsPageHeader } from "@/components/settings/page-header"
 import { getCurrentUser } from "@/lib/auth"
 import { getFields } from "@/models/fields"
 import { Prisma } from "@/prisma/client"
@@ -14,13 +15,11 @@ export default async function FieldsSettingsPage() {
   }))
 
   return (
-    <div className="container">
-      <h1 className="text-2xl font-bold mb-2">Custom Fields</h1>
-      <p className="text-sm text-gray-500 mb-6 max-w-prose">
-        You can add new fields to your transactions. Standard fields can&apos;t be removed but you can tweak their
-        prompts or hide them. If you don&apos;t want a field to be analyzed by AI but filled in by hand, leave the
-        &quot;LLM prompt&quot; empty.
-      </p>
+    <div className="space-y-6">
+      <SettingsPageHeader
+        title="Fields"
+        description="Add custom fields to transactions, tweak LLM prompts, or hide fields you don't need. Leave the LLM prompt empty for fields you want to fill in manually."
+      />
       <CrudTable
         items={fieldsWithActions}
         columns={[

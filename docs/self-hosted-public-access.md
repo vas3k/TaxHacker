@@ -50,4 +50,4 @@ docker exec -it postgres psql -U postgres -d taxhacker -c "SELECT value FROM ver
 
 ### 4. Seed the Database
 
-Because we skipped the normal route, database seeding won't happen automatically. Open `<YOUR_URL>/settings/danger` and click `[Reset fields, currencies and categories]`
+Because we skipped the normal route, database seeding won't happen automatically. Open `<YOUR_URL>/settings/backups` and click `[Reset fields, currencies and categories]`

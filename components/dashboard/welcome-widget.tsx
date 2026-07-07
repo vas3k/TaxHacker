@@ -94,7 +94,7 @@ export async function WelcomeWidget() {
               </Button>
             </Link>
           )}
-          <Link href="/settings">
+          <Link href="/settings/currencies">
             <Button variant="outline">
               <Banknote className="h-4 w-4" />
               Default Currency: {settings.default_currency}

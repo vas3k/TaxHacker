@@ -1,5 +1,6 @@
 import { addProjectAction, deleteProjectAction, editProjectAction } from "@/app/(app)/settings/actions"
 import { CrudTable } from "@/components/settings/crud"
+import { SettingsPageHeader } from "@/components/settings/page-header"
 import { getCurrentUser } from "@/lib/auth"
 import { randomHexColor } from "@/lib/utils"
 import { getProjects } from "@/models/projects"
@@ -15,12 +16,11 @@ export default async function ProjectsSettingsPage() {
   }))
 
   return (
-    <div className="container">
-      <h1 className="text-2xl font-bold mb-2">Projects</h1>
-      <p className="text-sm text-gray-500 mb-6 max-w-prose">
-        Use projects to differentiate between the type of activities you do For example: Freelancing, YouTube channel,
-        Blogging. Projects are just a convenient way to separate statistics.
-      </p>
+    <div className="space-y-6">
+      <SettingsPageHeader
+        title="Projects"
+        description="Use projects to differentiate between the type of activities you do. For example: Freelancing, YouTube channel, Blogging. Projects are just a convenient way to separate statistics."
+      />
       <CrudTable
         items={projectsWithActions}
         columns={[

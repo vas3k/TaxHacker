@@ -8,6 +8,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -18,7 +19,21 @@ import {
 } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
 import config from "@/lib/config"
-import { ClockArrowUp, FileText, Gift, House, Import, LayoutDashboard, Settings, Upload } from "lucide-react"
+import {
+  ClockArrowUp,
+  Coins,
+  DatabaseBackup,
+  FileText,
+  FolderKanban,
+  FormInput,
+  Gift,
+  House,
+  Import,
+  Sparkles,
+  Tags,
+  Upload,
+  User,
+} from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -28,14 +43,32 @@ import { Blinker } from "./blinker"
 import { SidebarMenuItemWithHighlight } from "./sidebar-item"
 import SidebarUser from "./sidebar-user"
 
+type SidebarApp = {
+  id: string
+  name: string
+  icon: string
+}
+
+const settingsItems = [
+  { title: "Profile & Plan", href: "/settings/profile", icon: User },
+  { title: "LLM settings", href: "/settings/llm", icon: Sparkles },
+  { title: "Fields", href: "/settings/fields", icon: FormInput },
+  { title: "Categories", href: "/settings/categories", icon: Tags },
+  { title: "Projects", href: "/settings/projects", icon: FolderKanban },
+  { title: "Currencies", href: "/settings/currencies", icon: Coins },
+  { title: "Backup & Restore", href: "/settings/backups", icon: DatabaseBackup },
+]
+
 export function AppSidebar({
   profile,
   unsortedFilesCount,
   isSelfHosted,
+  apps,
 }: {
   profile: UserProfile
   unsortedFilesCount: number
   isSelfHosted: boolean
+  apps: SidebarApp[]
 }) {
   const { open, setOpenMobile } = useSidebar()
   const pathname = usePathname()
@@ -106,22 +139,44 @@ export function AppSidebar({
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItemWithHighlight>
-                <SidebarMenuItemWithHighlight href="/apps">
-                  <SidebarMenuButton asChild>
-                    <Link href="/apps">
-                      <LayoutDashboard />
-                      <span>Apps</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItemWithHighlight>
-                <SidebarMenuItemWithHighlight href="/settings">
-                  <SidebarMenuButton asChild>
-                    <Link href="/settings">
-                      <Settings />
-                      <span>Settings</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItemWithHighlight>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {apps.length > 0 && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Apps</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {apps.map((app) => (
+                    <SidebarMenuItemWithHighlight key={app.id} href={`/apps/${app.id}`}>
+                      <SidebarMenuButton asChild>
+                        <Link href={`/apps/${app.id}`}>
+                          <span className="text-base leading-none">{app.icon}</span>
+                          <span>{app.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItemWithHighlight>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Settings</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {settingsItems.map((item) => (
+                  <SidebarMenuItemWithHighlight key={item.href} href={item.href}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItemWithHighlight>
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
