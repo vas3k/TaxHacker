@@ -1,7 +1,7 @@
 import { TransactionFilters } from "@/models/transactions"
 import { format } from "date-fns"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 
 const filterKeys = ["search", "dateFrom", "dateTo", "ordering", "categoryCode", "projectCode"]
 
@@ -17,28 +17,24 @@ export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [filters, setFilters] = useState<TransactionFilters>({
-    ...defaultFilters,
-    ...searchParamsToFilters(searchParams),
-  })
+  const filters = useMemo(
+    () => ({
+      ...defaultFilters,
+      ...searchParamsToFilters(searchParams),
+    }),
+    [defaultFilters, searchParams]
+  )
 
-  useEffect(() => {
-    const newSearchParams = filtersToSearchParams(filters, searchParams)
+  const setFilters = (
+    update: TransactionFilters | ((prev: TransactionFilters) => TransactionFilters)
+  ) => {
+    const nextFilters = typeof update === "function" ? update(filters) : update
+    const newSearchParams = filtersToSearchParams(nextFilters, searchParams)
     if (areSearchParamsEqual(newSearchParams, searchParams)) return
 
     const query = newSearchParams.toString()
     router.push(query ? `${pathname}?${query}` : pathname)
-  }, [filters, pathname, router, searchParams])
-
-  useEffect(() => {
-    const next = searchParamsToFilters(searchParams)
-    setFilters((prev) => {
-      if (filterKeys.every((key) => prev[key as keyof TransactionFilters] === next[key as keyof TransactionFilters])) {
-        return prev
-      }
-      return next
-    })
-  }, [searchParams])
+  }
 
   return [filters, setFilters] as const
 }
