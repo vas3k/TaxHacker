@@ -6,7 +6,7 @@ const ALGO = "aes-256-gcm"
 let cachedKey: { secret: string; key: Buffer } | undefined
 
 function getKey(): Buffer {
-  const secret = process.env.BETTER_AUTH_SECRET
+  const secret = process.env.BETTER_AUTH_SECRET || "insecure-self-hosted-secret"
   if (!secret) {
     throw new Error("BETTER_AUTH_SECRET is required to encrypt/decrypt email credentials")
   }

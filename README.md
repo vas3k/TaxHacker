@@ -165,7 +165,7 @@ Configure TaxHacker for your specific needs with these environment variables:
 | `BASE_URL` | No | Base URL for the application | `http://localhost:7331` |
 | `SELF_HOSTED_MODE` | No | Set to "true" for self-hosting: enables auto-login, custom API keys, and additional features | `true` |
 | `DISABLE_SIGNUP` | No | Disable new user registration on your instance | `false` |
-| `BETTER_AUTH_SECRET` | Yes | Secret key for authentication (minimum 16 characters) | `your-secure-random-key` |
+| `BETTER_AUTH_SECRET` | Recommended | Secret key for authentication and email credential encryption (minimum 16 characters). In self-hosted Docker, TaxHacker auto-generates and persists one in `./data/.better_auth_secret` if unset. | `your-secure-random-key` |
 | `POSTGRES_PASSWORD` | Yes (`docker-compose.build.yml`) | Password for the bundled Postgres when building locally — used in both `POSTGRES_PASSWORD` and `DATABASE_URL` | output of `openssl rand -hex 24` |
 | `POSTGRES_USER` | No (`docker-compose.build.yml`) | Database user (defaults to `postgres`) | `postgres` |
 | `POSTGRES_DB` | No (`docker-compose.build.yml`) | Database name (defaults to `taxhacker`) | `taxhacker` |

@@ -11,6 +11,7 @@ services:
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-taxhacker}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
@@ -29,8 +30,8 @@ services:
       - SELF_HOSTED_MODE=true
       - UPLOAD_PATH=/app/data/uploads
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-taxhacker}
-      # Must match the app's secret: it derives the key that decrypts stored mailbox passwords.
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in your .env file}
+      # Optional override. When unset, both containers use the same persisted secret from ./data.
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-}
     volumes:
       - ./data:/app/data
       - ./etc/crontab:/etc/cron.d/email-sync:ro
