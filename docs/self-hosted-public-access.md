@@ -1,6 +1,6 @@
 # Self-Hosted Public Access
 
-> ⚠️ **Warning: This is a workaround ("hack") for exposing self-hosted instances to the internet.**  
+> ⚠️ **Warning: This is a workaround ("hack") for exposing self-hosted instances to the internet.**
 > This approach has security implications and should be used with caution. For production deployments, consider implementing proper authentication with reverse proxy or using the official cloud version.
 
 ## Overview
