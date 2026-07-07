@@ -44,6 +44,8 @@ services:
     restart: unless-stopped
     depends_on:
       - app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     security_opt:
       - no-new-privileges:true
     command: >
