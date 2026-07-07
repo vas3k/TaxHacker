@@ -27,6 +27,17 @@ export default function ProfileSettingsForm({ user }: { user: User }) {
             defaultValue={user.avatar ? user.avatar + "?" + user.id : ""}
           />
           <FormInput title="Account Name" name="name" defaultValue={user.name || ""} />
+          <div className="flex flex-row items-center gap-4">
+            <Button type="submit" disabled={pending}>
+              {pending ? "Saving..." : "Save"}
+            </Button>
+            {saveState?.success && (
+              <p className="text-green-500 flex flex-row items-center gap-2">
+                <CircleCheckBig />
+                Saved!
+              </p>
+            )}
+          </div>
         </div>
 
         <Separator />

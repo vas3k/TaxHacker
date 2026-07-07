@@ -38,7 +38,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect } from "react"
-import { ColoredText } from "../ui/colored-text"
 import { Blinker } from "./blinker"
 import { SidebarMenuItemWithHighlight } from "./sidebar-item"
 import SidebarUser from "./sidebar-user"
@@ -73,6 +72,8 @@ export function AppSidebar({
   const { open, setOpenMobile } = useSidebar()
   const pathname = usePathname()
   const { notification } = useNotification()
+  const accountTitle = profile.name || profile.email
+  const accountSubtitle = isSelfHosted ? `Version ${config.app.version}` : profile.email
 
   // Hide sidebar on mobile when clicking an item
   useEffect(() => {
@@ -83,12 +84,11 @@ export function AppSidebar({
     <>
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo/256.png" alt="Logo" className="h-10 w-10 rounded-lg" width={40} height={40} />
-            <div className="grid flex-1 text-left leading-tight">
-              <span className="truncate font-semibold text-lg">
-                <ColoredText>{config.app.title}</ColoredText>
-              </span>
+          <Link href="/" className="flex min-w-0 items-center gap-2">
+            <Image src="/logo/256.png" alt="Logo" className="h-10 w-10 shrink-0 rounded-lg" width={40} height={40} />
+            <div className="grid min-w-0 flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+              <span className="truncate font-semibold text-base text-black">{accountTitle}</span>
+              <span className="truncate text-xs text-muted-foreground">{accountSubtitle}</span>
             </div>
           </Link>
         </SidebarHeader>
@@ -212,15 +212,17 @@ export function AppSidebar({
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarUser profile={profile} isSelfHosted={isSelfHosted} />
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {!isSelfHosted && (
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarUser profile={profile} isSelfHosted={isSelfHosted} />
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </SidebarFooter>
       </Sidebar>
     </>
