@@ -18,6 +18,10 @@ export const settingsFormSchema = z.object({
   llm_providers: z.string().default('openai,google,mistral,openai_compatible'),
   prompt_analyse_new_file: z.string().optional(),
   is_welcome_message_hidden: z.string().optional(),
+  paperless_url: z.string().url().optional().or(z.literal("")),
+  paperless_api_token: z.string().optional(),
+  paperless_enabled: z.string().optional(),
+  paperless_default_tags: z.string().optional(),
 })
 
 export const currencyFormSchema = z.object({

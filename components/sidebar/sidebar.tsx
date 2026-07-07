@@ -139,6 +139,14 @@ export function AppSidebar({
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/import/paperless">
+                      <Import />
+                      Import from Paperless
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 {isSelfHosted && (
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>

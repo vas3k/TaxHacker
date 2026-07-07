@@ -185,7 +185,15 @@ const getFieldRenderer = (field: Field): FieldRenderer => {
   }
 }
 
-export function TransactionList({ transactions, fields = [] }: { transactions: Transaction[]; fields?: Field[] }) {
+export function TransactionList({
+  transactions,
+  fields = [],
+  isPaperlessEnabled = false,
+}: {
+  transactions: Transaction[]
+  fields?: Field[]
+  isPaperlessEnabled?: boolean
+}) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -352,7 +360,11 @@ export function TransactionList({ transactions, fields = [] }: { transactions: T
         </TableFooter>
       </Table>
       {selectedIds.length > 0 && (
-        <BulkActionsMenu selectedIds={selectedIds} onActionComplete={() => setSelectedIds([])} />
+        <BulkActionsMenu
+          selectedIds={selectedIds}
+          onActionComplete={() => setSelectedIds([])}
+          isPaperlessEnabled={isPaperlessEnabled}
+        />
       )}
     </div>
   )
