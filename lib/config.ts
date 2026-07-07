@@ -1,4 +1,5 @@
 import { z } from "zod"
+import packageJson from "../package.json"
 
 const envSchema = z.object({
   BASE_URL: z.string().url().default("http://localhost:7331"),
@@ -28,7 +29,7 @@ const config = {
   app: {
     title: "TaxHacker",
     description: "Your personal AI accountant",
-    version: process.env.npm_package_version || "0.0.1",
+    version: packageJson.version || "0.0.1",
     baseURL: env.BASE_URL || `http://localhost:${env.PORT || "7331"}`,
     supportEmail: "me@vas3k.com",
   },
