@@ -3,6 +3,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
 import type { AnalyzeAttachment } from "@/ai/attachments"
+import sharp from "sharp"
 
 export type LLMProvider = "openai" | "google" | "mistral" | "openai_compatible"
 
@@ -90,12 +91,21 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
 
     const messageContent: MessageContent = [{ type: "text", text: req.prompt }]
     if (req.attachments && req.attachments.length > 0) {
-      const images = req.attachments.map((att) => ({
-        type: "image_url",
-        image_url: {
-          url: `data:${att.contentType};base64,${att.base64}`,
-        },
-      }))
+      const images = await Promise.all(
+        req.attachments.map(async (att) => {
+          let contentType = att.contentType
+          let base64 = att.base64
+          if (config.provider === "openai_compatible" && contentType !== "image/png" && contentType !== "image/jpeg") {
+            const pngBuffer = await sharp(Buffer.from(base64, "base64")).png().toBuffer()
+            base64 = pngBuffer.toString("base64")
+            contentType = "image/png"
+          }
+          return {
+            type: "image_url",
+            image_url: { url: `data:${contentType};base64,${base64}` },
+          }
+        })
+      )
       messageContent.push(...images)
     }
     const messages: BaseMessage[] = [new HumanMessage({ content: messageContent })]
