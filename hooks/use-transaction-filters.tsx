@@ -1,36 +1,52 @@
 import { TransactionFilters } from "@/models/transactions"
 import { format } from "date-fns"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useMemo } from "react"
 
 const filterKeys = ["search", "dateFrom", "dateTo", "ordering", "categoryCode", "projectCode"]
 
+export function areSearchParamsEqual(a: URLSearchParams, b: URLSearchParams) {
+  const keys = new Set([...a.keys(), ...b.keys()])
+  for (const key of keys) {
+    if (a.get(key) !== b.get(key)) return false
+  }
+  return true
+}
+
 export function useTransactionFilters(defaultFilters?: TransactionFilters) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [filters, setFilters] = useState<TransactionFilters>({
-    ...defaultFilters,
-    ...searchParamsToFilters(searchParams),
-  })
+  const filters = useMemo(
+    () => ({
+      ...defaultFilters,
+      ...searchParamsToFilters(searchParams),
+    }),
+    [defaultFilters, searchParams]
+  )
 
-  useEffect(() => {
-    const newSearchParams = filtersToSearchParams(filters, searchParams)
-    router.push(`?${newSearchParams.toString()}`)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams intentionally omitted to avoid sync loop with URL→filters effect
-  }, [filters, router])
+  const setFilters = (
+    update: TransactionFilters | ((prev: TransactionFilters) => TransactionFilters)
+  ) => {
+    const nextFilters = typeof update === "function" ? update(filters) : update
+    const newSearchParams = filtersToSearchParams(nextFilters, searchParams)
+    if (areSearchParamsEqual(newSearchParams, searchParams)) return
 
-  useEffect(() => {
-    setFilters(searchParamsToFilters(searchParams))
-  }, [searchParams])
+    const query = newSearchParams.toString()
+    router.push(query ? `${pathname}?${query}` : pathname)
+  }
 
   return [filters, setFilters] as const
 }
 
 export function searchParamsToFilters(searchParams: URLSearchParams) {
-  return filterKeys.reduce((acc, filter) => {
-    acc[filter] = searchParams.get(filter) || ""
-    return acc
-  }, {} as Record<string, string>) as TransactionFilters
+  return filterKeys.reduce(
+    (acc, filter) => {
+      acc[filter] = searchParams.get(filter) || ""
+      return acc
+    },
+    {} as Record<string, string>
+  ) as TransactionFilters
 }
 
 export function filtersToSearchParams(

@@ -2,7 +2,7 @@ import { FormError } from "@/components/forms/error"
 import { formatCurrency } from "@/lib/utils"
 import { format, startOfDay } from "date-fns"
 import { Loader2 } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 
 async function getCurrencyRate(currencyCodeFrom: string, currencyCodeTo: string, date: Date): Promise<number> {
@@ -33,12 +33,13 @@ export const CurrencyConverterTool = ({
   onChange?: (value: number) => void
 }) => {
   const normalizedDate = startOfDay(date || new Date(Date.now() - 24 * 60 * 60 * 1000))
+  const normalizedDateString = format(normalizedDate, "yyyy-MM-dd")
   const [exchangeRate, setExchangeRate] = useState(0)
   const [convertedTotal, setConvertedTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchAndUpdateRates = useCallback(async () => {
+  const fetchAndUpdateRates = async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -54,7 +55,7 @@ export const CurrencyConverterTool = ({
     } finally {
       setIsLoading(false)
     }
-  }, [originalCurrencyCode, targetCurrencyCode, normalizedDate, originalTotal])
+  }
 
   const handleRestart = () => {
     setError(null)
@@ -63,11 +64,17 @@ export const CurrencyConverterTool = ({
 
   useEffect(() => {
     fetchAndUpdateRates()
-  }, [fetchAndUpdateRates])
+    // fetchAndUpdateRates is intentionally omitted: it's redefined every render and only
+    // needs to re-run when the values below actually change, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originalCurrencyCode, targetCurrencyCode, normalizedDateString, originalTotal])
 
   useEffect(() => {
     onChange?.(convertedTotal)
-  }, [convertedTotal, onChange])
+    // onChange is intentionally omitted: callers often pass a new inline function each
+    // render, which would otherwise cause this effect to fire on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [convertedTotal])
 
   if (!originalTotal || !originalCurrencyCode || !targetCurrencyCode || originalCurrencyCode === targetCurrencyCode) {
     return <></>

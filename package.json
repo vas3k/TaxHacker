@@ -1,8 +1,11 @@
 {
   "name": "taxhacker",
-  "version": "0.5.5",
+  "version": "0.8.2",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
   "scripts": {
     "dev": "next dev -p 7331 --turbopack",
     "build": "next build",

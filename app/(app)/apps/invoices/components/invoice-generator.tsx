@@ -81,8 +81,8 @@ export function InvoiceGenerator({
   appData: InvoiceAppData | null
 }) {
   const templates: InvoiceTemplate[] = useMemo(
-    () =>     [...defaultTemplates(user, settings), ...(appData?.templates || [])],
-    [appData, user, settings]
+    () => [...defaultTemplates(user, settings), ...(appData?.templates || [])],
+    [user, settings, appData]
   )
 
   const [selectedTemplate, setSelectedTemplate] = useState<string>(templates[0].name)

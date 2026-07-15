@@ -6,7 +6,7 @@ import { createUserDefaults } from "./defaults"
 
 export const SELF_HOSTED_USER = {
   email: "taxhacker@localhost",
-  name: "Self-Hosted Mode",
+  name: "TaxHacker",
   membershipPlan: "unlimited",
 }
 
@@ -38,7 +38,7 @@ export async function getOrCreateCloudUser(email: string, data: Prisma.UserCreat
   if (await isDatabaseEmpty(user.id)) {
     await createUserDefaults(user.id)
   }
-  
+
   return user
 }
 

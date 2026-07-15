@@ -7,13 +7,14 @@ import { ComponentProps } from "react"
 
 export function SidebarMenuItemWithHighlight({
   href,
+  exact = false,
   children,
   className,
   ...props
-}: { href: string } & ComponentProps<typeof SidebarMenuItem>) {
+}: { href: string; exact?: boolean } & ComponentProps<typeof SidebarMenuItem>) {
   const pathname = usePathname()
   let isActive = false
-  if (href === "/") {
+  if (exact || href === "/") {
     isActive = pathname === href
   } else {
     isActive = pathname.startsWith(href)

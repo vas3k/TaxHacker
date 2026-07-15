@@ -1,13 +1,17 @@
-import { addCategoryAction, deleteCategoryAction, editCategoryAction } from "@/app/(app)/settings/actions"
+import CategoryDefaultForm from "@/components/settings/category-default-form"
 import { CrudTable } from "@/components/settings/crud"
+import { SettingsPageHeader } from "@/components/settings/page-header"
+import { Separator } from "@/components/ui/separator"
 import { getCurrentUser } from "@/lib/auth"
 import { randomHexColor } from "@/lib/utils"
 import { getCategories } from "@/models/categories"
+import { getSettings } from "@/models/settings"
 import { Prisma } from "@/prisma/client"
+import { addCategoryAction, deleteCategoryAction, editCategoryAction } from "@/app/(app)/settings/actions"
 
 export default async function CategoriesSettingsPage() {
   const user = await getCurrentUser()
-  const categories = await getCategories(user.id)
+  const [categories, settings] = await Promise.all([getCategories(user.id), getSettings(user.id)])
   const categoriesWithActions = categories.map((category) => ({
     ...category,
     isEditable: true,
@@ -15,13 +19,13 @@ export default async function CategoriesSettingsPage() {
   }))
 
   return (
-    <div className="container">
-      <h1 className="text-2xl font-bold mb-2">Categories</h1>
-      <p className="text-sm text-gray-500 mb-6 max-w-prose">
-        Create your own categories that better reflect the type of income and expenses you have. Define an LLM Prompt so
-        that AI can determine this category automatically.
-      </p>
-
+    <div className="space-y-8">
+      <SettingsPageHeader
+        title="Categories"
+        description="Create categories that reflect your income and expenses. Define an LLM prompt so AI can assign the right category automatically."
+      />
+      <CategoryDefaultForm settings={settings} categories={categories} />
+      <Separator />
       <CrudTable
         items={categoriesWithActions}
         columns={[

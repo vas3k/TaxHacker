@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import config from "@/lib/config"
+import { getApps } from "@/app/(app)/apps/common"
 import { getUnsortedFilesCount } from "@/models/files"
 import type { Metadata, Viewport } from "next"
 import "../globals.css"
@@ -31,7 +32,7 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
-  const unsortedFilesCount = await getUnsortedFilesCount(user.id)
+  const [unsortedFilesCount, apps] = await Promise.all([getUnsortedFilesCount(user.id), getApps()])
 
   const userProfile = {
     id: user.id,
@@ -53,6 +54,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             profile={userProfile}
             unsortedFilesCount={unsortedFilesCount}
             isSelfHosted={config.selfHosted.isEnabled}
+            apps={apps.map((app) => ({
+              id: app.id,
+              name: app.manifest.name,
+              icon: app.manifest.icon,
+            }))}
           />
           <SidebarInset className="w-full h-full mt-[60px] md:mt-0 overflow-auto">
             {isSubscriptionExpired(user) && <SubscriptionExpired />}

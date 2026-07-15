@@ -1,5 +1,6 @@
 "use server"
 
+import { LLMConfig, LLMProvider, testLLMProvider } from "@/ai/providers/llmProvider"
 import {
   categoryFormSchema,
   currencyFormSchema,
@@ -41,7 +42,8 @@ export async function saveSettingsAction(
     }
   }
 
-  revalidatePath("/settings")
+  revalidatePath("/settings/currencies")
+  revalidatePath("/settings/categories")
   return { success: true }
 }
 
@@ -110,7 +112,6 @@ export async function saveProfileAction(
   })
 
   revalidatePath("/settings/profile")
-  revalidatePath("/settings/business")
   return { success: true }
 }
 

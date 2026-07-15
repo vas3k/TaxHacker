@@ -1,32 +1,47 @@
 name: Build and Publish Branch Docker Image
 
 on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to build and publish"
+        required: true
+        type: string
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [closed]
     branches: [main]
 
 concurrency:
-  group: docker-branch-pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: ${{ github.event.action != 'closed' }}
+  group: docker-branch-pr-${{ github.event.inputs.pr_number || github.event.pull_request.number }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' }}
 
 jobs:
   build:
-    if: github.event.action != 'closed'
+    if: github.event_name == 'workflow_dispatch'
     name: Build and Push (amd64)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
+      - name: Validate PR number
+        run: |
+          set -euo pipefail
+          if ! [[ "${{ inputs.pr_number }}" =~ ^[0-9]+$ ]]; then
+            echo "::error::pr_number must be a positive integer, got: ${{ inputs.pr_number }}"
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
+          ref: refs/pull/${{ inputs.pr_number }}/head
           persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 26
           cache: npm
 
       - name: Generate Prisma client natively
@@ -48,7 +63,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/taxhacker
           tags: |
-            type=ref,event=pr
+            type=raw,value=pr-${{ inputs.pr_number }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7.2.0
@@ -64,7 +79,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   cleanup:
-    if: github.event.action == 'closed'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
     name: Delete Branch Image
     runs-on: ubuntu-latest
     permissions:

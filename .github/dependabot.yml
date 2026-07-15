@@ -42,7 +42,7 @@ updates:
         patterns:
           - tailwindcss
           - tailwind-merge
-          - tw-animate-css
+          - tailwindcss-animate
           - class-variance-authority
           - clsx
           - postcss

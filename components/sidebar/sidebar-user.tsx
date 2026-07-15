@@ -11,13 +11,16 @@ import {
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { UserProfile } from "@/lib/auth"
 import { authClient } from "@/lib/auth-client"
+import config from "@/lib/config"
 import { PLANS } from "@/lib/stripe"
 import { formatBytes } from "@/lib/utils"
-import { CreditCard, LogOut, MoreVertical, Settings, Sparkles, User } from "lucide-react"
+import { CreditCard, LogOut, MoreVertical, Sparkles, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
 export default function SidebarUser({ profile, isSelfHosted }: { profile: UserProfile; isSelfHosted: boolean }) {
+  const subtitle = isSelfHosted ? `Version ${config.app.version}` : profile.email
+
   const signOut = async () => {
     await authClient.signOut({})
     redirect("/")
@@ -27,7 +30,7 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton
-          size="default"
+          size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <Avatar className="h-6 w-6 rounded-full bg-sidebar-accent">
@@ -36,7 +39,10 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
               <User className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
-          <span className="truncate font-medium">{profile.name || profile.email}</span>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-medium">{profile.name || profile.email}</span>
+            <span className="truncate text-xs">{subtitle}</span>
+          </div>
           <MoreVertical className="ml-auto size-4" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
@@ -56,7 +62,7 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{profile.name || profile.email}</span>
-              <span className="truncate text-xs">{profile.email}</span>
+              <span className="truncate text-xs">{subtitle}</span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -71,22 +77,16 @@ export default function SidebarUser({ profile, isSelfHosted }: { profile: UserPr
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-          </DropdownMenuItem>
-          {!isSelfHosted && (
+        {!isSelfHosted && (
+          <DropdownMenuGroup>
             <DropdownMenuItem asChild>
               <Link href="/api/stripe/portal" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Billing
               </Link>
             </DropdownMenuItem>
-          )}
-        </DropdownMenuGroup>
+          </DropdownMenuGroup>
+        )}
         {!isSelfHosted && (
           <>
             <DropdownMenuSeparator />

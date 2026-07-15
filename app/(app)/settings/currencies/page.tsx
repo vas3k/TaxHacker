@@ -1,11 +1,15 @@
-import { addCurrencyAction, deleteCurrencyAction, editCurrencyAction } from "@/app/(app)/settings/actions"
+import CurrencyDefaultsForm from "@/components/settings/currency-defaults-form"
 import { CrudTable } from "@/components/settings/crud"
+import { SettingsPageHeader } from "@/components/settings/page-header"
+import { Separator } from "@/components/ui/separator"
 import { getCurrentUser } from "@/lib/auth"
 import { getCurrencies } from "@/models/currencies"
+import { getSettings } from "@/models/settings"
+import { addCurrencyAction, deleteCurrencyAction, editCurrencyAction } from "@/app/(app)/settings/actions"
 
 export default async function CurrenciesSettingsPage() {
   const user = await getCurrentUser()
-  const currencies = await getCurrencies(user.id)
+  const [currencies, settings] = await Promise.all([getCurrencies(user.id), getSettings(user.id)])
   const currenciesWithActions = currencies.map((currency) => ({
     ...currency,
     isEditable: true,
@@ -13,11 +17,13 @@ export default async function CurrenciesSettingsPage() {
   }))
 
   return (
-    <div className="container">
-      <h1 className="text-2xl font-bold mb-2">Currencies</h1>
-      <p className="text-sm text-gray-500 mb-6 max-w-prose">
-        Custom currencies would not be automatically converted but you still can have them.
-      </p>
+    <div className="space-y-8">
+      <SettingsPageHeader
+        title="Currencies"
+        description="Set default currency and transaction type, and manage custom currencies for your account."
+      />
+      <CurrencyDefaultsForm settings={settings} currencies={currencies} />
+      <Separator />
       <CrudTable
         items={currenciesWithActions}
         columns={[

@@ -1,4 +1,5 @@
 import { File, Transaction, User } from "@/prisma/client"
+import { formatDate } from "date-fns"
 import { access, constants, readdir, stat } from "fs/promises"
 import path from "path"
 import config from "./config"
@@ -39,6 +40,28 @@ export function getTransactionFileUploadPath(fileUuid: string, filename: string,
 export function fullPathForFile(user: User, file: File) {
   const userUploadsDirectory = getUserUploadsDirectory(user)
   return safePathJoin(userUploadsDirectory, file.path)
+}
+
+export function getTransactionExportRelativeFolder(transaction: Transaction, totalFiles: number): string {
+  return path.posix.join(
+    transaction.issuedAt ? formatDate(transaction.issuedAt, "yyyy/MM") : "",
+    totalFiles > 1 ? transaction.name || transaction.id : ""
+  )
+}
+
+export function getTransactionExportFileName(transaction: Transaction, file: File): string {
+  const ext = path.extname(file.path)
+  const shortId = file.id.replace(/-/g, "").slice(0, 5)
+  const baseName = `${formatDate(transaction.issuedAt || new Date(), "yyyy-MM-dd")} - ${transaction.name || transaction.id}`
+  return `${baseName} ${shortId}${ext}`
+}
+
+export function getTransactionExportFilePath(transaction: Transaction, file: File, totalFiles: number): string {
+  return path.posix.join(
+    "files",
+    getTransactionExportRelativeFolder(transaction, totalFiles),
+    getTransactionExportFileName(transaction, file)
+  )
 }
 
 function formatFilePath(filename: string, date: Date, format = "{YYYY}/{MM}/{name}{ext}") {

@@ -48,34 +48,34 @@ This app allows you to connect to email servers and automatically monitor incomi
 
 ## 🐳 **Docker Setup**
 
-The email sync runs as a separate Docker container with cron:
+Scheduled tasks (including email sync) run in a shared `cron` container:
 
 ```yaml
 # docker-compose.yml
-email-sync:
+cron:
   image: ghcr.io/vas3k/taxhacker:latest
   volumes:
     - ./data:/app/data
-    - ./etc/crontab:/etc/cron.d/email-sync:ro
+    - ./etc/crontab:/mnt/crontab:ro
   environment:
     - DATABASE_URL=postgresql://...
-    # Must match the app's secret — it derives the key that decrypts stored mailbox passwords.
-    - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-  command: >
-    sh -c "... && printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|...)=' > /etc/cron.env && cron && tail -f /var/log/email-sync.log"
+    # Optional override. If unset, the container reads the persisted secret from ./data/.better_auth_secret.
+    - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-}
+  command: ["docker-cron-entrypoint.sh"]
 ```
 
 ### Cron Configuration
+
 File: `etc/crontab`
 ```bash
-# Heartbeat every 5 minutes; runEmailSync honors each mailbox's UI sync frequency before fetching.
-# Cron jobs don't inherit the container env, so we source /etc/cron.env (written at container start).
-*/5 * * * * set -a; . /etc/cron.env; cd /app && npm run email:sync >> /var/log/email-sync.log 2>&1
+# Cron jobs source /etc/cron.env (written at container startup).
+*/5 * * * * set -a; . /etc/cron.env; cd /app && npm run email:sync >> /var/log/cron.log 2>&1
 ```
 
-> **Env propagation:** cron strips the environment, so the container's startup command dumps the
-> needed vars to `/etc/cron.env` and each job sources it. `BETTER_AUTH_SECRET` **must** match the
-> app's — otherwise stored mailbox passwords can't be decrypted and every sync fails.
+> **Env propagation:** cron strips the environment, so the container's startup script dumps the
+> needed vars to `/etc/cron.env` and each job sources it. In self-hosted Docker, if
+> `BETTER_AUTH_SECRET` is unset, TaxHacker generates and persists one in `./data/.better_auth_secret`
+> so the app and cron containers still share the same key.
 
 ## 📊 **Data Storage**
 
@@ -84,7 +84,7 @@ File: `etc/crontab`
 - Each user can have multiple email servers
 - Settings include sync interval, file extensions, credentials
 
-### Downloaded Files  
+### Downloaded Files
 - Saved to `UPLOAD_PATH` directory
 - Created as `File` records in database
 - Metadata includes email details (subject, sender, date)
@@ -102,10 +102,10 @@ File: `etc/crontab`
 npm run email:sync
 
 # View logs
-docker logs taxhacker_email_sync
+docker logs taxhacker_cron
 
-# Check cron status
-docker exec taxhacker_email_sync crontab -l
+# Check installed crontab
+docker exec taxhacker_cron crontab -l
 ```
 
 ## 🚨 **Troubleshooting**
@@ -124,7 +124,7 @@ docker exec taxhacker_email_sync crontab -l
 - Check if the sync frequency has elapsed since the last sync
 - Verify the mailbox has new messages (above the last processed UID) carrying attachments — fetch is read-only and does not depend on unread status
 - Check allowed file extensions match your attachments
-- Review logs: `docker logs taxhacker_email_sync`
+- Review logs: `docker logs taxhacker_cron`
 
 ### Performance
 - Default sync frequency is Hourly — pick a shorter one (down to every 15 min) in the UI if needed
@@ -134,8 +134,8 @@ docker exec taxhacker_email_sync crontab -l
 ## 📝 **Logs**
 
 Email sync logs are available:
-- **Container logs**: `docker logs taxhacker_email_sync`
-- **Cron logs**: `/var/log/email-sync.log` inside container
+- **Container logs**: `docker logs taxhacker_cron`
+- **Cron log**: `/var/log/cron.log` inside container
 - **Manual sync**: Output shown in terminal when running `npm run email:sync`
 
 ## 🔒 **Security**
@@ -144,4 +144,4 @@ Email sync logs are available:
   - ⚠️ **Rotating `BETTER_AUTH_SECRET` invalidates stored mailbox passwords.** After changing it, re-enter each server's password (the server shows a decryption error until you do).
 - **IMAP SSL**: Enabled by default for all preset providers
 - **Access Control**: Each user can only access their own email servers
-- **App Passwords**: Recommended for all providers supporting them 
+- **App Passwords**: Recommended for all providers supporting them

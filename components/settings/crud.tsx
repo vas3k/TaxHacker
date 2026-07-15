@@ -310,9 +310,9 @@ export function CrudTable<T extends Record<string, unknown>>({ items, columns, o
                         </Button>
                       )}
                       {item.isDeletable && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDelete((item.code || item.id) as string)}
                           aria-label={`Delete ${String(item.name || item.code || 'item')}`}
                         >

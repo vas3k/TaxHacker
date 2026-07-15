@@ -26,9 +26,9 @@ services:
         max-size: "100M"
         max-file: "3"
 
-  email-sync:
+  cron:
     image: ghcr.io/vas3k/taxhacker:latest
-    container_name: taxhacker_email_sync
+    container_name: taxhacker_cron
     networks:
       - taxhacker_network
     environment:
@@ -40,21 +40,15 @@ services:
       - .env
     volumes:
       - ./data:/app/data
-      - ./etc/crontab:/etc/cron.d/email-sync:ro
+      - ./etc/crontab:/mnt/crontab:ro
     restart: unless-stopped
     depends_on:
       - app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     security_opt:
       - no-new-privileges:true
-    command: >
-      sh -c "
-        printenv | grep -E '^(DATABASE_URL|BETTER_AUTH_SECRET|UPLOAD_PATH|NODE_ENV|SELF_HOSTED_MODE|BASE_URL|PATH)=' > /etc/cron.env &&
-        chmod 0644 /etc/cron.d/email-sync &&
-        crontab /etc/cron.d/email-sync &&
-        touch /var/log/email-sync.log &&
-        cron &&
-        tail -f /var/log/email-sync.log
-      "
+    command: ["docker-cron-entrypoint.sh"]
     logging:
       driver: "json-file"
       options:

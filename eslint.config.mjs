@@ -3,7 +3,7 @@ import nextConfig from "eslint-config-next";
 const eslintConfig = [
   ...nextConfig,
   {
-    ignores: ["prisma/client/**", "pgdata/**"],
+    ignores: ["prisma/client/**"],
   },
   {
     files: ["**/*.{ts,tsx}"],
