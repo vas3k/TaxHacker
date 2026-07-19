@@ -64,6 +64,9 @@ COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/app ./app
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/models ./models
+COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/next.config.ts ./
 
 COPY docker-entrypoint.sh docker-cron-entrypoint.sh /usr/local/bin/

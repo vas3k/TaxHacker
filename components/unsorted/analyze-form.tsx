@@ -17,10 +17,32 @@ import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
+import { useFormStatus } from "react-dom"
 import { DuplicateModal } from "../transactions/duplicate-modal"
 import { ActionState } from "@/lib/actions"
 import { Transaction } from "@/prisma/client"
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions"
+
+function SaveButton({ isSaving }: { isSaving: boolean }) {
+  const { pending } = useFormStatus()
+  const loading = pending || isSaving
+
+  return (
+    <Button type="submit" disabled={loading} data-save-button>
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Saving...
+        </>
+      ) : (
+        <>
+          <ArrowDownToLine className="h-4 w-4" />
+          Save as Transaction
+        </>
+      )}
+    </Button>
+  )
+}
 
 export default function AnalyzeForm({
   file,
@@ -375,23 +397,20 @@ export default function AnalyzeForm({
             variant="destructive"
             disabled={isDeleting}
           >
-            <Trash2 className="h-4 w-4" />
-            {isDeleting ? "⏳ Deleting..." : "Delete"}
-          </Button>
-
-          <Button type="submit" disabled={isSaving} data-save-button>
-            {isSaving ? (
+            {isDeleting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Deleting...
               </>
             ) : (
               <>
-                <ArrowDownToLine className="h-4 w-4" />
-                Save as Transaction
+                <Trash2 className="h-4 w-4" />
+                Delete
               </>
             )}
           </Button>
+
+          <SaveButton isSaving={isSaving} />
         </div>
 
         <div>
