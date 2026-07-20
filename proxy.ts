@@ -2,7 +2,7 @@ import { default as globalConfig } from "@/lib/config"
 import { getSessionCookie } from "better-auth/cookies"
 import { NextRequest, NextResponse } from "next/server"
 
-export default async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (globalConfig.selfHosted.isEnabled) {
     return NextResponse.next()
   }
