@@ -10,7 +10,7 @@ export const transactionFormSchema = z
       .string()
       .optional()
       .transform((val) => {
-        if (!val || val.trim() === '') return null
+        if (!val || val.trim() === "") return null
         const num = parseFloat(val)
         if (isNaN(num)) {
           throw new z.ZodError([{ message: "Invalid total", path: ["total"], code: z.ZodIssueCode.custom }])
@@ -22,7 +22,7 @@ export const transactionFormSchema = z
       .string()
       .optional()
       .transform((val) => {
-        if (!val || val.trim() === '') return null
+        if (!val || val.trim() === "") return null
         const num = parseFloat(val)
         if (isNaN(num)) {
           throw new z.ZodError([
@@ -42,7 +42,13 @@ export const transactionFormSchema = z
           .refine((val) => !isNaN(Date.parse(val)), {
             message: "Invalid date format",
           })
-          .transform((val) => new Date(val)),
+          .transform((val) => {
+            // Date-only strings parse as UTC midnight; append local time to avoid -1 day shift
+            if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+              return new Date(val + "T00:00:00")
+            }
+            return new Date(val)
+          }),
       ])
       .optional(),
     text: z.string().optional(),
@@ -51,7 +57,7 @@ export const transactionFormSchema = z
       .string()
       .optional()
       .transform((val) => {
-        if (!val || val.trim() === '') return []
+        if (!val || val.trim() === "") return []
         try {
           return JSON.parse(val)
         } catch (_e) {

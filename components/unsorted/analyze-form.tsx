@@ -1,6 +1,7 @@
 "use client"
 
 import { useNotification } from "@/app/(app)/context"
+import { deleteTransactionAction } from "@/app/(app)/transactions/actions"
 import { analyzeFileAction, deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/(app)/unsorted/actions"
 import { CurrencyConverterTool } from "@/components/agents/currency-converter"
 import { ItemsDetectTool } from "@/components/agents/items-detect"
@@ -13,15 +14,13 @@ import { FormSelectType } from "@/components/forms/select-type"
 import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Category, Currency, Field, File, Project } from "@/prisma/client"
+import { ActionState } from "@/lib/actions"
+import { Category, Currency, Field, File, Project, Transaction } from "@/prisma/client"
 import { format } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useMemo, useState } from "react"
 import { useFormStatus } from "react-dom"
 import { DuplicateModal } from "../transactions/duplicate-modal"
-import { ActionState } from "@/lib/actions"
-import { Transaction } from "@/prisma/client"
-import { deleteTransactionAction } from "@/app/(app)/transactions/actions"
 
 function SaveButton({ isSaving }: { isSaving: boolean }) {
   const { pending } = useFormStatus()
@@ -301,12 +300,17 @@ export default function AnalyzeForm({
         </div>
 
         {formData.total != 0 && formData.currencyCode && formData.currencyCode !== settings.default_currency && (
-          <ToolWindow title={`Exchange rate on ${format(new Date(formData.issuedAt || Date.now()), "LLLL dd, yyyy")}`}>
+          <ToolWindow
+            title={`Exchange rate on ${format(
+              formData.issuedAt ? new Date(formData.issuedAt + "T00:00:00") : new Date(),
+              "LLLL dd, yyyy"
+            )}`}
+          >
             <CurrencyConverterTool
               originalTotal={formData.total}
               originalCurrencyCode={formData.currencyCode}
               targetCurrencyCode={settings.default_currency}
-              date={new Date(formData.issuedAt || Date.now())}
+              date={formData.issuedAt ? new Date(formData.issuedAt + "T00:00:00") : new Date()}
               onChange={(value) => setFormData((prev) => ({ ...prev, convertedTotal: value }))}
             />
             <input type="hidden" name="convertedCurrencyCode" value={settings.default_currency} />

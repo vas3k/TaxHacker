@@ -122,6 +122,10 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
     },
     import: async function (userId: string, value: string) {
       try {
+        // Date-only strings parse as UTC midnight; append local time to avoid -1 day shift
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          return new Date(value + "T00:00:00")
+        }
         return new Date(value)
       } catch (_error) {
         return null
