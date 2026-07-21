@@ -43,6 +43,7 @@ export async function saveSettingsAction(
 
   revalidatePath("/settings/currencies")
   revalidatePath("/settings/categories")
+  revalidatePath("/settings/llm")
   return { success: true }
 }
 

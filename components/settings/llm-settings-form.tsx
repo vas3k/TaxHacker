@@ -3,10 +3,11 @@
 import { fieldsToJsonSchema } from "@/ai/schema"
 import { saveSettingsAction, testLLMProviderAction } from "@/app/(app)/settings/actions"
 import { FormError } from "@/components/forms/error"
-import { FormTextarea } from "@/components/forms/simple"
+import { FormSelect, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import { PROVIDERS } from "@/lib/llm-providers"
+import { DEFAULT_PREVIEW_FORMAT } from "@/lib/previews/format"
 import { Field } from "@/prisma/client"
 import type { DragEndEvent } from "@dnd-kit/core"
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
@@ -78,6 +79,25 @@ export default function LLMSettingsForm({
         )}
 
         {isSelfHosted && <input type="hidden" name="llm_providers" value={providerOrder.join(",")} />}
+
+        {isSelfHosted && (
+          <div className="space-y-1">
+            <FormSelect
+              title="Image format for AI analysis"
+              name="llm_attachment_format"
+              defaultValue={settings.llm_attachment_format || DEFAULT_PREVIEW_FORMAT}
+              items={[
+                { code: "webp", name: "WebP (smaller, less tokens)" },
+                { code: "jpeg", name: "JPEG (most compatible)" },
+                { code: "png", name: "PNG (best quality, expensive)" },
+              ]}
+            />
+            <small className="text-muted-foreground">
+              WebP is smaller and works with cloud providers. Use PNG or JPEG for local models like Ollama that cannot
+              decode WebP.
+            </small>
+          </div>
+        )}
 
         <FormTextarea
           title="Prompt for File Analysis Form"
@@ -236,9 +256,13 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           className="ml-auto h-7 text-xs"
         >
           {testState.status === "testing" ? (
-            <><Loader2 className="w-3 h-3 animate-spin" /> Testing...</>
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" /> Testing...
+            </>
           ) : (
-            <><Plug className="w-3 h-3" /> Test</>
+            <>
+              <Plug className="w-3 h-3" /> Test
+            </>
           )}
         </Button>
       </div>

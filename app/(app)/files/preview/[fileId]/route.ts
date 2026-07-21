@@ -1,7 +1,9 @@
 import { getCurrentUser } from "@/lib/auth"
 import { fileExists, fullPathForFile } from "@/lib/files"
+import { resolvePreviewFormat } from "@/lib/previews/format"
 import { generateFilePreviews } from "@/lib/previews/generate"
 import { getFileById } from "@/models/files"
+import { getSettings } from "@/models/settings"
 import fs from "fs/promises"
 import { NextResponse } from "next/server"
 import path from "path"
@@ -34,7 +36,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
     }
 
     // Generate previews
-    const { contentType, previews } = await generateFilePreviews(user, fullFilePath, file.mimetype)
+    const settings = await getSettings(user.id)
+    const format = resolvePreviewFormat(settings.llm_attachment_format)
+    const { contentType, previews } = await generateFilePreviews(user, fullFilePath, file.mimetype, format)
     if (page > previews.length) {
       return new NextResponse("Page not found", { status: 404 })
     }

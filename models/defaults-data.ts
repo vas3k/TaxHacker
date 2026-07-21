@@ -49,6 +49,12 @@ export const DEFAULT_SETTINGS = [
     value: DEFAULT_PROMPT_ANALYSE_NEW_FILE,
   },
   {
+    code: "llm_attachment_format",
+    name: "Image Format for AI Analysis",
+    description: "WebP is smaller; use PNG or JPEG for local models like Ollama that cannot decode WebP",
+    value: "webp",
+  },
+  {
     code: "is_welcome_message_hidden",
     name: "Do not show welcome message on dashboard",
     description: "",

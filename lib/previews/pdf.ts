@@ -6,16 +6,24 @@ import fs from "fs/promises"
 import path from "path"
 import { fromPath } from "pdf2pic"
 import config from "../config"
+import { DEFAULT_PREVIEW_FORMAT, PreviewFormat, previewContentType, previewExtension } from "./format"
 
-export async function pdfToImages(user: User, origFilePath: string): Promise<{ contentType: string; pages: string[] }> {
+export async function pdfToImages(
+  user: User,
+  origFilePath: string,
+  format: PreviewFormat = DEFAULT_PREVIEW_FORMAT
+): Promise<{ contentType: string; pages: string[] }> {
   const userPreviewsDirectory = getUserPreviewsDirectory(user)
   await fs.mkdir(userPreviewsDirectory, { recursive: true })
 
   const basename = path.basename(origFilePath, path.extname(origFilePath))
+  const extension = previewExtension(format)
+  const contentType = previewContentType(format)
+
   // Check if converted pages already exist
   const existingPages: string[] = []
   for (let i = 1; i <= config.upload.pdfs.maxPages; i++) {
-    const convertedFilePath = safePathJoin(userPreviewsDirectory, `${basename}.${i}.webp`)
+    const convertedFilePath = safePathJoin(userPreviewsDirectory, `${basename}.${i}.${extension}`)
     if (await fileExists(convertedFilePath)) {
       existingPages.push(convertedFilePath)
     } else {
@@ -24,7 +32,7 @@ export async function pdfToImages(user: User, origFilePath: string): Promise<{ c
   }
 
   if (existingPages.length > 0) {
-    return { contentType: "image/webp", pages: existingPages }
+    return { contentType, pages: existingPages }
   }
 
   // If not — convert the file as store in previews folder
@@ -32,7 +40,7 @@ export async function pdfToImages(user: User, origFilePath: string): Promise<{ c
     density: config.upload.pdfs.dpi,
     saveFilename: basename,
     savePath: userPreviewsDirectory,
-    format: "webp",
+    format: extension,
     quality: config.upload.pdfs.quality,
     width: config.upload.pdfs.maxWidth,
     height: config.upload.pdfs.maxHeight,
@@ -44,7 +52,7 @@ export async function pdfToImages(user: User, origFilePath: string): Promise<{ c
     const results = await convert.bulk(-1, { responseType: "image" }) // TODO: respect MAX_PAGES here too
     const paths = results.filter((result) => result && result.path).map((result) => result.path) as string[]
     return {
-      contentType: "image/webp",
+      contentType,
       pages: paths,
     }
   } catch (error) {

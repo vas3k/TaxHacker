@@ -1,5 +1,7 @@
 import { fileExists, fullPathForFile } from "@/lib/files"
+import { resolvePreviewFormat } from "@/lib/previews/format"
 import { generateFilePreviews } from "@/lib/previews/generate"
+import { getSettings } from "@/models/settings"
 import { File, User } from "@/prisma/client"
 import fs from "fs/promises"
 
@@ -18,7 +20,9 @@ export const loadAttachmentsForAI = async (user: User, file: File): Promise<Anal
     throw new Error("File not found on disk")
   }
 
-  const { contentType, previews } = await generateFilePreviews(user, fullFilePath, file.mimetype)
+  const settings = await getSettings(user.id)
+  const format = resolvePreviewFormat(settings.llm_attachment_format)
+  const { contentType, previews } = await generateFilePreviews(user, fullFilePath, file.mimetype, format)
 
   return Promise.all(
     previews.slice(0, MAX_PAGES_TO_ANALYZE).map(async (preview) => ({

@@ -27,8 +27,8 @@ export function unsortedFilePath(fileUuid: string, filename: string) {
   return safePathJoin(FILE_UNSORTED_DIRECTORY_NAME, `${fileUuid}${fileExtension}`)
 }
 
-export function previewFilePath(fileUuid: string, page: number) {
-  return safePathJoin(FILE_PREVIEWS_DIRECTORY_NAME, `${fileUuid}.${page}.webp`)
+export function previewFilePath(fileUuid: string, page: number, extension = "webp") {
+  return safePathJoin(FILE_PREVIEWS_DIRECTORY_NAME, `${fileUuid}.${page}.${extension}`)
 }
 
 export function getTransactionFileUploadPath(fileUuid: string, filename: string, transaction: Transaction) {
