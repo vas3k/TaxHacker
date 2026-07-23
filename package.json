@@ -80,7 +80,7 @@
     "postcss": "^8.5.20",
     "prisma": "^7.8.0",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6",
+    "typescript": "^7",
     "vitest": "^4.1.10"
   },
   "overrides": {
