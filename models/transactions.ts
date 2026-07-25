@@ -65,8 +65,8 @@ export const getTransactions = cache(
 
       if (filters.dateFrom || filters.dateTo) {
         where.issuedAt = {
-          gte: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
-          lte: filters.dateTo ? new Date(filters.dateTo) : undefined,
+          gte: filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00.000Z`) : undefined,
+          lte: filters.dateTo ? new Date(`${filters.dateTo}T23:59:59.999Z`) : undefined,
         }
       }
 
