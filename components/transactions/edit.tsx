@@ -48,7 +48,7 @@ export default function TransactionEditForm({
     type: transaction.type || "expense",
     categoryCode: transaction.categoryCode || settings.default_category,
     projectCode: transaction.projectCode || settings.default_project,
-    issuedAt: transaction.issuedAt ? format(transaction.issuedAt, "yyyy-MM-dd") : "",
+    issuedAt: transaction.issuedAt ? transaction.issuedAt.toISOString().slice(0, 10) : "",
     note: transaction.note || "",
     items: transaction.items || [],
     ...extraFields.reduce(

@@ -43,9 +43,11 @@ export const transactionFormSchema = z
             message: "Invalid date format",
           })
           .transform((val) => {
-            // Date-only strings parse as UTC midnight; append local time to avoid -1 day shift
+            // Transaction dates are calendar dates.
+            // Store date-only values at UTC midnight so they are
+            // independent of the server/container/browser timezone.
             if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-              return new Date(val + "T00:00:00")
+              return new Date(`${val}T00:00:00.000Z`)
             }
             return new Date(val)
           }),
