@@ -91,14 +91,29 @@ jobs:
         run: |
           set -euo pipefail
           OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          OWNER_TYPE="${{ github.event.repository.owner.type }}"
           TAG="pr-${{ github.event.pull_request.number }}"
-          echo "Looking for image versions tagged '${TAG}'"
-          VIDS=$(gh api --paginate "/orgs/${OWNER_LC}/packages/container/taxhacker/versions" \
-            --jq ".[] | select((.metadata.container.tags // []) | index(\"${TAG}\")) | .id" || true)
-          VID=$(echo "${VIDS}" | head -1)
+
+          if [ "${OWNER_TYPE}" = "Organization" ]; then
+            API_BASE="/orgs/${OWNER_LC}/packages/container/taxhacker"
+          else
+            API_BASE="/users/${OWNER_LC}/packages/container/taxhacker"
+          fi
+
+          echo "Looking for image versions tagged '${TAG}' (${API_BASE})"
+          # Most PRs never get a branch image (build is workflow_dispatch only).
+          # Treat missing package / API errors as nothing to delete — do not use
+          # error JSON bodies as version IDs.
+          if ! VIDS=$(gh api --paginate "${API_BASE}/versions" \
+            --jq ".[] | select((.metadata.container.tags // []) | index(\"${TAG}\")) | .id" 2>/dev/null); then
+            echo "Package not found or inaccessible — nothing to delete"
+            exit 0
+          fi
+
+          VID=$(printf '%s\n' "${VIDS}" | grep -E '^[0-9]+$' | head -1 || true)
           if [ -n "${VID}" ]; then
             echo "Deleting version ${VID} (tag: ${TAG})"
-            gh api --method DELETE "/orgs/${OWNER_LC}/packages/container/taxhacker/versions/${VID}"
+            gh api --method DELETE "${API_BASE}/versions/${VID}"
           else
             echo "No version found for tag: ${TAG} (already cleaned up)"
           fi
