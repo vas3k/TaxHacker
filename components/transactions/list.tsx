@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { calcNetTotalPerCurrency, calcTotalPerCurrency, isTransactionIncomplete } from "@/lib/stats"
 import { cn, formatCurrency } from "@/lib/utils"
 import { Category, Field, Project, Transaction } from "@/prisma/client"
-import { formatDate } from "date-fns"
 import { ArrowDownIcon, ArrowUpIcon, File } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
@@ -46,7 +45,7 @@ export const standardFieldRenderers: Record<string, FieldRenderer> = {
     classes: "min-w-[100px]",
     sortable: true,
     formatValue: (transaction: Transaction) =>
-      transaction.issuedAt ? formatDate(transaction.issuedAt, "yyyy-MM-dd") : "",
+      transaction.issuedAt ? transaction.issuedAt.toISOString().slice(0, 10) : "",
   },
   projectCode: {
     name: "Project",
