@@ -15,9 +15,16 @@ export async function selfHostedGetStartedAction(formData: FormData) {
 
   const apiKeys = [
     "openai_api_key",
+    "openai_model_name",
     "google_api_key",
+    "google_model_name",
     "mistral_api_key",
+    "mistral_model_name",
+    "atlascloud_api_key",
+    "atlascloud_model_name",
+    "atlascloud_base_url",
     "openai_compatible_api_key",
+    "openai_compatible_model_name",
     "openai_compatible_base_url",
   ]
 

@@ -60,6 +60,23 @@ export const PROVIDERS: ProviderMeta[] = [
     logo: "/logo/mistral.svg",
   },
   {
+    key: "atlascloud",
+    label: "Atlas Cloud",
+    apiKeyName: "atlascloud_api_key",
+    modelName: "atlascloud_model_name",
+    defaultModelName: "qwen/qwen3.5-27b",
+    baseUrlName: "atlascloud_base_url",
+    defaultBaseUrl: "https://api.atlascloud.ai/v1",
+    apiDoc: "https://www.atlascloud.ai/console/api-keys",
+    apiDocLabel: "Atlas Cloud Console",
+    placeholder: "Atlas Cloud API key",
+    help: {
+      url: "https://www.atlascloud.ai/console/api-keys",
+      label: "Atlas Cloud Console",
+    },
+    logo: "/logo/openai.svg",
+  },
+  {
     key: "openai_compatible",
     label: "OpenAI-compatible (Ollama, vLLM, z.ai, etc.)",
     apiKeyName: "openai_compatible_api_key",

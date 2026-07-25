@@ -14,6 +14,9 @@ export const SELF_HOSTED_ONLY_SETTINGS = [
   "google_model_name",
   "mistral_api_key",
   "mistral_model_name",
+  "atlascloud_api_key",
+  "atlascloud_model_name",
+  "atlascloud_base_url",
   "openai_compatible_api_key",
   "openai_compatible_model_name",
   "openai_compatible_base_url",
@@ -31,7 +34,7 @@ function isSelfHostedOnlySetting(code: string): code is (typeof SELF_HOSTED_ONLY
  */
 export function getLLMSettings(settings: SettingsMap) {
   if (config.selfHosted.isEnabled) {
-    const priorities = (settings.llm_providers || "openai,google,mistral,openai_compatible")
+    const priorities = (settings.llm_providers || "openai,google,mistral,atlascloud,openai_compatible")
       .split(",")
       .map((p) => p.trim())
       .filter(Boolean)
@@ -66,6 +69,15 @@ export function getLLMSettings(settings: SettingsMap) {
             apiKey: settings.openai_compatible_api_key || "",
             model: settings.openai_compatible_model_name || "",
             baseUrl: settings.openai_compatible_base_url || providerMeta?.defaultBaseUrl || "",
+          }
+        }
+        if (provider === "atlascloud") {
+          const providerMeta = PROVIDERS.find((p) => p.key === "atlascloud")
+          return {
+            provider: provider as LLMProvider,
+            apiKey: settings.atlascloud_api_key || "",
+            model: settings.atlascloud_model_name || providerMeta?.defaultModelName || "",
+            baseUrl: settings.atlascloud_base_url || providerMeta?.defaultBaseUrl || "",
           }
         }
         return null

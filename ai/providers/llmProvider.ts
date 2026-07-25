@@ -4,7 +4,7 @@ import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
 import type { AnalyzeAttachment } from "@/ai/attachments"
 
-export type LLMProvider = "openai" | "google" | "mistral" | "openai_compatible"
+export type LLMProvider = "openai" | "google" | "mistral" | "atlascloud" | "openai_compatible"
 
 export interface LLMConfig {
   provider: LLMProvider
@@ -71,7 +71,7 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         model: config.model,
         temperature: temperature,
       })
-    } else if (config.provider === "openai_compatible") {
+    } else if (config.provider === "atlascloud" || config.provider === "openai_compatible") {
       model = new ChatOpenAI({
         apiKey: config.apiKey || "not-needed",
         model: config.model,
@@ -101,7 +101,7 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
     const messages: BaseMessage[] = [new HumanMessage({ content: messageContent })]
 
     let response: Record<string, unknown>
-    if (config.provider === "openai_compatible") {
+    if (config.provider === "atlascloud" || config.provider === "openai_compatible") {
       const raw = await model.invoke(messages)
       const rawContent = raw as { content: string | Array<{ text?: string }> }
       const text = typeof rawContent.content === "string"
@@ -171,7 +171,7 @@ export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult>
       model = new ChatGoogleGenerativeAI({ apiKey: config.apiKey, model: config.model, temperature })
     } else if (config.provider === "mistral") {
       model = new ChatMistralAI({ apiKey: config.apiKey, model: config.model, temperature })
-    } else if (config.provider === "openai_compatible") {
+    } else if (config.provider === "atlascloud" || config.provider === "openai_compatible") {
       model = new ChatOpenAI({
         apiKey: config.apiKey || "not-needed",
         model: config.model,

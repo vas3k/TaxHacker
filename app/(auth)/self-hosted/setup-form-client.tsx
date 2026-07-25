@@ -11,12 +11,29 @@ import { PROVIDERS } from "@/lib/llm-providers"
 type Props = {
   defaultProvider: string
   defaultApiKeys: Record<string, string>
+  defaultModels: Record<string, string>
+  defaultBaseUrls: Record<string, string>
 }
 
-export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiKeys }: Props) {
+export default function SelfHostedSetupFormClient({
+  defaultProvider,
+  defaultApiKeys,
+  defaultModels,
+  defaultBaseUrls,
+}: Props) {
   const [provider, setProvider] = useState(defaultProvider)
   const selected = PROVIDERS.find(p => p.key === provider)!
   const getDefaultApiKey = useCallback((providerKey: string) => defaultApiKeys[providerKey] ?? "", [defaultApiKeys])
+  const getDefaultModel = useCallback(
+    (providerKey: string) =>
+      defaultModels[providerKey] ?? PROVIDERS.find((provider) => provider.key === providerKey)?.defaultModelName ?? "",
+    [defaultModels]
+  )
+  const getDefaultBaseUrl = useCallback(
+    (providerKey: string) =>
+      defaultBaseUrls[providerKey] ?? PROVIDERS.find((provider) => provider.key === providerKey)?.defaultBaseUrl ?? "",
+    [defaultBaseUrls]
+  )
 
   const [apiKey, setApiKey] = useState(getDefaultApiKey(provider))
   const userTyped = useRef(false)
@@ -60,6 +77,7 @@ export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiK
           }}
           placeholder={selected.placeholder}
         />
+        <input type="hidden" name={selected.modelName} value={getDefaultModel(provider)} />
         <small className="text-xs text-muted-foreground flex justify-center mt-2">
           Get key from
           {"\u00A0"}
@@ -71,9 +89,10 @@ export default function SelfHostedSetupFormClient({ defaultProvider, defaultApiK
       {selected.baseUrlName && (
         <div>
           <FormInput
+            key={selected.baseUrlName}
             title={`${selected.label} Base URL`}
             name={selected.baseUrlName}
-            defaultValue={selected.defaultBaseUrl}
+            defaultValue={getDefaultBaseUrl(provider)}
             placeholder="http://localhost:11434/v1"
           />
         </div>

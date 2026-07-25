@@ -19,7 +19,7 @@ import { useActionState, useState } from "react"
 function getInitialProviderOrder(settings: Record<string, string>) {
   let order: string[] = []
   if (!settings.llm_providers) {
-    order = ["openai", "google", "mistral", "openai_compatible"]
+    order = ["openai", "google", "mistral", "atlascloud", "openai_compatible"]
   } else {
     order = settings.llm_providers.split(",").map((p) => p.trim())
   }

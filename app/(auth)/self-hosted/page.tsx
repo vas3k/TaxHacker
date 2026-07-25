@@ -37,6 +37,16 @@ export default async function SelfHostedWelcomePage() {
     openai: config.ai.openaiApiKey ?? "",
     google: config.ai.googleApiKey ?? "",
     mistral: config.ai.mistralApiKey ?? "",
+    atlascloud: config.ai.atlasCloudApiKey ?? "",
+  }
+  const defaultModels: Record<string, string> = {
+    openai: config.ai.openaiModelName,
+    google: config.ai.googleModelName,
+    mistral: config.ai.mistralModelName,
+    atlascloud: config.ai.atlasCloudModelName,
+  }
+  const defaultBaseUrls: Record<string, string> = {
+    atlascloud: config.ai.atlasCloudBaseUrl,
   }
 
   return (
@@ -47,7 +57,12 @@ export default async function SelfHostedWelcomePage() {
       </CardTitle>
       <CardDescription className="flex flex-col gap-4 text-center text-lg">
         <p>Welcome to your own instance of TaxHacker. Let&apos;s set up a couple of settings to get started.</p>
-        <SelfHostedSetupFormClient defaultProvider={defaultProvider} defaultApiKeys={defaultApiKeys} />
+        <SelfHostedSetupFormClient
+          defaultProvider={defaultProvider}
+          defaultApiKeys={defaultApiKeys}
+          defaultModels={defaultModels}
+          defaultBaseUrls={defaultBaseUrls}
+        />
       </CardDescription>
     </Card>
   )
