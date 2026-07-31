@@ -1,5 +1,6 @@
 import imaps from "imap-simple"
 import { simpleParser } from "mailparser"
+import { validateImapTarget } from "./imap-validation"
 import { ImapClient, ImapConnectConfig, ImapMessage, ImapSearchCriteria } from "./types"
 
 function buildImapConfig(config: ImapConnectConfig) {
@@ -10,16 +11,32 @@ function buildImapConfig(config: ImapConnectConfig) {
       host: config.host,
       port: config.port,
       tls: config.tls,
-      authTimeout: 10000,
-      connTimeout: 10000,
+      authTimeout: 5000,
+      connTimeout: 5000,
       tlsOptions: { servername: config.host },
     },
   }
 }
 
+async function connectWithImap(config: ImapConnectConfig) {
+  const maxAttempts = 1
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await imaps.connect(buildImapConfig(config))
+    } catch (error) {
+      lastError = error
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("IMAP connection failed")
+}
+
 export const realImapClient: ImapClient = {
   async fetchMessages(config: ImapConnectConfig, criteria: ImapSearchCriteria[]): Promise<ImapMessage[]> {
-    const connection = await imaps.connect(buildImapConfig(config))
+    await validateImapTarget(config.host, config.port)
+    const connection = await connectWithImap(config)
 
     try {
       await connection.openBox("INBOX")
@@ -58,7 +75,8 @@ export const realImapClient: ImapClient = {
 }
 
 export async function testImapConnection(config: ImapConnectConfig): Promise<void> {
-  const connection = await imaps.connect(buildImapConfig(config))
+  await validateImapTarget(config.host, config.port)
+  const connection = await connectWithImap(config)
   try {
     await connection.openBox("INBOX")
   } finally {
