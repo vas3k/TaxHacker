@@ -65,52 +65,53 @@ export type ImapTargetValidationResult = {
 }
 
 export async function validateImapTarget(
-  host: string,
-  port: number,
-  options: ImapTargetValidationOptions = {}
+   host: string,
+   port: number,
+   options: ImapTargetValidationOptions = {}
 ): Promise<ImapTargetValidationResult> {
-  const rejectDirectIp = options.rejectDirectIp ?? true
-  const hostname = host.trim()
+   const rejectDirectIp = options.rejectDirectIp ?? true
+   const hostname = host.trim()
 
-  if (!hostname) {
-    rejectWithLog(hostname, port, "IMAP host is required")
-  }
+   if (!hostname) {
+     rejectWithLog(hostname, port, "IMAP host is required")
+   }
 
-  if (!ALLOWED_PORTS.has(port)) {
-    rejectWithLog(hostname, port, `IMAP port must be one of: ${Array.from(ALLOWED_PORTS).join(", ")}`)
-  }
+   if (!ALLOWED_PORTS.has(port)) {
+     rejectWithLog(hostname, port, `IMAP port must be one of: ${Array.from(ALLOWED_PORTS).join(", ")}`)
+   }
 
-  if (hostname === "localhost" || hostname === "::1" || hostname === "127.0.0.1") {
-    rejectWithLog(hostname, port, "IMAP host must not be localhost")
-  }
+   if (hostname === "localhost" || hostname === "::1" || hostname === "127.0.0.1") {
+     rejectWithLog(hostname, port, "IMAP host must not be localhost")
+   }
 
-  if (isIpLiteral(hostname)) {
-    if (rejectDirectIp) {
-      rejectWithLog(hostname, port, "Direct IP hostnames are not allowed")
-    }
+   if (isIpLiteral(hostname)) {
+     // Check for private address BEFORE rejecting direct IPs
+     if (isPrivateAddress(hostname)) {
+       rejectWithLog(hostname, port, "IMAP host resolves to a private or local address")
+     }
 
-    if (isPrivateAddress(hostname)) {
-      rejectWithLog(hostname, port, "IMAP host resolves to a private or local address")
-    }
+     if (rejectDirectIp) {
+       rejectWithLog(hostname, port, "Direct IP hostnames are not allowed")
+     }
 
-    return { host: hostname, port, resolvedIps: [hostname] }
-  }
+     return { host: hostname, port, resolvedIps: [hostname] }
+   }
 
-  if (isIgnoredHostname(hostname)) {
-    rejectWithLog(hostname, port, "IMAP host must not be localhost")
-  }
+   if (isIgnoredHostname(hostname)) {
+     rejectWithLog(hostname, port, "IMAP host must not be localhost")
+   }
 
-  const resolveHost = options.resolveHost ?? ((value: string) => dns.promises.lookup(value, { all: true }).then((entries) => entries.map((entry) => entry.address)))
-  const resolvedIps = await resolveHost(hostname)
+   const resolveHost = options.resolveHost ?? ((value: string) => dns.promises.lookup(value, { all: true }).then((entries) => entries.map((entry) => entry.address)))
+   const resolvedIps = await resolveHost(hostname)
 
-  if (!resolvedIps.length) {
-    rejectWithLog(hostname, port, "IMAP host did not resolve to any IP addresses")
-  }
+   if (!resolvedIps.length) {
+     rejectWithLog(hostname, port, "IMAP host did not resolve to any IP addresses")
+   }
 
-  const publicIps = resolvedIps.filter((ip) => !isPrivateAddress(ip))
-  if (!publicIps.length) {
-    rejectWithLog(hostname, port, "IMAP host resolves to a private or local address")
-  }
+   const publicIps = resolvedIps.filter((ip) => !isPrivateAddress(ip))
+   if (!publicIps.length) {
+     rejectWithLog(hostname, port, "IMAP host resolves to a private or local address")
+   }
 
-  return { host: hostname, port, resolvedIps }
+   return { host: hostname, port, resolvedIps }
 }
