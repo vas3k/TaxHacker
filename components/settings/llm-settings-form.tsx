@@ -41,18 +41,23 @@ export default function LLMSettingsForm({
 
   // Controlled values for each provider
   const [providerValues, setProviderValues] = useState(() => {
-    const values: Record<string, { apiKey: string; model: string; baseUrl: string }> = {}
+    const values: Record<string, { apiKey: string; model: string; baseUrl: string; maxConcurrency: string }> = {}
     PROVIDERS.forEach((provider) => {
       values[provider.key] = {
         apiKey: settings[provider.apiKeyName],
         model: settings[provider.modelName] || provider.defaultModelName,
         baseUrl: provider.baseUrlName ? settings[provider.baseUrlName] || provider.defaultBaseUrl || "" : "",
+        maxConcurrency: settings[provider.maxConcurrencyName] || "1",
       }
     })
     return values
   })
 
-  function handleProviderValueChange(providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) {
+  function handleProviderValueChange(
+    providerKey: string,
+    field: "apiKey" | "model" | "baseUrl" | "maxConcurrency",
+    value: string
+  ) {
     setProviderValues((prev) => ({
       ...prev,
       [providerKey]: {
@@ -151,8 +156,12 @@ export default function LLMSettingsForm({
 type DndProviderBlocksProps = {
   providerOrder: string[]
   setProviderOrder: React.Dispatch<React.SetStateAction<string[]>>
-  providerValues: Record<string, { apiKey: string; model: string; baseUrl: string }>
-  handleProviderValueChange: (providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) => void
+  providerValues: Record<string, { apiKey: string; model: string; baseUrl: string; maxConcurrency: string }>
+  handleProviderValueChange: (
+    providerKey: string,
+    field: "apiKey" | "model" | "baseUrl" | "maxConcurrency",
+    value: string
+  ) => void
 }
 
 function DndProviderBlocks({
@@ -193,8 +202,12 @@ type SortableProviderBlockProps = {
   id: string
   idx: number
   providerKey: string
-  value: { apiKey: string; model: string; baseUrl: string }
-  handleValueChange: (providerKey: string, field: "apiKey" | "model" | "baseUrl", value: string) => void
+  value: { apiKey: string; model: string; baseUrl: string; maxConcurrency: string }
+  handleValueChange: (
+    providerKey: string,
+    field: "apiKey" | "model" | "baseUrl" | "maxConcurrency",
+    value: string
+  ) => void
 }
 
 type TestState = {
@@ -294,6 +307,20 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           placeholder="Base URL (e.g. http://localhost:11434/v1)"
         />
       )}
+      <div className="flex flex-row items-center gap-2">
+        <input
+          type="number"
+          min={1}
+          step={1}
+          name={provider.maxConcurrencyName}
+          value={value.maxConcurrency}
+          onChange={(e) => handleValueChange(provider.key, "maxConcurrency", e.target.value)}
+          className="w-20 border rounded px-2 py-1"
+        />
+        <span className="text-xs text-muted-foreground">
+          Max concurrency for &quot;Analyze all&quot; (1 = safe; raise only if your plan allows it)
+        </span>
+      </div>
       {testState.status === "success" && (
         <p className="text-sm text-green-600 flex flex-row items-center gap-1">
           <CircleCheckBig className="w-4 h-4 flex-shrink-0" /> {testState.message}

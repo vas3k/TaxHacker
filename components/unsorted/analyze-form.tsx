@@ -2,7 +2,7 @@
 
 import { useNotification } from "@/app/(app)/context"
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions"
-import { analyzeFileAction, deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/(app)/unsorted/actions"
+import { deleteUnsortedFileAction, saveFileAsTransactionAction } from "@/app/(app)/unsorted/actions"
 import { CurrencyConverterTool } from "@/components/agents/currency-converter"
 import { ItemsDetectTool } from "@/components/agents/items-detect"
 import ToolWindow from "@/components/agents/tool-window"
@@ -15,10 +15,11 @@ import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ActionState } from "@/lib/actions"
+import { analyzeLimiter } from "@/lib/analyze-queue"
 import { Category, Currency, Field, File, Project, Transaction } from "@/prisma/client"
 import { format } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
-import { startTransition, useActionState, useMemo, useState } from "react"
+import { startTransition, useEffect, useActionState, useMemo, useState } from "react"
 import { useFormStatus } from "react-dom"
 import { DuplicateModal } from "../transactions/duplicate-modal"
 
@@ -50,6 +51,7 @@ export default function AnalyzeForm({
   currencies,
   fields,
   settings,
+  analyzeConcurrency,
 }: {
   file: File
   categories: Category[]
@@ -57,6 +59,7 @@ export default function AnalyzeForm({
   currencies: Currency[]
   fields: Field[]
   settings: Record<string, string>
+  analyzeConcurrency: number
 }) {
   const { showNotification } = useNotification()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -68,6 +71,10 @@ export default function AnalyzeForm({
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false)
   const [duplicateData, setDuplicateData] = useState<ActionState<Transaction>["duplicateData"] | null>(null)
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null)
+
+  useEffect(() => {
+    analyzeLimiter.setMax(analyzeConcurrency)
+  }, [analyzeConcurrency])
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -187,7 +194,14 @@ export default function AnalyzeForm({
     setAnalyzeError("")
     try {
       setAnalyzeStep("Analyzing...")
-      const results = await analyzeFileAction(file, settings, fields, categories, projects)
+      const response = await analyzeLimiter.run(() =>
+        fetch("/api/unsorted/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileId: file.id }),
+        })
+      )
+      const results = await response.json()
 
       console.log("Analysis results:", results)
 

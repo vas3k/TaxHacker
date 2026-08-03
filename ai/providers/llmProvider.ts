@@ -11,6 +11,7 @@ export interface LLMConfig {
   apiKey: string
   model: string
   baseUrl?: string
+  maxConcurrency?: number
 }
 
 export interface LLMSettings {
@@ -144,10 +145,15 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
       ? " — This model does not support image input. Use a vision-capable model or test the provider in Settings."
       : ""
 
+    const concurrencyHint =
+      info.status === 429 && (config.maxConcurrency ?? 1) > 1
+        ? " — rate-limited; lower \u201cMax concurrency\u201d for this provider in LLM settings and retry"
+        : ""
+
     return {
       output: {},
       provider: config.provider,
-      error: `${detail}${status}${body}${visionHint}`,
+      error: `${detail}${status}${body}${concurrencyHint}${visionHint}`,
     }
   }
 }

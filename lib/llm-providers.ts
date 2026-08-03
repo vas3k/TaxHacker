@@ -6,6 +6,7 @@ export interface ProviderMeta {
   defaultModelName: string
   baseUrlName?: string
   defaultBaseUrl?: string
+  maxConcurrencyName: string
   apiDoc: string
   apiDocLabel: string
   placeholder: string
@@ -20,6 +21,7 @@ export const PROVIDERS: ProviderMeta[] = [
     apiKeyName: "openai_api_key",
     modelName: "openai_model_name",
     defaultModelName: "gpt-4o-mini",
+    maxConcurrencyName: "openai_max_concurrency",
     apiDoc: "https://platform.openai.com/settings/organization/api-keys",
     apiDocLabel: "OpenAI Platform Console",
     placeholder: "sk-...",
@@ -35,6 +37,7 @@ export const PROVIDERS: ProviderMeta[] = [
     apiKeyName: "google_api_key",
     modelName: "google_model_name",
     defaultModelName: "gemini-2.5-flash",
+    maxConcurrencyName: "google_max_concurrency",
     apiDoc: "https://aistudio.google.com/apikey",
     apiDocLabel: "Google AI Studio",
     placeholder: "...",
@@ -50,6 +53,7 @@ export const PROVIDERS: ProviderMeta[] = [
     apiKeyName: "mistral_api_key",
     modelName: "mistral_model_name",
     defaultModelName: "mistral-medium-latest",
+    maxConcurrencyName: "mistral_max_concurrency",
     apiDoc: "https://admin.mistral.ai/organization/api-keys",
     apiDocLabel: "Mistral Admin Console",
     placeholder: "...",
@@ -67,6 +71,7 @@ export const PROVIDERS: ProviderMeta[] = [
     defaultModelName: "",
     baseUrlName: "openai_compatible_base_url",
     defaultBaseUrl: "http://localhost:11434/v1",
+    maxConcurrencyName: "openai_compatible_max_concurrency",
     apiDoc: "",
     apiDocLabel: "",
     placeholder: "(optional)",

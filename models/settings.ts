@@ -17,11 +17,20 @@ export const SELF_HOSTED_ONLY_SETTINGS = [
   "openai_compatible_api_key",
   "openai_compatible_model_name",
   "openai_compatible_base_url",
+  "openai_max_concurrency",
+  "google_max_concurrency",
+  "mistral_max_concurrency",
+  "openai_compatible_max_concurrency",
   "llm_providers",
 ] as const
 
 function isSelfHostedOnlySetting(code: string): code is (typeof SELF_HOSTED_ONLY_SETTINGS)[number] {
   return SELF_HOSTED_ONLY_SETTINGS.includes(code as (typeof SELF_HOSTED_ONLY_SETTINGS)[number])
+}
+
+function parseConcurrency(raw: string | undefined): number {
+  const n = parseInt(raw || "", 10)
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1
 }
 
 /**
@@ -43,6 +52,7 @@ export function getLLMSettings(settings: SettingsMap) {
             provider: provider as LLMProvider,
             apiKey: settings.openai_api_key || "",
             model: settings.openai_model_name || PROVIDERS[0].defaultModelName,
+            maxConcurrency: parseConcurrency(settings.openai_max_concurrency),
           }
         }
         if (provider === "google") {
@@ -50,6 +60,7 @@ export function getLLMSettings(settings: SettingsMap) {
             provider: provider as LLMProvider,
             apiKey: settings.google_api_key || "",
             model: settings.google_model_name || PROVIDERS[1].defaultModelName,
+            maxConcurrency: parseConcurrency(settings.google_max_concurrency),
           }
         }
         if (provider === "mistral") {
@@ -57,6 +68,7 @@ export function getLLMSettings(settings: SettingsMap) {
             provider: provider as LLMProvider,
             apiKey: settings.mistral_api_key || "",
             model: settings.mistral_model_name || PROVIDERS[2].defaultModelName,
+            maxConcurrency: parseConcurrency(settings.mistral_max_concurrency),
           }
         }
         if (provider === "openai_compatible") {
@@ -66,6 +78,7 @@ export function getLLMSettings(settings: SettingsMap) {
             apiKey: settings.openai_compatible_api_key || "",
             model: settings.openai_compatible_model_name || "",
             baseUrl: settings.openai_compatible_base_url || providerMeta?.defaultBaseUrl || "",
+            maxConcurrency: parseConcurrency(settings.openai_compatible_max_concurrency),
           }
         }
         return null
@@ -81,6 +94,7 @@ export function getLLMSettings(settings: SettingsMap) {
         provider: "openai" as LLMProvider,
         apiKey: config.ai.openaiApiKey || "",
         model: config.ai.openaiModelName || PROVIDERS[0].defaultModelName,
+        maxConcurrency: 1,
       },
     ],
   }
