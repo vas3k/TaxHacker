@@ -50,7 +50,7 @@
     "date-fns": "^4.4.0",
     "imap-simple": "^5.1.0",
     "jszip": "^3.10.1",
-    "langchain": "^1.5.3",
+    "langchain": "^1.5.4",
     "lucide-react": "^1.25.0",
     "mailparser": "^3.9.14",
     "mime-types": "^3.0.1",
