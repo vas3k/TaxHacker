@@ -100,6 +100,23 @@ export function getLLMSettings(settings: SettingsMap) {
   }
 }
 
+/**
+ * Max concurrent "Analyze all" requests — the maxConcurrency of the first
+ * provider requestLLM would actually use (first with a model + credentials),
+ * mirroring its skip logic. Falls back to 1 (serial).
+ */
+export function getAnalyzeConcurrency(settings: SettingsMap): number {
+  const { providers } = getLLMSettings(settings)
+  for (const config of providers) {
+    if (!config.model) continue
+    const hasCredentials =
+      config.provider === "openai_compatible" ? Boolean(config.baseUrl) : Boolean(config.apiKey)
+    if (!hasCredentials) continue
+    return config.maxConcurrency ?? 1
+  }
+  return 1
+}
+
 export const getSettings = cache(async (userId: string): Promise<SettingsMap> => {
   const settings = await prisma.setting.findMany({
     where: { userId },
