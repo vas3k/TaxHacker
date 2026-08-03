@@ -23,6 +23,9 @@ import { startTransition, useEffect, useActionState, useMemo, useState } from "r
 import { useFormStatus } from "react-dom"
 import { DuplicateModal } from "../transactions/duplicate-modal"
 
+const MAX_ANALYZE_RETRIES = 8
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
 function SaveButton({ isSaving }: { isSaving: boolean }) {
   const { pending } = useFormStatus()
   const loading = pending || isSaving
@@ -192,15 +195,26 @@ export default function AnalyzeForm({
   const startAnalyze = async () => {
     setIsAnalyzing(true)
     setAnalyzeError("")
+    let attempt = 0
     try {
-      setAnalyzeStep("Analyzing...")
-      const response = await analyzeLimiter.run(() =>
-        fetch("/api/unsorted/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileId: file.id }),
-        })
-      )
+      let response: Response
+      while (true) {
+        setAnalyzeStep(attempt === 0 ? "Analyzing..." : `Rate limited — retrying (${attempt}/${MAX_ANALYZE_RETRIES})…`)
+        response = await analyzeLimiter.run(() =>
+          fetch("/api/unsorted/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileId: file.id }),
+          })
+        )
+        if (response.status === 429 && attempt < MAX_ANALYZE_RETRIES) {
+          analyzeLimiter.reduceMax()
+          attempt += 1
+          await delay(1000 * attempt)
+          continue
+        }
+        break
+      }
       const results = await response.json()
 
       console.log("Analysis results:", results)

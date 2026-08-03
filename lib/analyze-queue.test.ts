@@ -69,4 +69,17 @@ describe("ConcurrencyLimiter", () => {
     expect(peak()).toBe(1)
     expect(limiter.getMax).toBe(1)
   })
+
+  it("reduceMax lowers the cap by 1 and floors at 1", () => {
+    const limiter = new ConcurrencyLimiter()
+    limiter.setMax(4)
+    expect(limiter.getMax).toBe(4)
+    limiter.reduceMax()
+    expect(limiter.getMax).toBe(3)
+    limiter.reduceMax()
+    limiter.reduceMax()
+    expect(limiter.getMax).toBe(1)
+    limiter.reduceMax()
+    expect(limiter.getMax).toBe(1)
+  })
 })

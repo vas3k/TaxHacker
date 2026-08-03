@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { AnalyzeAllButton } from "@/components/unsorted/analyze-all-button"
+import { AnalyzeConcurrencyBadge } from "@/components/unsorted/analyze-concurrency-badge"
 import AnalyzeForm from "@/components/unsorted/analyze-form"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
@@ -36,7 +37,10 @@ export default async function UnsortedPage() {
     <>
       <header className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">You have {files.length} unsorted files</h2>
-        {files.length > 1 && <AnalyzeAllButton />}
+        <div className="flex items-center gap-3">
+          <AnalyzeConcurrencyBadge />
+          {files.length > 1 && <AnalyzeAllButton />}
+        </div>
       </header>
 
       {config.selfHosted.isEnabled &&

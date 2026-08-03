@@ -107,5 +107,6 @@ export async function POST(request: NextRequest) {
     await updateUser(user.id, { aiBalance: { decrement: 1 } })
   }
 
-  return NextResponse.json(results)
+  const isRateLimited = !results.success && /\(HTTP 429\)/.test(results.error || "")
+  return NextResponse.json(results, { status: isRateLimited ? 429 : 200 })
 }
