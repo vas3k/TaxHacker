@@ -42,10 +42,11 @@ function extractErrorInfo(error: unknown): {
   errorBody: unknown
 } {
   const obj = error as Record<string, unknown>
+  const causeObj = obj?.cause as Record<string, unknown> | undefined
   return {
     message: typeof obj?.message === "string" ? obj.message : undefined,
     cause: obj?.cause,
-    status: obj?.status as number | undefined,
+    status: (obj?.status as number | undefined) ?? (causeObj?.status as number | undefined),
     errorBody: obj?.error,
   }
 }
@@ -243,6 +244,7 @@ export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult>
 }
 
 export async function requestLLM(settings: LLMSettings, req: LLMRequest): Promise<LLMResponse> {
+  let lastError = "All LLM providers failed or are not configured"
   for (const config of settings.providers) {
     if (!config.model) {
       console.info("Skipping provider:", config.provider, "(no model)")
@@ -258,14 +260,14 @@ export async function requestLLM(settings: LLMSettings, req: LLMRequest): Promis
 
     if (!response.error) {
       return response
-    } else {
-      console.error(response.error)
     }
+    lastError = response.error
+    console.error(response.error)
   }
 
   return {
     output: {},
     provider: settings.providers[0]?.provider || "openai",
-    error: "All LLM providers failed or are not configured",
+    error: lastError,
   }
 }
