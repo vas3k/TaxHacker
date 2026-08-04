@@ -199,7 +199,7 @@ export default function AnalyzeForm({
     try {
       let response: Response
       while (true) {
-        setAnalyzeStep(attempt === 0 ? "Analyzing..." : `Rate limited — retrying (${attempt}/${MAX_ANALYZE_RETRIES})…`)
+        setAnalyzeStep(attempt < 3 ? "Analyzing..." : "Analyzing… (retrying after rate-limit)")
         response = await analyzeLimiter.run(() =>
           fetch("/api/unsorted/analyze", {
             method: "POST",
@@ -210,7 +210,7 @@ export default function AnalyzeForm({
         if (response.status === 429 && attempt < MAX_ANALYZE_RETRIES) {
           analyzeLimiter.reduceMax()
           attempt += 1
-          await delay(1000 * attempt)
+          await delay(Math.min(2000 * 2 ** (attempt - 1), 30000))
           continue
         }
         break
