@@ -66,6 +66,9 @@ export default function AnalyzeForm({
 }) {
   const { showNotification } = useNotification()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [hasAnalyzed, setHasAnalyzed] = useState(
+    Object.keys(file.cachedParseResult || {}).length > 0
+  )
   const [analyzeStep, setAnalyzeStep] = useState<string>("")
   const [analyzeError, setAnalyzeError] = useState<string>("")
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteUnsortedFileAction, null)
@@ -231,6 +234,7 @@ export default function AnalyzeForm({
         setAnalyzeError(results.error ? results.error : "Something went wrong...")
       } else {
         analyzeProgress.setState(file.id, "done")
+        setHasAnalyzed(true)
         const nonEmptyFields = Object.fromEntries(
           Object.entries(results.data?.output || {}).filter(
             ([, value]) => value !== null && value !== undefined && value !== ""
@@ -264,7 +268,7 @@ export default function AnalyzeForm({
           ) : (
             <>
               <Brain className="mr-1 h-4 w-4" />
-              <span>Analyze with AI</span>
+              <span>{hasAnalyzed ? "Analyze again" : "Analyze with AI"}</span>
             </>
           )}
         </Button>

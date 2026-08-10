@@ -111,7 +111,11 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         : Array.isArray(rawContent.content)
           ? rawContent.content.map((c: { text?: string }) => c.text || "").join("")
           : ""
-      response = JSON.parse(text.replace(/```(?:json)?\s*/g, "").trim())
+      const cleaned = text.replace(/```(?:json)?\s*/g, "").trim()
+      // Some openai-compatible models emit raw control chars (e.g. a literal
+      // newline) inside JSON string values, which JSON.parse rejects. Replace
+      // them with spaces so the value parses (structural whitespace is unaffected).
+      response = JSON.parse(cleaned.replace(/[\u0000-\u001F]/g, " "))
     } else {
       const structuredModel = model.withStructuredOutput(req.schema!, { name: "transaction" })
       response = await structuredModel.invoke(messages) as Record<string, unknown>
