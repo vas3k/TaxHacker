@@ -15,7 +15,7 @@ import { FormInput, FormTextarea } from "@/components/forms/simple"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ActionState } from "@/lib/actions"
-import { analyzeLimiter } from "@/lib/analyze-queue"
+import { analyzeLimiter, analyzeProgress } from "@/lib/analyze-queue"
 import { Category, Currency, Field, File, Project, Transaction } from "@/prisma/client"
 import { format } from "date-fns"
 import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
@@ -78,6 +78,10 @@ export default function AnalyzeForm({
   useEffect(() => {
     analyzeLimiter.setMax(analyzeConcurrency)
   }, [analyzeConcurrency])
+
+  useEffect(() => {
+    return () => analyzeProgress.clear(file.id)
+  }, [file.id])
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -195,19 +199,22 @@ export default function AnalyzeForm({
   const startAnalyze = async () => {
     setIsAnalyzing(true)
     setAnalyzeError("")
+    analyzeProgress.setState(file.id, "queued")
     let attempt = 0
     try {
       let response: Response
       while (true) {
         setAnalyzeStep(attempt < 3 ? "Analyzing..." : "Analyzing… (retrying after rate-limit)")
-        response = await analyzeLimiter.run(() =>
-          fetch("/api/unsorted/analyze", {
+        response = await analyzeLimiter.run(async () => {
+          analyzeProgress.setState(file.id, "analyzing")
+          return fetch("/api/unsorted/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ fileId: file.id }),
           })
-        )
+        })
         if (response.status === 429 && attempt < MAX_ANALYZE_RETRIES) {
+          analyzeProgress.setState(file.id, "queued")
           analyzeLimiter.reduceMax()
           attempt += 1
           await delay(Math.min(2000 * 2 ** (attempt - 1), 30000))
@@ -220,8 +227,10 @@ export default function AnalyzeForm({
       console.log("Analysis results:", results)
 
       if (!results.success) {
+        analyzeProgress.setState(file.id, "error")
         setAnalyzeError(results.error ? results.error : "Something went wrong...")
       } else {
+        analyzeProgress.setState(file.id, "done")
         const nonEmptyFields = Object.fromEntries(
           Object.entries(results.data?.output || {}).filter(
             ([, value]) => value !== null && value !== undefined && value !== ""
@@ -230,6 +239,7 @@ export default function AnalyzeForm({
         setFormData({ ...formData, ...nonEmptyFields })
       }
     } catch (error) {
+      analyzeProgress.setState(file.id, "error")
       console.error("Analysis failed:", error)
       setAnalyzeError(error instanceof Error ? error.message : "Analysis failed")
     } finally {

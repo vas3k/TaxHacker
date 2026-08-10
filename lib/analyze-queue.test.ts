@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { ConcurrencyLimiter } from "./analyze-queue"
+import { AnalyzeProgress, ConcurrencyLimiter } from "./analyze-queue"
 
 function tracker() {
   let active = 0
@@ -81,5 +81,49 @@ describe("ConcurrencyLimiter", () => {
     expect(limiter.getMax).toBe(1)
     limiter.reduceMax()
     expect(limiter.getMax).toBe(1)
+  })
+})
+
+describe("AnalyzeProgress", () => {
+  it("aggregates per-doc states into counts", () => {
+    const progress = new AnalyzeProgress()
+    progress.setState("a", "queued")
+    progress.setState("b", "analyzing")
+    progress.setState("c", "analyzing")
+    progress.setState("d", "done")
+    progress.setState("e", "error")
+    expect(progress.getCountsSnapshot()).toEqual({
+      analyzing: 2,
+      queued: 1,
+      done: 1,
+      error: 1,
+      total: 5,
+    })
+  })
+
+  it("overwrites a doc's previous state and clears on removal", () => {
+    const progress = new AnalyzeProgress()
+    progress.setState("a", "queued")
+    progress.setState("a", "analyzing")
+    expect(progress.getCountsSnapshot()).toMatchObject({ analyzing: 1, queued: 0 })
+    progress.setState("a", "done")
+    expect(progress.getCountsSnapshot()).toMatchObject({ done: 1, analyzing: 0 })
+    progress.clear("a")
+    expect(progress.getCountsSnapshot()).toEqual({
+      analyzing: 0,
+      queued: 0,
+      done: 0,
+      error: 0,
+      total: 0,
+    })
+  })
+
+  it("returns a stable snapshot reference between changes (useSyncExternalStore-safe)", () => {
+    const progress = new AnalyzeProgress()
+    const before = progress.getCountsSnapshot()
+    const unchanged = progress.getCountsSnapshot()
+    expect(unchanged).toBe(before)
+    progress.setState("a", "queued")
+    expect(progress.getCountsSnapshot()).not.toBe(before)
   })
 })
