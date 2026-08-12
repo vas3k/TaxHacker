@@ -6,26 +6,30 @@ import { FormError } from "@/components/forms/error"
 import { FormSelect, FormTextarea } from "@/components/forms/simple"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
-import { PROVIDERS } from "@/lib/llm-providers"
+import {
+  createDefaultInstance,
+  getProviderMeta,
+  PROVIDER_KINDS,
+  ProviderInstance,
+  ProviderKind,
+  resolveInstances,
+  serializeInstances,
+} from "@/lib/llm-providers"
 import { DEFAULT_PREVIEW_FORMAT } from "@/lib/previews/format"
 import { Field } from "@/prisma/client"
 import type { DragEndEvent } from "@dnd-kit/core"
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { CircleCheckBig, Edit, GripVertical, Loader2, Plug, X } from "lucide-react"
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CircleCheckBig, Edit, GripVertical, Loader2, Plug, Plus, X } from "lucide-react"
 import Link from "next/link"
-import { useActionState, useState } from "react"
+import { useState, useTransition } from "react"
 
-function getInitialProviderOrder(settings: Record<string, string>) {
-  let order: string[] = []
-  if (!settings.llm_providers) {
-    order = ["openai", "google", "mistral", "openai_compatible"]
-  } else {
-    order = settings.llm_providers.split(",").map((p) => p.trim())
-  }
-  // Remove duplicates and keep only valid providers
-  return order.filter((key, idx) => PROVIDERS.some((p) => p.key === key) && order.indexOf(key) === idx)
-}
+type EditableField = "apiKey" | "model" | "baseUrl" | "maxConcurrency"
 
 export default function LLMSettingsForm({
   settings,
@@ -36,54 +40,77 @@ export default function LLMSettingsForm({
   fields: Field[]
   isSelfHosted: boolean
 }) {
-  const [saveState, saveAction, pending] = useActionState(saveSettingsAction, null)
-  const [providerOrder, setProviderOrder] = useState<string[]>(getInitialProviderOrder(settings))
+  const [isPending, startTransition] = useTransition()
+  const [saveState, setSaveState] = useState<{ success: boolean; error?: string | null } | null>(null)
+  const [instances, setInstances] = useState<ProviderInstance[]>(() =>
+    resolveInstances(settings)
+  )
 
-  // Controlled values for each provider
-  const [providerValues, setProviderValues] = useState(() => {
-    const values: Record<string, { apiKey: string; model: string; baseUrl: string; maxConcurrency: string }> = {}
-    PROVIDERS.forEach((provider) => {
-      values[provider.key] = {
-        apiKey: settings[provider.apiKeyName],
-        model: settings[provider.modelName] || provider.defaultModelName,
-        baseUrl: provider.baseUrlName ? settings[provider.baseUrlName] || provider.defaultBaseUrl || "" : "",
-        maxConcurrency: settings[provider.maxConcurrencyName] || "1",
-      }
+  function updateField(id: string, field: EditableField, value: string) {
+    setInstances((prev) =>
+      prev.map((i) => {
+        if (i.id !== id) return i
+        if (field === "apiKey") return { ...i, apiKey: value }
+        if (field === "model") return { ...i, model: value }
+        if (field === "baseUrl") return { ...i, baseUrl: value }
+        const n = parseInt(value, 10)
+        return { ...i, maxConcurrency: Number.isFinite(n) && n >= 1 ? n : 1 }
+      })
+    )
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setInstances((prev) => {
+      const oldIndex = prev.findIndex((i) => i.id === active.id)
+      const newIndex = prev.findIndex((i) => i.id === over.id)
+      if (oldIndex < 0 || newIndex < 0) return prev
+      return arrayMove(prev, oldIndex, newIndex)
     })
-    return values
-  })
+  }
 
-  function handleProviderValueChange(
-    providerKey: string,
-    field: "apiKey" | "model" | "baseUrl" | "maxConcurrency",
-    value: string
-  ) {
-    setProviderValues((prev) => ({
-      ...prev,
-      [providerKey]: {
-        ...prev[providerKey],
-        [field]: value,
-      },
-    }))
+  function handleAdd(kind: ProviderKind) {
+    setInstances((prev) => [...prev, createDefaultInstance(kind)])
+  }
+
+  function handleRemove(id: string) {
+    setInstances((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      const result = await saveSettingsAction(saveState, formData)
+      setSaveState(result)
+    })
   }
 
   return (
     <>
-      <form action={saveAction} className="space-y-4">
+      <form action={handleSubmit} className="space-y-4">
         {isSelfHosted && (
           <div className="space-y-3">
             <label className="text-sm font-medium">LLM providers</label>
-            <DndProviderBlocks
-              providerOrder={providerOrder}
-              setProviderOrder={setProviderOrder}
-              providerValues={providerValues}
-              handleProviderValueChange={handleProviderValueChange}
+            <ProviderCardList
+              instances={instances}
+              onDragEnd={handleDragEnd}
+              onUpdateField={updateField}
+              onRemove={handleRemove}
             />
-            <small className="text-muted-foreground">Drag provider blocks to reorder. First is highest priority.</small>
+            <AddProviderControl onAdd={handleAdd} />
+            <small className="text-muted-foreground">
+              Drag provider blocks to reorder. First is highest priority.
+            </small>
           </div>
         )}
 
-        {isSelfHosted && <input type="hidden" name="llm_providers" value={providerOrder.join(",")} />}
+        {isSelfHosted && (
+          <input
+            type="hidden"
+            name="llm_provider_instances"
+            value={serializeInstances(instances)}
+          />
+        )}
 
         {isSelfHosted && (
           <div className="space-y-1">
@@ -98,8 +125,8 @@ export default function LLMSettingsForm({
               ]}
             />
             <small className="text-muted-foreground">
-              WebP is smaller and works with cloud providers. Use PNG or JPEG for local models like Ollama that cannot
-              decode WebP.
+              WebP is smaller and works with cloud providers. Use PNG or JPEG for
+              local models like Ollama that cannot decode WebP.
             </small>
           </div>
         )}
@@ -112,8 +139,8 @@ export default function LLMSettingsForm({
         />
 
         <div className="flex flex-row items-center gap-4">
-          <Button type="submit" disabled={pending}>
-            {pending ? "Saving..." : "Save Settings"}
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Saving..." : "Save Settings"}
           </Button>
           {saveState?.success && (
             <p className="text-green-500 flex flex-row items-center gap-2">
@@ -153,43 +180,54 @@ export default function LLMSettingsForm({
   )
 }
 
-type DndProviderBlocksProps = {
-  providerOrder: string[]
-  setProviderOrder: React.Dispatch<React.SetStateAction<string[]>>
-  providerValues: Record<string, { apiKey: string; model: string; baseUrl: string; maxConcurrency: string }>
-  handleProviderValueChange: (
-    providerKey: string,
-    field: "apiKey" | "model" | "baseUrl" | "maxConcurrency",
-    value: string
-  ) => void
+function AddProviderControl({ onAdd }: { onAdd: (kind: ProviderKind) => void }) {
+  const [selectedKind, setSelectedKind] = useState<ProviderKind>(PROVIDER_KINDS[0])
+  return (
+    <div className="flex flex-row items-center gap-2">
+      <select
+        value={selectedKind}
+        onChange={(e) => setSelectedKind(e.target.value as ProviderKind)}
+        className="border rounded px-2 py-1 text-sm"
+      >
+        {PROVIDER_KINDS.map((kind) => (
+          <option key={kind} value={kind}>
+            {getProviderMeta(kind).label}
+          </option>
+        ))}
+      </select>
+      <Button type="button" variant="outline" size="sm" onClick={() => onAdd(selectedKind)}>
+        <Plus className="w-4 h-4 mr-1" /> Add provider
+      </Button>
+    </div>
+  )
 }
 
-function DndProviderBlocks({
-  providerOrder,
-  setProviderOrder,
-  providerValues,
-  handleProviderValueChange,
-}: DndProviderBlocksProps) {
+type ProviderCardListProps = {
+  instances: ProviderInstance[]
+  onDragEnd: (event: DragEndEvent) => void
+  onUpdateField: (id: string, field: EditableField, value: string) => void
+  onRemove: (id: string) => void
+}
+
+function ProviderCardList({
+  instances,
+  onDragEnd,
+  onUpdateField,
+  onRemove,
+}: ProviderCardListProps) {
   const sensors = useSensors(useSensor(PointerSensor))
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const oldIndex = providerOrder.indexOf(active.id as string)
-    const newIndex = providerOrder.indexOf(over.id as string)
-    setProviderOrder(arrayMove(providerOrder, oldIndex, newIndex))
-  }
+  const ids = instances.map((i) => i.id)
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={providerOrder} strategy={verticalListSortingStrategy}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <div className="my-6 flex flex-col gap-4">
-          {providerOrder.map((providerKey, idx) => (
-            <SortableProviderBlock
-              key={providerKey}
-              id={providerKey}
+          {instances.map((instance, idx) => (
+            <ProviderCard
+              key={instance.id}
+              instance={instance}
               idx={idx}
-              providerKey={providerKey}
-              value={providerValues[providerKey]}
-              handleValueChange={handleProviderValueChange}
+              onUpdateField={onUpdateField}
+              onRemove={onRemove}
             />
           ))}
         </div>
@@ -198,34 +236,39 @@ function DndProviderBlocks({
   )
 }
 
-type SortableProviderBlockProps = {
-  id: string
-  idx: number
-  providerKey: string
-  value: { apiKey: string; model: string; baseUrl: string; maxConcurrency: string }
-  handleValueChange: (
-    providerKey: string,
-    field: "apiKey" | "model" | "baseUrl" | "maxConcurrency",
-    value: string
-  ) => void
-}
-
 type TestState = {
   status: "idle" | "testing" | "success" | "error"
   message?: string
 }
 
-function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange }: SortableProviderBlockProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+type ProviderCardProps = {
+  instance: ProviderInstance
+  idx: number
+  onUpdateField: (id: string, field: EditableField, value: string) => void
+  onRemove: (id: string) => void
+}
+
+function ProviderCard({
+  instance,
+  idx,
+  onUpdateField,
+  onRemove,
+}: ProviderCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: instance.id })
   const [testState, setTestState] = useState<TestState>({ status: "idle" })
 
-  const provider = PROVIDERS.find((p) => p.key === providerKey)
-  if (!provider) return null
+  const provider = getProviderMeta(instance.kind)
 
   async function handleTest() {
     setTestState({ status: "testing" })
     try {
-      const result = await testLLMProviderAction(providerKey, value.apiKey, value.model, value.baseUrl || undefined)
+      const result = await testLLMProviderAction(
+        instance.kind,
+        instance.apiKey,
+        instance.model,
+        instance.baseUrl || undefined
+      )
       setTestState({
         status: result.success ? "success" : "error",
         message: result.message,
@@ -249,7 +292,6 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
       className="flex flex-col gap-2 p-4"
     >
       <div className="flex flex-row items-center gap-2 mb-2">
-        {/* Drag handle */}
         <span
           {...attributes}
           {...listeners}
@@ -265,7 +307,7 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           variant="outline"
           size="sm"
           onClick={handleTest}
-          disabled={testState.status === "testing" || !value.model}
+          disabled={testState.status === "testing" || !instance.model}
           className="ml-auto h-7 text-xs"
         >
           {testState.status === "testing" ? (
@@ -278,21 +320,29 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
             </>
           )}
         </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(instance.id)}
+          className="h-7 w-7 p-0"
+          aria-label="Remove this instance"
+        >
+          <X className="w-4 h-4" />
+        </Button>
       </div>
       <div className="flex flex-row gap-4 items-center">
         <input
           type="text"
-          name={provider.apiKeyName}
-          value={value.apiKey}
-          onChange={(e) => handleValueChange(provider.key, "apiKey", e.target.value)}
+          value={instance.apiKey}
+          onChange={(e) => onUpdateField(instance.id, "apiKey", e.target.value)}
           className="flex-1 border rounded px-2 py-1"
           placeholder={provider.baseUrlName ? "API key (optional)" : "API key"}
         />
         <input
           type="text"
-          name={provider.modelName}
-          value={value.model}
-          onChange={(e) => handleValueChange(provider.key, "model", e.target.value)}
+          value={instance.model}
+          onChange={(e) => onUpdateField(instance.id, "model", e.target.value)}
           className="flex-1 border rounded px-2 py-1"
           placeholder="Model name"
         />
@@ -300,9 +350,8 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
       {provider.baseUrlName && (
         <input
           type="text"
-          name={provider.baseUrlName}
-          value={value.baseUrl}
-          onChange={(e) => handleValueChange(provider.key, "baseUrl", e.target.value)}
+          value={instance.baseUrl}
+          onChange={(e) => onUpdateField(instance.id, "baseUrl", e.target.value)}
           className="w-full border rounded px-2 py-1"
           placeholder="Base URL (e.g. http://localhost:11434/v1)"
         />
@@ -312,13 +361,13 @@ function SortableProviderBlock({ id, idx, providerKey, value, handleValueChange 
           type="number"
           min={1}
           step={1}
-          name={provider.maxConcurrencyName}
-          value={value.maxConcurrency}
-          onChange={(e) => handleValueChange(provider.key, "maxConcurrency", e.target.value)}
+          value={instance.maxConcurrency}
+          onChange={(e) => onUpdateField(instance.id, "maxConcurrency", e.target.value)}
           className="w-20 border rounded px-2 py-1"
         />
         <span className="text-xs text-muted-foreground">
-          Max concurrency for &quot;Analyze all&quot; (1 = safe; raise only if your plan allows it)
+          Max concurrency for &quot;Analyze all&quot; (1 = safe; raise only if your
+          plan allows it)
         </span>
       </div>
       {testState.status === "success" && (
