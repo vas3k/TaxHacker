@@ -267,12 +267,12 @@ export const getDetailedTimeSeriesStats = cache(
               ? transaction.total || 0
               : 0 // Skip transactions not in default currency for simplicity
 
-        const categoryCode = transaction.categoryCode || "other"
-        const category = categoryLookup.get(categoryCode) || {
-          code: "other",
-          name: "Other",
+        const category = (transaction.categoryCode && categoryLookup.get(transaction.categoryCode)) || {
+          code: "",
+          name: "Uncategorized",
           color: "#6b7280",
         }
+        const categoryCode = category.code
 
         // Initialize category if not exists
         if (!acc[period].categories.has(categoryCode)) {

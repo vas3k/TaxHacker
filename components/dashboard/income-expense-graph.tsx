@@ -1,6 +1,6 @@
 "use client"
 
-import { formatCurrency, formatPeriodLabel } from "@/lib/utils"
+import { formatCurrency, formatPeriodLabel, isDailyPeriod } from "@/lib/utils"
 import { DetailedTimeSeriesData } from "@/models/stats"
 import { addDays, endOfMonth, format, startOfMonth } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -52,12 +52,10 @@ export function IncomeExpenseGraph({ data, defaultCurrency }: IncomeExpenseGraph
 
   const handleBarClick = (item: DetailedTimeSeriesData, type: "income" | "expense") => {
     // Calculate date range for the period
-    const isDailyPeriod = item.period.includes("-") && item.period.split("-").length === 3
-
     let dateFrom: string
     let dateTo: string
 
-    if (isDailyPeriod) {
+    if (isDailyPeriod(item.period)) {
       // Daily period: use the exact date, add 1 day to dateTo
       const date = new Date(item.period)
       dateFrom = item.period // YYYY-MM-DD format

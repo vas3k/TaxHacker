@@ -139,8 +139,12 @@ export function generateUUID(): string {
   })
 }
 
+export function isDailyPeriod(period: string): boolean {
+  return period.split("-").length === 3
+}
+
 export function formatPeriodLabel(period: string, date: Date): string {
-  if (period.includes("-") && period.split("-").length === 3) {
+  if (isDailyPeriod(period)) {
     // Daily format: show day/month/year
     return date.toLocaleDateString("en-US", {
       weekday: "short",
