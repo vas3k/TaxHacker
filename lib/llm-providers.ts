@@ -81,4 +81,22 @@ export const PROVIDERS: ProviderMeta[] = [
     },
     logo: "/logo/openai.svg",
   },
+  {
+    key: "orcarouter",
+    label: "OrcaRouter",
+    apiKeyName: "orcarouter_api_key",
+    modelName: "orcarouter_model_name",
+    defaultModelName: "deepseek/deepseek-v4-flash",
+    baseUrlName: "orcarouter_base_url",
+    defaultBaseUrl: "https://api.orcarouter.ai/v1",
+    maxConcurrencyName: "orcarouter_max_concurrency",
+    apiDoc: "https://www.orcarouter.ai",
+    apiDocLabel: "OrcaRouter Console",
+    placeholder: "sk-orca-...",
+    help: {
+      url: "https://www.orcarouter.ai",
+      label: "OrcaRouter — OpenAI-compatible model routing gateway (150+ models, one key)",
+    },
+    logo: "/logo/orcarouter.svg",
+  },
 ]
