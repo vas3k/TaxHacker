@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card"
 import type { CategoryTotal, PeriodAverage } from "@/lib/stats"
 import { cn, formatCurrency } from "@/lib/utils"
+import type { TransactionFilters } from "@/models/transactions"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { KeyboardEvent, useId, useRef, useState } from "react"
@@ -24,21 +25,11 @@ interface CategoryBreakdownChartProps {
   expenses: CategoryTotal[]
   income: CategoryTotal[]
   currency: string
-  periods: number
-  periodUnit: PeriodAverage["unit"]
-  dateFrom?: string
-  dateTo?: string
+  averages: PeriodAverage
+  filters: Pick<TransactionFilters, "dateFrom" | "dateTo">
 }
 
-export function CategoryBreakdownChart({
-  expenses,
-  income,
-  currency,
-  periods,
-  periodUnit,
-  dateFrom,
-  dateTo,
-}: CategoryBreakdownChartProps) {
+export function CategoryBreakdownChart({ expenses, income, currency, averages, filters }: CategoryBreakdownChartProps) {
   const router = useRouter()
   const id = useId()
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -62,8 +53,8 @@ export function CategoryBreakdownChart({
 
   const hrefFor = (code: string) => {
     const params = new URLSearchParams({ type: tab.transactionType, categoryCode: code })
-    if (dateFrom) params.set("dateFrom", dateFrom)
-    if (dateTo) params.set("dateTo", dateTo)
+    if (filters.dateFrom) params.set("dateFrom", filters.dateFrom)
+    if (filters.dateTo) params.set("dateTo", filters.dateTo)
     return `/transactions?${params.toString()}`
   }
 
@@ -156,14 +147,17 @@ export function CategoryBreakdownChart({
                   stroke={segment.color}
                   strokeDasharray={`${Math.max(segment.length - gap, 0.75)} ${CIRCUMFERENCE}`}
                   strokeDashoffset={-segment.offset}
-                  className="cursor-pointer transition-[opacity,stroke-width] duration-200 ease-out"
+                  className={cn(
+                    "transition-[opacity,stroke-width] duration-200 ease-out",
+                    segment.code && "cursor-pointer"
+                  )}
                   style={{
                     strokeWidth: isActive ? STROKE + 6 : STROKE,
-                    opacity: activeCode && !isActive ? 0.25 : 1,
+                    opacity: activeCode !== null && !isActive ? 0.25 : 1,
                   }}
                   onMouseEnter={() => setActiveCode(segment.code)}
                   onMouseLeave={() => setActiveCode(null)}
-                  onClick={() => router.push(hrefFor(segment.code))}
+                  onClick={segment.code ? () => router.push(hrefFor(segment.code)) : undefined}
                 />
               )
             })}
@@ -192,36 +186,50 @@ export function CategoryBreakdownChart({
             >
               <span className="col-span-2">Category</span>
               <span className="text-right">Total</span>
-              <span className="text-right">Avg / {periodUnit}</span>
+              <span className="text-right">Avg / {averages.unit}</span>
             </li>
-            {items.map((item) => (
-              <li key={item.code} className="col-span-full grid grid-cols-subgrid">
-                <Link
-                  href={hrefFor(item.code)}
-                  onMouseEnter={() => setActiveCode(item.code)}
-                  onMouseLeave={() => setActiveCode(null)}
-                  onFocus={() => setActiveCode(item.code)}
-                  onBlur={() => setActiveCode(null)}
-                  className={cn(
-                    "col-span-full grid grid-cols-subgrid items-center gap-x-2 rounded-md px-2 py-1.5 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    item.code === activeCode && "bg-muted"
-                  )}
-                >
+            {items.map((item) => {
+              const rowProps = {
+                onMouseEnter: () => setActiveCode(item.code),
+                onMouseLeave: () => setActiveCode(null),
+                className: cn(
+                  "col-span-full grid grid-cols-subgrid items-center gap-x-2 rounded-md px-2 py-1.5 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  item.code === activeCode && "bg-muted"
+                ),
+              }
+              const cells = (
+                <>
                   <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="truncate">{item.name}</span>
                   <span className="text-right text-xs text-muted-foreground tabular-nums">
                     {formatCurrency(item.total, currency)}
                   </span>
                   <span className="text-right font-medium tabular-nums">
-                    {formatCurrency(item.total / periods, currency)}
+                    {formatCurrency(item.total / averages.periodCount, currency)}
                   </span>
-                </Link>
-              </li>
-            ))}
+                </>
+              )
+              return (
+                <li key={item.code} className="col-span-full grid grid-cols-subgrid">
+                  {item.code ? (
+                    <Link
+                      href={hrefFor(item.code)}
+                      onFocus={() => setActiveCode(item.code)}
+                      onBlur={() => setActiveCode(null)}
+                      {...rowProps}
+                    >
+                      {cells}
+                    </Link>
+                  ) : (
+                    <div {...rowProps}>{cells}</div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         ) : (
           <p className="text-balance px-4 text-center text-sm text-muted-foreground">
-            No {tab.label.toLowerCase()} in this period. Categorized {tab.label.toLowerCase()} will show up here.
+            No {tab.label.toLowerCase()} in this period.
           </p>
         )}
       </div>

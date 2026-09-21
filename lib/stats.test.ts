@@ -43,13 +43,37 @@ describe("calcAveragePerPeriod", () => {
   it("divides by every month between the first and last period, gaps included", () => {
     const data = [period("2025-11", 300, 600), period("2026-01", 300, 0)]
 
-    expect(calcAveragePerPeriod(data)).toEqual({ income: 200, expenses: 200, periods: 3, unit: "month" })
+    expect(calcAveragePerPeriod(data)).toEqual({ income: 200, expenses: 200, periodCount: 3, unit: "month" })
   })
 
   it("counts days when the series is grouped by day", () => {
     const data = [period("2026-02-27", 0, 40), period("2026-03-02", 0, 40)]
 
-    expect(calcAveragePerPeriod(data)).toEqual({ income: 0, expenses: 20, periods: 4, unit: "day" })
+    expect(calcAveragePerPeriod(data)).toEqual({ income: 0, expenses: 20, periodCount: 4, unit: "day" })
+  })
+
+  it("counts a 12-month range as 12 months even when it touches 13 calendar months", () => {
+    const data = [period("2025-09", 600, 0), period("2026-09", 600, 0)]
+
+    expect(calcAveragePerPeriod(data, { dateFrom: "2025-09-21", dateTo: "2026-09-21" })?.periodCount).toBe(12)
+  })
+
+  it("counts empty months at both ends of the selected range", () => {
+    const data = [period("2025-10", 0, 120), period("2025-12", 0, 120)]
+
+    expect(calcAveragePerPeriod(data, { dateFrom: "2025-01-01", dateTo: "2025-12-31" })).toMatchObject({
+      expenses: 20,
+      periodCount: 12,
+    })
+  })
+
+  it("counts every day of the selected range when grouped by day", () => {
+    const data = [period("2026-09-03", 0, 42), period("2026-09-05", 0, 0)]
+
+    expect(calcAveragePerPeriod(data, { dateFrom: "2026-09-01", dateTo: "2026-09-21" })).toMatchObject({
+      expenses: 2,
+      periodCount: 21,
+    })
   })
 
   it("returns null for an empty series", () => {

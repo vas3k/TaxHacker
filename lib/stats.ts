@@ -1,4 +1,6 @@
+import { isDailyPeriod } from "@/lib/utils"
 import type { DetailedTimeSeriesData } from "@/models/stats"
+import type { TransactionFilters } from "@/models/transactions"
 import { Field, Transaction } from "@/prisma/client"
 
 export type CategoryTotal = {
@@ -26,24 +28,44 @@ export function sumCategoryTotals(data: DetailedTimeSeriesData[], type: "income"
 export type PeriodAverage = {
   income: number
   expenses: number
-  periods: number
+  periodCount: number
   unit: "month" | "day"
 }
 
-export function calcAveragePerPeriod(data: DetailedTimeSeriesData[]): PeriodAverage | null {
+export function calcAveragePerPeriod(
+  data: DetailedTimeSeriesData[],
+  { dateFrom, dateTo }: Pick<TransactionFilters, "dateFrom" | "dateTo"> = {}
+): PeriodAverage | null {
   if (!data.length) return null
 
-  const [y1, m1, d1] = data[0].period.split("-").map(Number)
-  const [y2, m2, d2] = data[data.length - 1].period.split("-").map(Number)
-  const unit = d1 === undefined ? "month" : "day"
-  const periods =
-    unit === "month"
-      ? (y2 - y1) * 12 + (m2 - m1) + 1
-      : Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86_400_000) + 1
+  const first = data[0].period
+  const last = data[data.length - 1].period
+  const unit = isDailyPeriod(first) ? "day" : "month"
+  const from = dateFrom && dateTo ? dateFrom : unit === "day" ? first : `${first}-01`
+  const to = dateFrom && dateTo ? dateTo : unit === "day" ? last : `${last}-${lastDayOfMonth(last)}`
+  const periodCount = countPeriods(from, to, unit)
 
   const sum = (key: "income" | "expenses") => data.reduce((acc, item) => acc + item[key], 0)
 
-  return { income: sum("income") / periods, expenses: sum("expenses") / periods, periods, unit }
+  return { income: sum("income") / periodCount, expenses: sum("expenses") / periodCount, periodCount, unit }
+}
+
+function lastDayOfMonth(yearMonth: string): number {
+  const [year, month] = yearMonth.split("-").map(Number)
+  return new Date(Date.UTC(year, month, 0)).getUTCDate()
+}
+
+function countPeriods(from: string, to: string, unit: PeriodAverage["unit"]): number {
+  const [fromYear, fromMonth, fromDay] = from.split("-").map(Number)
+  const [toYear, toMonth, toDay] = to.split("-").map(Number)
+
+  if (unit === "day") {
+    return (
+      Math.round((Date.UTC(toYear, toMonth - 1, toDay) - Date.UTC(fromYear, fromMonth - 1, fromDay)) / 86_400_000) + 1
+    )
+  }
+
+  return Math.max(1, (toYear - fromYear) * 12 + (toMonth - fromMonth) + (toDay > fromDay ? 1 : 0))
 }
 
 export function calcTotalPerCurrency(transactions: Transaction[]): Record<string, number> {

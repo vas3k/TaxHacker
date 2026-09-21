@@ -5,7 +5,7 @@ import { ProjectsWidget } from "@/components/dashboard/projects-widget"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth"
 import { calcAveragePerPeriod, PeriodAverage, sumCategoryTotals } from "@/lib/stats"
-import { formatCurrency } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 import { getProjects } from "@/models/projects"
 import { getSettings } from "@/models/settings"
 import { getDashboardStats, getDetailedTimeSeriesStats, getProjectStats } from "@/models/stats"
@@ -21,7 +21,7 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
 
   const stats = await getDashboardStats(user.id, filters)
   const statsTimeSeries = await getDetailedTimeSeriesStats(user.id, filters, defaultCurrency)
-  const averages = calcAveragePerPeriod(statsTimeSeries)
+  const averages = calcAveragePerPeriod(statsTimeSeries, filters)
   const statsPerProject = Object.fromEntries(
     await Promise.all(
       projects.map((project) => getProjectStats(user.id, project.code, filters).then((stats) => [project.code, stats]))
@@ -43,10 +43,8 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
             expenses={sumCategoryTotals(statsTimeSeries, "expenses")}
             income={sumCategoryTotals(statsTimeSeries, "income")}
             currency={defaultCurrency}
-            periods={averages.periods}
-            periodUnit={averages.unit}
-            dateFrom={filters.dateFrom}
-            dateTo={filters.dateTo}
+            averages={averages}
+            filters={{ dateFrom: filters.dateFrom, dateTo: filters.dateTo }}
           />
         </div>
       )}
@@ -69,7 +67,12 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
               ))}
               {!Object.entries(stats.totalIncomePerCurrency).length && <div className="text-2xl font-bold">0.00</div>}
               {averages && (
-                <AverageLine value={averages.income} unit={averages.unit} currency={defaultCurrency} tone="text-green-600" />
+                <AverageLine
+                  value={averages.income}
+                  unit={averages.unit}
+                  currency={defaultCurrency}
+                  tone="text-green-600"
+                />
               )}
             </CardContent>
           </Card>
@@ -88,7 +91,12 @@ export async function StatsWidget({ filters }: { filters: TransactionFilters }) 
               ))}
               {!Object.entries(stats.totalExpensesPerCurrency).length && <div className="text-2xl font-bold">0.00</div>}
               {averages && (
-                <AverageLine value={averages.expenses} unit={averages.unit} currency={defaultCurrency} tone="text-red-600" />
+                <AverageLine
+                  value={averages.expenses}
+                  unit={averages.unit}
+                  currency={defaultCurrency}
+                  tone="text-red-600"
+                />
               )}
             </CardContent>
           </Card>
@@ -149,7 +157,7 @@ function AverageLine({
   return (
     <div className="mt-3 flex items-baseline justify-between gap-2 border-t pt-2 text-sm">
       <span className="text-muted-foreground">Avg. per {unit}</span>
-      <span className={`font-semibold tabular-nums ${tone}`}>{formatCurrency(value, currency)}</span>
+      <span className={cn("font-semibold tabular-nums", tone)}>{formatCurrency(value, currency)}</span>
     </div>
   )
 }
