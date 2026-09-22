@@ -3,6 +3,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { ColoredText } from "@/components/ui/colored-text"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
+import { hasConfiguredProvider } from "@/lib/llm-providers"
 import { getSettings, updateSettings } from "@/models/settings"
 import { Banknote, ChartBarStacked, FolderOpenDot, Key, TextCursorInput, X } from "lucide-react"
 import { revalidatePath } from "next/cache"
@@ -87,7 +88,7 @@ export async function WelcomeWidget() {
           </Link>
         </div>
         <div className="flex flex-wrap gap-2 mt-8">
-          {config.selfHosted.isEnabled && !settings.openai_api_key && (
+          {config.selfHosted.isEnabled && !hasConfiguredProvider(settings) && (
             <Link href="/settings/llm">
               <Button>
                 <Key className="h-4 w-4" />

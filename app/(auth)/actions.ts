@@ -13,15 +13,16 @@ export async function selfHostedGetStartedAction(formData: FormData) {
     await createUserDefaults(user.id)
   }
 
-  const apiKeys = [
+  const settingFields = [
     "openai_api_key",
     "google_api_key",
     "mistral_api_key",
     "openai_compatible_api_key",
     "openai_compatible_base_url",
+    "openai_compatible_model_name",
   ]
 
-  for (const key of apiKeys) {
+  for (const key of settingFields) {
     const value = formData.get(key)
     if (value) {
       await updateSettings(user.id, key, value as string)
