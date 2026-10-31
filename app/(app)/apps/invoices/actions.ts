@@ -1,6 +1,8 @@
 "use server"
 
 import * as React from "react"
+import { lookup } from "node:dns/promises"
+import { isIP } from "node:net"
 import { getCurrentUser, isSubscriptionExpired } from "@/lib/auth"
 import {
   getTransactionFileUploadPath,
@@ -28,7 +30,82 @@ import { InvoicePDF } from "./components/invoice-pdf"
 import { InvoiceTemplate } from "./default-templates"
 import { InvoiceAppData } from "./page"
 
+const BLOCKED_V4_RANGES: Array<[string, number]> = [
+  ["0.0.0.0", 8],
+  ["10.0.0.0", 8],
+  ["100.64.0.0", 10],
+  ["127.0.0.0", 8],
+  ["169.254.0.0", 16],
+  ["172.16.0.0", 12],
+  ["192.0.0.0", 24],
+  ["192.168.0.0", 16],
+  ["198.18.0.0", 15],
+  ["224.0.0.0", 4],
+  ["240.0.0.0", 4],
+]
+
+function ipv4ToInt(address: string): number {
+  return address.split(".").reduce((acc, octet) => acc * 256 + Number(octet), 0) >>> 0
+}
+
+/** Loopback, link-local, private, CGNAT, documentation and multicast space. */
+function isPrivateAddress(address: string): boolean {
+  if (isIP(address) === 4) {
+    const value = ipv4ToInt(address)
+    return BLOCKED_V4_RANGES.some(([base, bits]) => {
+      const size = 2 ** (32 - bits)
+      return value >= ipv4ToInt(base) && value < ipv4ToInt(base) + size
+    })
+  }
+  if (isIP(address) === 6) {
+    const lower = address.toLowerCase()
+    if (lower === "::" || lower === "::1") return true
+    const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+    if (mapped) return isPrivateAddress(mapped[1])
+    return lower.startsWith("fc") || lower.startsWith("fd") || /^fe[89ab]/.test(lower) || lower.startsWith("ff")
+  }
+  return true
+}
+
+/** A logo source @react-pdf/renderer may resolve server-side: an inline data
+ *  URL (what the invoice generator sends), or an http(s) URL whose host
+ *  resolves only to public addresses. A local path or a file: URL is refused
+ *  before the renderer can read it into the PDF. */
+async function assertSafeLogoSource(value: string | null | undefined): Promise<void> {
+  if (!value || value.trim() === "") return
+
+  const raw = value.trim()
+  if (/^data:/i.test(raw)) return
+
+  let url: URL
+  try {
+    url = new URL(raw)
+  } catch {
+    throw new Error("Invoice logo must be an http(s) or data URL")
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`Invoice logo must be an http(s) or data URL, not ${url.protocol}`)
+  }
+
+  const host = url.hostname.replace(/^\[|\]$/g, "")
+  if (isIP(host)) {
+    if (isPrivateAddress(host)) {
+      throw new Error(`Invoice logo host ${host} is a loopback, link-local or private address`)
+    }
+    return
+  }
+  const addresses = await lookup(host, { all: true, verbatim: true })
+  if (addresses.length === 0) throw new Error(`Invoice logo host ${host} did not resolve`)
+  for (const entry of addresses) {
+    if (isPrivateAddress(entry.address)) {
+      throw new Error(`Invoice logo host ${host} resolves to ${entry.address}, a loopback, link-local or private address`)
+    }
+  }
+}
+
 export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Array> {
+  await assertSafeLogoSource(data.businessLogo)
+
   const pdfElement = createElement(InvoicePDF, { data })
   const buffer = await renderToBuffer(pdfElement as unknown as React.ReactElement<Record<string, never>>)
   return new Uint8Array(buffer)
