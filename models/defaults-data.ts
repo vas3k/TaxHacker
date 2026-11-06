@@ -247,6 +247,7 @@ export const DEFAULT_CURRENCIES = [
   { code: "MKD", name: "ден" },
   { code: "VUV", name: "VT" },
   { code: "ANG", name: "ƒ" },
+  { code: "XCG", name: "Cg" },
   { code: "MRU", name: "UM" },
   { code: "SZL", name: "L" },
   { code: "CVE", name: "$" },
@@ -285,6 +286,7 @@ export const DEFAULT_CURRENCIES = [
   { code: "XLM", name: "Crypto" },
   { code: "XRP", name: "Crypto" },
   { code: "ZWL", name: "$" },
+  { code: "ZWG", name: "ZiG" },
 ]
 
 export const DEFAULT_FIELDS = [
