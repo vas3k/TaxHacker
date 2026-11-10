@@ -35,15 +35,15 @@ export default async function CategoriesSettingsPage() {
         ]}
         onDelete={async (code) => {
           "use server"
-          return await deleteCategoryAction(user.id, code)
+          return await deleteCategoryAction(code)
         }}
         onAdd={async (data) => {
           "use server"
-          return await addCategoryAction(user.id, data as Prisma.CategoryCreateInput)
+          return await addCategoryAction(data as Prisma.CategoryCreateInput)
         }}
         onEdit={async (code, data) => {
           "use server"
-          return await editCategoryAction(user.id, code, data as Prisma.CategoryUpdateInput)
+          return await editCategoryAction(code, data as Prisma.CategoryUpdateInput)
         }}
       />
     </div>

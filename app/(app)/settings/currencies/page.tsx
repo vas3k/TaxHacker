@@ -32,15 +32,15 @@ export default async function CurrenciesSettingsPage() {
         ]}
         onDelete={async (code) => {
           "use server"
-          return await deleteCurrencyAction(user.id, code)
+          return await deleteCurrencyAction(code)
         }}
         onAdd={async (data) => {
           "use server"
-          return await addCurrencyAction(user.id, data as { code: string; name: string })
+          return await addCurrencyAction(data as { code: string; name: string })
         }}
         onEdit={async (code, data) => {
           "use server"
-          return await editCurrencyAction(user.id, code, data as { name: string })
+          return await editCurrencyAction(code, data as { name: string })
         }}
       />
     </div>

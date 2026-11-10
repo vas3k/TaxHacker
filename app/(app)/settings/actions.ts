@@ -121,14 +121,15 @@ export async function saveProfileAction(
   return { success: true }
 }
 
-export async function addProjectAction(userId: string, data: Prisma.ProjectCreateInput) {
+export async function addProjectAction(data: Prisma.ProjectCreateInput) {
+  const user = await getCurrentUser()
   const validatedForm = projectFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const project = await createProject(userId, {
+  const project = await createProject(user.id, {
     code: codeFromName(validatedForm.data.name),
     name: validatedForm.data.name,
     llm_prompt: validatedForm.data.llm_prompt || null,
@@ -139,14 +140,15 @@ export async function addProjectAction(userId: string, data: Prisma.ProjectCreat
   return { success: true, project }
 }
 
-export async function editProjectAction(userId: string, code: string, data: Prisma.ProjectUpdateInput) {
+export async function editProjectAction(code: string, data: Prisma.ProjectUpdateInput) {
+  const user = await getCurrentUser()
   const validatedForm = projectFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const project = await updateProject(userId, code, {
+  const project = await updateProject(user.id, code, {
     name: validatedForm.data.name,
     llm_prompt: validatedForm.data.llm_prompt,
     color: validatedForm.data.color || "",
@@ -156,9 +158,10 @@ export async function editProjectAction(userId: string, code: string, data: Pris
   return { success: true, project }
 }
 
-export async function deleteProjectAction(userId: string, code: string) {
+export async function deleteProjectAction(code: string) {
+  const user = await getCurrentUser()
   try {
-    await deleteProject(userId, code)
+    await deleteProject(user.id, code)
   } catch (error) {
     return { success: false, error: "Failed to delete project" + error }
   }
@@ -166,14 +169,15 @@ export async function deleteProjectAction(userId: string, code: string) {
   return { success: true }
 }
 
-export async function addCurrencyAction(userId: string, data: Prisma.CurrencyCreateInput) {
+export async function addCurrencyAction(data: Prisma.CurrencyCreateInput) {
+  const user = await getCurrentUser()
   const validatedForm = currencyFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const currency = await createCurrency(userId, {
+  const currency = await createCurrency(user.id, {
     code: validatedForm.data.code,
     name: validatedForm.data.name,
   })
@@ -182,21 +186,23 @@ export async function addCurrencyAction(userId: string, data: Prisma.CurrencyCre
   return { success: true, currency }
 }
 
-export async function editCurrencyAction(userId: string, code: string, data: Prisma.CurrencyUpdateInput) {
+export async function editCurrencyAction(code: string, data: Prisma.CurrencyUpdateInput) {
+  const user = await getCurrentUser()
   const validatedForm = currencyFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const currency = await updateCurrency(userId, code, { name: validatedForm.data.name })
+  const currency = await updateCurrency(user.id, code, { name: validatedForm.data.name })
   revalidatePath("/settings/currencies")
   return { success: true, currency }
 }
 
-export async function deleteCurrencyAction(userId: string, code: string) {
+export async function deleteCurrencyAction(code: string) {
+  const user = await getCurrentUser()
   try {
-    await deleteCurrency(userId, code)
+    await deleteCurrency(user.id, code)
   } catch (error) {
     return { success: false, error: "Failed to delete currency" + error }
   }
@@ -204,7 +210,8 @@ export async function deleteCurrencyAction(userId: string, code: string) {
   return { success: true }
 }
 
-export async function addCategoryAction(userId: string, data: Prisma.CategoryCreateInput) {
+export async function addCategoryAction(data: Prisma.CategoryCreateInput) {
+  const user = await getCurrentUser()
   const validatedForm = categoryFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
@@ -213,11 +220,11 @@ export async function addCategoryAction(userId: string, data: Prisma.CategoryCre
 
   const code = codeFromName(validatedForm.data.name)
   try {
-    const category = await createCategory(userId, {
+    const category = await createCategory(user.id, {
       code,
       name: validatedForm.data.name,
       llm_prompt: validatedForm.data.llm_prompt,
-      color: validatedForm.data.color || "",
+      color: validatedForm.data.color || randomHexColor(),
     })
     revalidatePath("/settings/categories")
 
@@ -233,14 +240,15 @@ export async function addCategoryAction(userId: string, data: Prisma.CategoryCre
   }
 }
 
-export async function editCategoryAction(userId: string, code: string, data: Prisma.CategoryUpdateInput) {
+export async function editCategoryAction(code: string, data: Prisma.CategoryUpdateInput) {
+  const user = await getCurrentUser()
   const validatedForm = categoryFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const category = await updateCategory(userId, code, {
+  const category = await updateCategory(user.id, code, {
     name: validatedForm.data.name,
     llm_prompt: validatedForm.data.llm_prompt,
     color: validatedForm.data.color || "",
@@ -250,9 +258,10 @@ export async function editCategoryAction(userId: string, code: string, data: Pri
   return { success: true, category }
 }
 
-export async function deleteCategoryAction(userId: string, code: string) {
+export async function deleteCategoryAction(code: string) {
+  const user = await getCurrentUser()
   try {
-    await deleteCategory(userId, code)
+    await deleteCategory(user.id, code)
   } catch (error) {
     return { success: false, error: "Failed to delete category" + error }
   }
@@ -260,14 +269,15 @@ export async function deleteCategoryAction(userId: string, code: string) {
   return { success: true }
 }
 
-export async function addFieldAction(userId: string, data: Prisma.FieldCreateInput) {
+export async function addFieldAction(data: Prisma.FieldCreateInput) {
+  const user = await getCurrentUser()
   const validatedForm = fieldFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const field = await createField(userId, {
+  const field = await createField(user.id, {
     code: codeFromName(validatedForm.data.name),
     name: validatedForm.data.name,
     type: validatedForm.data.type,
@@ -282,14 +292,15 @@ export async function addFieldAction(userId: string, data: Prisma.FieldCreateInp
   return { success: true, field }
 }
 
-export async function editFieldAction(userId: string, code: string, data: Prisma.FieldUpdateInput) {
+export async function editFieldAction(code: string, data: Prisma.FieldUpdateInput) {
+  const user = await getCurrentUser()
   const validatedForm = fieldFormSchema.safeParse(data)
 
   if (!validatedForm.success) {
     return { success: false, error: validatedForm.error.message }
   }
 
-  const field = await updateField(userId, code, {
+  const field = await updateField(user.id, code, {
     name: validatedForm.data.name,
     type: validatedForm.data.type,
     llm_prompt: validatedForm.data.llm_prompt,
@@ -302,9 +313,10 @@ export async function editFieldAction(userId: string, code: string, data: Prisma
   return { success: true, field }
 }
 
-export async function deleteFieldAction(userId: string, code: string) {
+export async function deleteFieldAction(code: string) {
+  const user = await getCurrentUser()
   try {
-    await deleteField(userId, code)
+    await deleteField(user.id, code)
   } catch (error) {
     return { success: false, error: "Failed to delete field" + error }
   }

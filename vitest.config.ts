@@ -7,6 +7,9 @@ export default defineConfig({
     include: ["lib/**/*.test.ts", "forms/**/*.test.ts"],
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, ".") },
+    alias: {
+      "@/prisma/client": path.resolve(__dirname, "prisma/client/client.ts"),
+      "@": path.resolve(__dirname, "."),
+    },
   },
 })

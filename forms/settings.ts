@@ -1,4 +1,3 @@
-import { randomHexColor } from "@/lib/utils"
 import { z } from "zod"
 
 export const settingsFormSchema = z.object({
@@ -33,13 +32,13 @@ export const currencyFormSchema = z.object({
 export const projectFormSchema = z.object({
   name: z.string().max(128),
   llm_prompt: z.string().max(512).nullable().optional(),
-  color: z.string().max(7).default(randomHexColor()).nullable().optional(),
+  color: z.string().max(7).nullable().optional(),
 })
 
 export const categoryFormSchema = z.object({
   name: z.string().max(128),
   llm_prompt: z.string().max(512).nullable().optional(),
-  color: z.string().max(7).default(randomHexColor()).nullable().optional(),
+  color: z.string().max(7).nullable().optional(),
 })
 
 export const fieldFormSchema = z.object({
