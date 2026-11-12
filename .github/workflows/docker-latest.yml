@@ -1,79 +1,176 @@
-name: Build and Publish Latest Docker Image
+name: Deploy production
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
-  group: docker-latest-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy-production
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
-  build-and-push:
-    name: Build and Push to GHCR
+  build:
+    name: Build image
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 26
           cache: npm
-
       - name: Generate Prisma client natively
         run: npm ci && npx prisma generate
-
-      - name: Set up QEMU for multi-platform builds
-        uses: docker/setup-qemu-action@v4.1.0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 26
-          cache: npm
-
-      - name: Generate Prisma client natively
-        run: npm ci && npx prisma generate
-
-      - name: Set up QEMU for multi-platform builds
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.1.0
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4.2.0
+      - uses: docker/setup-qemu-action@v4.1.0
+      - uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v6.1.0
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
-          images: ghcr.io/${{ github.repository_owner }}/taxhacker
+          images: ghcr.io/vas3k/taxhacker
           tags: |
+            type=sha
             type=raw,value=latest
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v7.2.0
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            SKIP_PRISMA_GENERATE=true
+          build-args: SKIP_PRISMA_GENERATE=true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Make envfile
+        run: |
+          umask 077
+          python3 - <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          from urllib.parse import quote, unquote, urlsplit
+
+          values = {key.removeprefix("secret_"): value for key, value in os.environ.items() if key.startswith("secret_") and value}
+          required = ['BETTER_AUTH_SECRET']
+          if not values.get('DATABASE_URL'):
+              required.append('POSTGRES_PASSWORD')
+          missing = [key for key in required if not values.get(key)]
+
+          if missing:
+              raise SystemExit("Missing production secrets: " + ", ".join(missing))
+
+          if len(values["BETTER_AUTH_SECRET"]) < 16:
+              raise SystemExit("BETTER_AUTH_SECRET must retain the existing production value (at least 16 characters)")
+
+          source_url = urlsplit(values.get("DATABASE_URL", ""))
+          username = unquote(source_url.username or "taxhacker")
+          password = values.get("POSTGRES_PASSWORD") or unquote(source_url.password or "")
+          if not password:
+              raise SystemExit("POSTGRES_PASSWORD or credentials in DATABASE_URL are required")
+          credentials = quote(username, safe="") + ":" + quote(password, safe="")
+          for key, port in [("DATABASE_URL", 6432), ("DIRECT_URL", 5432)]:
+              values[key] = f"postgresql://{credentials}@host.docker.internal:{port}/taxhacker"
+
+          values["GITHUB_SHA"] = "sha-" + os.environ["GITHUB_SHA"][:7]
+          lines = []
+
+          for key, value in sorted(values.items()):
+              lines.append(key + "=" + json.dumps(value.replace("$", "$$"), ensure_ascii=False) + "\n")
+
+          Path(os.environ["RUNNER_TEMP"], "deploy.env").write_text("".join(lines))
+          PYTHON
+        env:
+          secret_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          secret_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          secret_BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          secret_DISABLE_SIGNUP: ${{ secrets.DISABLE_SIGNUP }}
+          secret_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          secret_OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+          secret_GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          secret_GOOGLE_MODEL_NAME: ${{ secrets.GOOGLE_MODEL_NAME }}
+          secret_MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          secret_MISTRAL_MODEL_NAME: ${{ secrets.MISTRAL_MODEL_NAME }}
+          secret_STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          secret_STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          secret_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          secret_RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
+          secret_RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          secret_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          SSH_USER: ${{ secrets.PRODUCTION_SSH_USERNAME }}
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          umask 077
+          : "${SSH_HOST:?Set PRODUCTION_SSH_HOST}"
+          : "${SSH_USER:?Set PRODUCTION_SSH_USERNAME}"
+          : "${SSH_KEY:?Set PRODUCTION_SSH_KEY}"
+          : "${SSH_KNOWN_HOSTS:?Set PRODUCTION_SSH_KNOWN_HOSTS}"
+          printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/deploy.key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/deploy.known_hosts"
+          ssh_options=(-i "$RUNNER_TEMP/deploy.key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/deploy.known_hosts" -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=3)
+          target="$SSH_USER@$SSH_HOST"
+          release="sha-${GITHUB_SHA:0:7}"
+          stage="/home/vas3k/taxhacker.app/.deploy-$release"
+          ssh "${ssh_options[@]}" "$target" "umask 077 && mkdir -p '$stage'"
+          printf '%s' "$REGISTRY_TOKEN" | ssh "${ssh_options[@]}" "$target" "docker login ghcr.io --username '$REGISTRY_USER' --password-stdin"
+          scp "${ssh_options[@]}" "$RUNNER_TEMP/deploy.env" "$target:$stage/.env"
+          scp "${ssh_options[@]}" docker-compose.production.yml "$target:$stage/docker-compose.production.yml"
+          scp "${ssh_options[@]}" etc/crontab "$target:$stage/crontab"
+
+          ssh "${ssh_options[@]}" "$target" "bash -se -- '$release'" <<'REMOTE'
+          set -euo pipefail
+          umask 077
+          cd /home/vas3k/taxhacker.app
+          stage="$PWD/.deploy-$1"
+          trap 'rm -rf -- "$stage"' EXIT
+          docker compose --project-name taxhackerapp --project-directory "$stage" -f "$stage/docker-compose.production.yml" --env-file "$stage/.env" config --quiet
+          docker compose --project-name taxhackerapp --project-directory "$stage" -f "$stage/docker-compose.production.yml" --env-file "$stage/.env" pull
+          install -m 600 "$stage/.env" .env
+          install -m 644 "$stage/docker-compose.production.yml" docker-compose.production.yml
+          mkdir -p etc
+          install -m 644 "$stage/crontab" etc/crontab
+
+          docker compose --project-name taxhackerapp -f docker-compose.production.yml --env-file .env up -d --no-build --pull never --wait --wait-timeout 180
+          REMOTE
+
+      - name: Remove temporary credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deploy.env" "$RUNNER_TEMP/deploy.key" "$RUNNER_TEMP/deploy.known_hosts"

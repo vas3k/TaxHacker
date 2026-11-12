@@ -1,11 +1,13 @@
 services:
   app:
-    image: ghcr.io/vas3k/taxhacker:latest
+    image: ghcr.io/vas3k/taxhacker:${GITHUB_SHA:-latest}
     container_name: taxhacker_app
     networks:
       - taxhacker_network
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://taxhacker:${POSTGRES_PASSWORD:-}@host.docker.internal:6432/taxhacker}
+      - DIRECT_URL=${DIRECT_URL:-postgresql://taxhacker:${POSTGRES_PASSWORD:-}@host.docker.internal:5432/taxhacker}
       - BASE_URL=https://taxhacker.app
       - SELF_HOSTED_MODE=false
       - UPLOAD_PATH=/app/data/uploads
@@ -16,6 +18,12 @@ services:
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "node", "-e", 'const s=require("net").connect(7331,"127.0.0.1",()=>{s.end();process.exit(0)});s.on("error",()=>process.exit(1));s.setTimeout(3000,()=>process.exit(1));']
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
     ports:
       - "127.0.0.1:7331:7331"
     security_opt:
@@ -27,12 +35,14 @@ services:
         max-file: "3"
 
   cron:
-    image: ghcr.io/vas3k/taxhacker:latest
+    image: ghcr.io/vas3k/taxhacker:${GITHUB_SHA:-latest}
     container_name: taxhacker_cron
     networks:
       - taxhacker_network
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://taxhacker:${POSTGRES_PASSWORD:-}@host.docker.internal:6432/taxhacker}
+      - DIRECT_URL=${DIRECT_URL:-postgresql://taxhacker:${POSTGRES_PASSWORD:-}@host.docker.internal:5432/taxhacker}
       - BASE_URL=https://taxhacker.app
       - SELF_HOSTED_MODE=false
       - UPLOAD_PATH=/app/data/uploads
