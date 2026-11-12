@@ -3,6 +3,7 @@
 import { getCurrentUser } from "@/lib/auth"
 import { encryptSecret, decryptSecret } from "@/lib/encryption"
 import { testImapConnection } from "@/lib/email-sync/imap-client"
+import { validateImapTarget } from "@/lib/email-sync/imap-validation"
 import { runEmailSync } from "@/lib/email-sync/ingest"
 import { getAppData, setAppData } from "@/models/apps"
 import { randomUUID } from "crypto"
@@ -24,6 +25,8 @@ export async function addEmailServerAction(
     const user = await getCurrentUser()
     const appData = (await getAppData(user, "email")) as EmailAppData | null
     const currentData = appData || getDefaultAppData()
+
+    await validateImapTarget(serverData.host, serverData.port)
 
     const newServer: EmailServer = {
       ...serverData,
@@ -59,6 +62,16 @@ export async function updateEmailServerAction(
 
     if (!appData) {
       return { success: false, error: "No email servers found" }
+    }
+
+    if (serverData.host !== undefined && serverData.port !== undefined) {
+      await validateImapTarget(serverData.host, serverData.port)
+    } else if (serverData.host !== undefined || serverData.port !== undefined) {
+      const existingServer = appData.servers.find((server) => server.id === serverId)
+      if (!existingServer) {
+        return { success: false, error: "Server not found" }
+      }
+      await validateImapTarget(serverData.host ?? existingServer.host, serverData.port ?? existingServer.port)
     }
 
     const patch = { ...serverData }
