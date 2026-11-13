@@ -293,6 +293,15 @@ export function InvoicePDF({ data }: { data: InvoiceFormData }): ReactElement {
     return data.taxIncluded ? subtotal : subtotal + taxes
   }
 
+  // Only a source the action's validation permits reaches @react-pdf: a
+  // relative path or a file: URL would otherwise be read into the PDF. The
+  // http(s) host check is in generateInvoicePDF, before the render.
+  const logoSrc =
+    typeof data.businessLogo === "string" &&
+    (/^https?:\/\//i.test(data.businessLogo.trim()) || /^data:/i.test(data.businessLogo.trim()))
+      ? data.businessLogo
+      : undefined
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -305,10 +314,10 @@ export function InvoicePDF({ data }: { data: InvoiceFormData }): ReactElement {
               <Text style={styles.title}>{data.title}</Text>
               <Text style={styles.subtitle}>{data.invoiceNumber}</Text>
             </View>
-            {data.businessLogo && (
+            {logoSrc && (
               <View style={styles.headerRight}>
                 {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop, this isn't an HTML img */}
-                <Image src={data.businessLogo} style={styles.logo} />
+                <Image src={logoSrc} style={styles.logo} />
               </View>
             )}
           </View>
