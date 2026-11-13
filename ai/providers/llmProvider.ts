@@ -1,3 +1,5 @@
+import { lookup } from "node:dns/promises"
+import { isIPv4, isIPv6 } from "node:net"
 import { ChatOpenAI } from "@langchain/openai"
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatMistralAI } from "@langchain/mistralai"
@@ -51,6 +53,74 @@ function extractErrorInfo(error: unknown): {
   }
 }
 
+
+const BLOCKED_V4_RANGES: Array<[string, number]> = [
+  ["0.0.0.0", 8],
+  ["10.0.0.0", 8],
+  ["100.64.0.0", 10],
+  ["127.0.0.0", 8],
+  ["169.254.0.0", 16],
+  ["172.16.0.0", 12],
+  ["192.0.0.0", 24],
+  ["192.168.0.0", 16],
+  ["198.18.0.0", 15],
+  ["224.0.0.0", 4],
+  ["240.0.0.0", 4],
+]
+
+function ipv4ToInt(address: string): number {
+  return address.split(".").reduce((acc, octet) => (acc * 256) + Number(octet), 0) >>> 0
+}
+
+/** Loopback, link-local, private, CGNAT, documentation and multicast space. */
+export function isPrivateAddress(address: string): boolean {
+  if (isIPv4(address)) {
+    const value = ipv4ToInt(address)
+    return BLOCKED_V4_RANGES.some(([base, bits]) => {
+      const size = 2 ** (32 - bits)
+      return value >= ipv4ToInt(base) && value < ipv4ToInt(base) + size
+    })
+  }
+  if (isIPv6(address)) {
+    const lower = address.toLowerCase()
+    if (lower === "::" || lower === "::1") return true
+    const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+    if (mapped) return isPrivateAddress(mapped[1])
+    return lower.startsWith("fc") || lower.startsWith("fd") || /^fe[89ab]/.test(lower) || lower.startsWith("ff")
+  }
+  return true
+}
+
+/** A URL a server-side request may be sent to: http(s) only, and every address
+ *  the hostname resolves to is public. Resolved immediately before the request
+ *  so a baseURL naming an internal service, or a name whose DNS answer points
+ *  at one, is refused instead of fetched. */
+export async function assertPublicHttpUrl(value: string): Promise<URL> {
+  let url: URL
+  try {
+    url = new URL(value.trim())
+  } catch {
+    throw new Error(`not a valid URL: ${value}`)
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`only http and https destinations are allowed, not ${url.protocol}`)
+  }
+  const host = url.hostname.replace(/^\[|\]$/g, "")
+  if (host === "") throw new Error("the destination names no host")
+  if (isIPv4(host) || isIPv6(host)) {
+    if (isPrivateAddress(host)) throw new Error(`destination ${host} is a loopback, link-local or private address`)
+    return url
+  }
+  const addresses = await lookup(host, { all: true, verbatim: true })
+  if (addresses.length === 0) throw new Error(`destination ${host} did not resolve`)
+  for (const entry of addresses) {
+    if (isPrivateAddress(entry.address)) {
+      throw new Error(`destination ${host} resolves to ${entry.address}, a loopback, link-local or private address`)
+    }
+  }
+  return url
+}
+
 async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LLMResponse> {
   try {
     const temperature = 0
@@ -74,6 +144,7 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
         temperature: temperature,
       })
     } else if (config.provider === "openai_compatible") {
+      if (config.baseUrl?.trim()) await assertPublicHttpUrl(config.baseUrl)
       model = new ChatOpenAI({
         apiKey: config.apiKey || "not-needed",
         model: config.model,
@@ -183,6 +254,7 @@ export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult>
     } else if (config.provider === "mistral") {
       model = new ChatMistralAI({ apiKey: config.apiKey, model: config.model, temperature })
     } else if (config.provider === "openai_compatible") {
+      if (config.baseUrl?.trim()) await assertPublicHttpUrl(config.baseUrl)
       model = new ChatOpenAI({
         apiKey: config.apiKey || "not-needed",
         model: config.model,
