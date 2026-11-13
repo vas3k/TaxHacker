@@ -37,7 +37,7 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
     },
     import: async function (userId: string, value: string) {
       const num = parseFloat(value)
-      return isNaN(num) ? 0.0 : num * 100
+      return isNaN(num) ? 0.0 : Math.round(num * 100)
     },
   },
   currencyCode: {
@@ -55,7 +55,7 @@ export const EXPORT_AND_IMPORT_FIELD_MAP: Record<string, ExportImportFieldSettin
     },
     import: async function (userId: string, value: string) {
       const num = parseFloat(value)
-      return isNaN(num) ? 0.0 : num * 100
+      return isNaN(num) ? 0.0 : Math.round(num * 100)
     },
   },
   convertedCurrencyCode: {
