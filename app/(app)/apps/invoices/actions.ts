@@ -16,7 +16,7 @@ import {
   TransactionData,
   findDuplicateTransaction,
 } from "@/models/transactions"
-import { Transaction, User } from "@/prisma/client"
+import { Transaction } from "@/prisma/client"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
@@ -34,14 +34,16 @@ export async function generateInvoicePDF(data: InvoiceFormData): Promise<Uint8Ar
   return new Uint8Array(buffer)
 }
 
-export async function addNewTemplateAction(user: User, template: InvoiceTemplate) {
+export async function addNewTemplateAction(template: InvoiceTemplate) {
+  const user = await getCurrentUser()
   const appData = (await getAppData(user, "invoices")) as InvoiceAppData | null
   const updatedTemplates = [...(appData?.templates || []), template]
   const appDataResult = await setAppData(user, "invoices", { ...appData, templates: updatedTemplates })
   return { success: true, data: appDataResult }
 }
 
-export async function deleteTemplateAction(user: User, templateId: string) {
+export async function deleteTemplateAction(templateId: string) {
+  const user = await getCurrentUser()
   const appData = (await getAppData(user, "invoices")) as InvoiceAppData | null
   if (!appData) return { success: false, error: "No app data found" }
 
