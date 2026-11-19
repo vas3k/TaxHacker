@@ -1,7 +1,7 @@
-import { LLMProvider } from "@/ai/providers/llmProvider"
+import { LLMConfig, LLMProvider } from "@/ai/providers/llmProvider"
 import config from "@/lib/config"
 import { prisma } from "@/lib/db"
-import { PROVIDERS } from "@/lib/llm-providers"
+import { PROVIDERS, ProviderInstance, resolveInstances } from "@/lib/llm-providers"
 import { cache } from "react"
 
 export type SettingsMap = Record<string, string>
@@ -22,70 +22,33 @@ export const SELF_HOSTED_ONLY_SETTINGS = [
   "mistral_max_concurrency",
   "openai_compatible_max_concurrency",
   "llm_providers",
+  "llm_provider_instances",
 ] as const
 
 function isSelfHostedOnlySetting(code: string): code is (typeof SELF_HOSTED_ONLY_SETTINGS)[number] {
   return SELF_HOSTED_ONLY_SETTINGS.includes(code as (typeof SELF_HOSTED_ONLY_SETTINGS)[number])
 }
 
-function parseConcurrency(raw: string | undefined): number {
-  const n = parseInt(raw || "", 10)
-  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1
+function toLLMConfig(instance: ProviderInstance): LLMConfig {
+  return {
+    provider: instance.kind,
+    apiKey: instance.apiKey,
+    model: instance.model,
+    baseUrl: instance.baseUrl || undefined,
+    maxConcurrency: instance.maxConcurrency,
+  }
 }
 
 /**
- * Helper to extract LLM provider settings from SettingsMap.
- * Self-hosted uses per-user DB settings and provider order.
- * Otherwise OpenAI is hard-coded via OPENAI_API_KEY / OPENAI_MODEL_NAME.
+ * Build LLMSettings from the settings map. Self-hosted reads the
+ * llm_provider_instances blob (array order = fallback order), migrating
+ * transparently from legacy single-instance rows on first read. Cloud mode
+ * hard-codes a single OpenAI provider from server config.
  */
 export function getLLMSettings(settings: SettingsMap) {
   if (config.selfHosted.isEnabled) {
-    const priorities = (settings.llm_providers || "openai,google,mistral,openai_compatible")
-      .split(",")
-      .map((p) => p.trim())
-      .filter(Boolean)
-
-    const providers = priorities
-      .map((provider) => {
-        if (provider === "openai") {
-          return {
-            provider: provider as LLMProvider,
-            apiKey: settings.openai_api_key || "",
-            model: settings.openai_model_name || PROVIDERS[0].defaultModelName,
-            maxConcurrency: parseConcurrency(settings.openai_max_concurrency),
-          }
-        }
-        if (provider === "google") {
-          return {
-            provider: provider as LLMProvider,
-            apiKey: settings.google_api_key || "",
-            model: settings.google_model_name || PROVIDERS[1].defaultModelName,
-            maxConcurrency: parseConcurrency(settings.google_max_concurrency),
-          }
-        }
-        if (provider === "mistral") {
-          return {
-            provider: provider as LLMProvider,
-            apiKey: settings.mistral_api_key || "",
-            model: settings.mistral_model_name || PROVIDERS[2].defaultModelName,
-            maxConcurrency: parseConcurrency(settings.mistral_max_concurrency),
-          }
-        }
-        if (provider === "openai_compatible") {
-          const providerMeta = PROVIDERS.find((p) => p.key === "openai_compatible")
-          return {
-            provider: provider as LLMProvider,
-            apiKey: settings.openai_compatible_api_key || "",
-            model: settings.openai_compatible_model_name || "",
-            baseUrl: settings.openai_compatible_base_url || providerMeta?.defaultBaseUrl || "",
-            maxConcurrency: parseConcurrency(settings.openai_compatible_max_concurrency),
-          }
-        }
-        return null
-      })
-      .filter((provider): provider is NonNullable<typeof provider> => provider !== null)
-
-    return { providers }
+    const instances = resolveInstances(settings)
+    return { providers: instances.map(toLLMConfig) }
   }
 
   return {

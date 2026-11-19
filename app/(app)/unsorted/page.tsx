@@ -8,6 +8,7 @@ import { AnalyzeConcurrencyBadge } from "@/components/unsorted/analyze-concurren
 import AnalyzeForm from "@/components/unsorted/analyze-form"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
+import { hasConfiguredProvider } from "@/lib/llm-providers"
 import { getCategories } from "@/models/categories"
 import { getCurrencies } from "@/models/currencies"
 import { getFields } from "@/models/fields"
@@ -43,11 +44,7 @@ export default async function UnsortedPage() {
         </div>
       </header>
 
-      {config.selfHosted.isEnabled &&
-        !settings.openai_api_key &&
-        !settings.google_api_key &&
-        !settings.mistral_api_key &&
-        !settings.openai_compatible_base_url && (
+      {config.selfHosted.isEnabled && !hasConfiguredProvider(settings) && (
           <Alert>
             <Settings className="h-4 w-4 mt-2" />
             <div className="flex flex-row justify-between pt-2">

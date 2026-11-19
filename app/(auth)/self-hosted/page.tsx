@@ -33,11 +33,7 @@ export default async function SelfHostedWelcomePage() {
   }
 
   const defaultProvider = PROVIDERS[0].key
-  const defaultApiKeys: Record<string, string> = {
-    openai: config.ai.openaiApiKey ?? "",
-    google: config.ai.googleApiKey ?? "",
-    mistral: config.ai.mistralApiKey ?? "",
-  }
+  const defaultApiKeys: Record<string, string> = {}
 
   return (
     <Card className="w-full max-w-xl mx-auto p-8 flex flex-col items-center justify-center gap-4">
