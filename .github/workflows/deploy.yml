@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: deploy-production
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 defaults:
   run:
@@ -35,7 +35,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Make envfile
@@ -48,7 +48,9 @@ jobs:
           from urllib.parse import quote, unquote, urlsplit
 
           values = {key.removeprefix("secret_"): value for key, value in os.environ.items() if key.startswith("secret_") and value}
-          required = ['BETTER_AUTH_SECRET']
+          required = ['BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']
+          if not any(values.get(key) for key in ['OPENAI_API_KEY', 'GOOGLE_API_KEY', 'MISTRAL_API_KEY']):
+              required.append('OPENAI_API_KEY (or GOOGLE_API_KEY / MISTRAL_API_KEY)')
           if not values.get('DATABASE_URL'):
               required.append('POSTGRES_PASSWORD')
           missing = [key for key in required if not values.get(key)]
