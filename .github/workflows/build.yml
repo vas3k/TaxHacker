@@ -22,23 +22,17 @@ jobs:
 
   build:
     name: Build image
-    needs: ci
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write
+    env:
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Generate Prisma client natively
-        run: npm ci && npx prisma generate
-      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
@@ -59,9 +53,11 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: SKIP_PRISMA_GENERATE=true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Reuse the published image without uploading a second, full build cache.
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/taxhacker:latest
+          cache-to: type=inline
+          provenance: false
+          sbom: false

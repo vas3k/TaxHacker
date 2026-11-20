@@ -17,3 +17,6 @@ docs
 docker-compose*.yml
 README.md
 LICENSE
+
+# Generated inside the image for its own Node/runtime environment.
+prisma/client

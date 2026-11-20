@@ -6,54 +6,37 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
-# ── Dependencies (cached unless package.json or prisma schema changes) ──
+# OpenSSL is shared by dependency generation, the build, and the runtime.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Dependencies (cached unless package files change) ──
 FROM base AS deps
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends openssl
 WORKDIR /app
-COPY package*.json ./
-COPY prisma ./prisma/
-
-# Install dependencies, including devDependencies (the `prisma` CLI needed
-# by `prisma generate` in the build stage below is a devDependency; the
-# runtime stage never sees this override since it starts fresh `FROM base`).
 ENV NODE_ENV=development
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci
-
-# ── Build ──
-FROM base AS builder
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends openssl
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --no-audit --no-fund
+
+# ── Build (native AMD64 in CI; no QEMU or pre-generated host artifacts) ──
+FROM deps AS builder
+ENV NODE_ENV=production
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
+RUN npx prisma generate
 COPY . .
-
-# CI pre-generates prisma/client natively (see workflows) and sets
-# SKIP_PRISMA_GENERATE=true so get-dmmf never runs under QEMU emulation.
-# Local single-platform builds run prisma generate here (natively, safe).
-ARG SKIP_PRISMA_GENERATE=false
-RUN if [ "${SKIP_PRISMA_GENERATE}" != "true" ]; then npx prisma generate; fi
-
-RUN npm run build
+RUN npm run build && rm -rf .next/cache
 
 # ── Runtime ──
 FROM base AS runner
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cron \
     ghostscript \
     graphicsmagick \
     libwebp-dev \
-    openssl \
-    postgresql-client
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN mkdir -p /app/data /app/upload
 
@@ -74,4 +57,5 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-cron-entr
 
 EXPOSE 7331
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["npm", "start"]
+# Migrations already run in docker-entrypoint.sh.
+CMD ["node", "node_modules/next/dist/bin/next", "start"]
