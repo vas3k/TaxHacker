@@ -12,7 +12,7 @@ services:
       - SELF_HOSTED_MODE=false
       - UPLOAD_PATH=/app/data/uploads
     env_file:
-      - .env
+      - ${DEPLOY_ENV_FILE:?Deployment must supply a generated environment file}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
@@ -47,7 +47,7 @@ services:
       - SELF_HOSTED_MODE=false
       - UPLOAD_PATH=/app/data/uploads
     env_file:
-      - .env
+      - ${DEPLOY_ENV_FILE:?Deployment must supply a generated environment file}
     volumes:
       - ./data:/app/data
       - ./etc/crontab:/mnt/crontab:ro

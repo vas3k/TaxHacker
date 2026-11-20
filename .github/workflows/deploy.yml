@@ -116,28 +116,30 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/deploy.known_hosts"
           ssh_options=(-i "$RUNNER_TEMP/deploy.key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/deploy.known_hosts" -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=3)
           target="$SSH_USER@$SSH_HOST"
-          release="sha-${GITHUB_SHA:0:7}"
-          stage="/home/vas3k/taxhacker.app/.deploy-$release"
+          stage_name=".deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          stage="/home/vas3k/taxhacker.app/$stage_name"
           ssh "${ssh_options[@]}" "$target" "umask 077 && mkdir -p '$stage'"
-          printf '%s' "$REGISTRY_TOKEN" | ssh "${ssh_options[@]}" "$target" "docker login ghcr.io --username '$REGISTRY_USER' --password-stdin"
-          scp "${ssh_options[@]}" "$RUNNER_TEMP/deploy.env" "$target:$stage/.env"
+          printf '%s' "$REGISTRY_TOKEN" | ssh "${ssh_options[@]}" "$target" "docker --config '$stage/.docker' login ghcr.io --username '$REGISTRY_USER' --password-stdin"
+          scp "${ssh_options[@]}" "$RUNNER_TEMP/deploy.env" "$target:$stage/deploy.env"
           scp "${ssh_options[@]}" docker-compose.production.yml "$target:$stage/docker-compose.production.yml"
           scp "${ssh_options[@]}" etc/crontab "$target:$stage/crontab"
 
-          ssh "${ssh_options[@]}" "$target" "bash -se -- '$release'" <<'REMOTE'
+          ssh "${ssh_options[@]}" "$target" "bash -se -- '$stage_name'" <<'REMOTE'
           set -euo pipefail
           umask 077
           cd /home/vas3k/taxhacker.app
-          stage="$PWD/.deploy-$1"
+          stage="$PWD/$1"
+          export DEPLOY_ENV_FILE="$stage/deploy.env"
+          export DOCKER_CONFIG="$stage/.docker"
           trap 'rm -rf -- "$stage"' EXIT
-          docker compose --project-name taxhackerapp --project-directory "$stage" -f "$stage/docker-compose.production.yml" --env-file "$stage/.env" config --quiet
-          docker compose --project-name taxhackerapp --project-directory "$stage" -f "$stage/docker-compose.production.yml" --env-file "$stage/.env" pull
-          install -m 600 "$stage/.env" .env
+          docker compose --project-name taxhackerapp --project-directory "$PWD" -f "$stage/docker-compose.production.yml" --env-file "$DEPLOY_ENV_FILE" config --quiet
+          docker compose --project-name taxhackerapp --project-directory "$PWD" -f "$stage/docker-compose.production.yml" --env-file "$DEPLOY_ENV_FILE" pull
           install -m 644 "$stage/docker-compose.production.yml" docker-compose.production.yml
           mkdir -p etc
           install -m 644 "$stage/crontab" etc/crontab
 
-          docker compose --project-name taxhackerapp -f docker-compose.production.yml --env-file .env up -d --no-build --pull never --wait --wait-timeout 180
+          docker compose --project-name taxhackerapp -f docker-compose.production.yml --env-file "$DEPLOY_ENV_FILE" up -d --no-build --pull never --wait --wait-timeout 180
+          rm -f .env
           REMOTE
 
       - name: Remove temporary credentials
