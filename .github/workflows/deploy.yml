@@ -33,7 +33,6 @@ jobs:
     needs: build
     permissions:
       contents: read
-      packages: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -48,11 +47,9 @@ jobs:
           from urllib.parse import quote, unquote, urlsplit
 
           values = {key.removeprefix("secret_"): value for key, value in os.environ.items() if key.startswith("secret_") and value}
-          required = ['BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']
+          required = ['DATABASE_URL', 'BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']
           if not any(values.get(key) for key in ['OPENAI_API_KEY', 'GOOGLE_API_KEY', 'MISTRAL_API_KEY']):
               required.append('OPENAI_API_KEY (or GOOGLE_API_KEY / MISTRAL_API_KEY)')
-          if not values.get('DATABASE_URL'):
-              required.append('POSTGRES_PASSWORD')
           missing = [key for key in required if not values.get(key)]
 
           if missing:
@@ -63,14 +60,14 @@ jobs:
 
           source_url = urlsplit(values.get("DATABASE_URL", ""))
           username = unquote(source_url.username or "taxhacker")
-          password = values.get("POSTGRES_PASSWORD") or unquote(source_url.password or "")
+          password = unquote(source_url.password or "")
           if not password:
-              raise SystemExit("POSTGRES_PASSWORD or credentials in DATABASE_URL are required")
+              raise SystemExit("DATABASE_URL must contain the production database credentials")
           credentials = quote(username, safe="") + ":" + quote(password, safe="")
           for key, port in [("DATABASE_URL", 6432), ("DIRECT_URL", 5432)]:
               values[key] = f"postgresql://{credentials}@host.docker.internal:{port}/taxhacker"
 
-          values["GITHUB_SHA"] = "sha-" + os.environ["GITHUB_SHA"][:7]
+          values["TAXHACKER_IMAGE"] = os.environ["DEPLOY_IMAGE"]
           lines = []
 
           for key, value in sorted(values.items()):
@@ -79,7 +76,7 @@ jobs:
           Path(os.environ["RUNNER_TEMP"], "deploy.env").write_text("".join(lines))
           PYTHON
         env:
-          secret_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DEPLOY_IMAGE: ${{ needs.build.outputs.image }}
           secret_DATABASE_URL: ${{ secrets.DATABASE_URL }}
           secret_BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           secret_DISABLE_SIGNUP: ${{ secrets.DISABLE_SIGNUP }}
@@ -103,8 +100,6 @@ jobs:
           SSH_USER: ${{ secrets.PRODUCTION_SSH_USERNAME }}
           SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
-          REGISTRY_USER: ${{ github.actor }}
-          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           umask 077
@@ -119,10 +114,7 @@ jobs:
           stage_name=".deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           stage="/home/vas3k/taxhacker.app/$stage_name"
           ssh "${ssh_options[@]}" "$target" "umask 077 && mkdir -p '$stage'"
-          printf '%s' "$REGISTRY_TOKEN" | ssh "${ssh_options[@]}" "$target" "docker --config '$stage/.docker' login ghcr.io --username '$REGISTRY_USER' --password-stdin"
-          scp "${ssh_options[@]}" "$RUNNER_TEMP/deploy.env" "$target:$stage/deploy.env"
-          scp "${ssh_options[@]}" docker-compose.production.yml "$target:$stage/docker-compose.production.yml"
-          scp "${ssh_options[@]}" etc/crontab "$target:$stage/crontab"
+          scp "${ssh_options[@]}" "$RUNNER_TEMP/deploy.env" docker-compose.production.yml etc/crontab "$target:$stage/"
 
           ssh "${ssh_options[@]}" "$target" "bash -se -- '$stage_name'" <<'REMOTE'
           set -euo pipefail
@@ -130,10 +122,10 @@ jobs:
           cd /home/vas3k/taxhacker.app
           stage="$PWD/$1"
           export DEPLOY_ENV_FILE="$stage/deploy.env"
-          export DOCKER_CONFIG="$stage/.docker"
           trap 'rm -rf -- "$stage"' EXIT
-          docker compose --project-name taxhackerapp --project-directory "$PWD" -f "$stage/docker-compose.production.yml" --env-file "$DEPLOY_ENV_FILE" config --quiet
-          docker compose --project-name taxhackerapp --project-directory "$PWD" -f "$stage/docker-compose.production.yml" --env-file "$DEPLOY_ENV_FILE" pull
+          compose=(docker compose --project-name taxhackerapp --project-directory "$PWD" -f "$stage/docker-compose.production.yml" --env-file "$DEPLOY_ENV_FILE")
+          "${compose[@]}" config --quiet
+          "${compose[@]}" pull
           install -m 644 "$stage/docker-compose.production.yml" docker-compose.production.yml
           mkdir -p etc
           install -m 644 "$stage/crontab" etc/crontab

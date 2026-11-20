@@ -2,6 +2,10 @@ name: Build image
 
 on:
   workflow_call:
+    outputs:
+      image:
+        description: Published image pinned to its immutable digest
+        value: ${{ jobs.build.outputs.image }}
   push:
     tags: ["v*"]
   workflow_dispatch:
@@ -22,6 +26,9 @@ jobs:
 
   build:
     name: Build image
+    needs: ci
+    outputs:
+      image: ghcr.io/${{ github.repository_owner }}/taxhacker@${{ steps.publish.outputs.digest }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -49,7 +56,8 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      - id: publish
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           push: true
