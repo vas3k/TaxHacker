@@ -152,7 +152,7 @@ export function InvoiceGenerator({
     }
 
     try {
-      const result = await addNewTemplateAction(user, {
+      const result = await addNewTemplateAction({
         id: `tmpl_${Math.random().toString(36).substring(2, 15)}`,
         name: newTemplateName,
         formData: formData,
@@ -176,7 +176,7 @@ export function InvoiceGenerator({
     if (!templateId) return // Don't allow deleting default templates
 
     try {
-      const result = await deleteTemplateAction(user, templateId)
+      const result = await deleteTemplateAction(templateId)
       if (result.success) {
         router.refresh()
       }
