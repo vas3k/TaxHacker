@@ -17,10 +17,14 @@ export const SELF_HOSTED_ONLY_SETTINGS = [
   "openai_compatible_api_key",
   "openai_compatible_model_name",
   "openai_compatible_base_url",
+  "orcarouter_api_key",
+  "orcarouter_model_name",
+  "orcarouter_base_url",
   "openai_max_concurrency",
   "google_max_concurrency",
   "mistral_max_concurrency",
   "openai_compatible_max_concurrency",
+  "orcarouter_max_concurrency",
   "llm_providers",
 ] as const
 
@@ -40,7 +44,7 @@ function parseConcurrency(raw: string | undefined): number {
  */
 export function getLLMSettings(settings: SettingsMap) {
   if (config.selfHosted.isEnabled) {
-    const priorities = (settings.llm_providers || "openai,google,mistral,openai_compatible")
+    const priorities = (settings.llm_providers || "openai,google,mistral,openai_compatible,orcarouter")
       .split(",")
       .map((p) => p.trim())
       .filter(Boolean)
@@ -79,6 +83,16 @@ export function getLLMSettings(settings: SettingsMap) {
             model: settings.openai_compatible_model_name || "",
             baseUrl: settings.openai_compatible_base_url || providerMeta?.defaultBaseUrl || "",
             maxConcurrency: parseConcurrency(settings.openai_compatible_max_concurrency),
+          }
+        }
+        if (provider === "orcarouter") {
+          const providerMeta = PROVIDERS.find((p) => p.key === "orcarouter")
+          return {
+            provider: provider as LLMProvider,
+            apiKey: settings.orcarouter_api_key || "",
+            model: settings.orcarouter_model_name || providerMeta?.defaultModelName || "",
+            baseUrl: settings.orcarouter_base_url || providerMeta?.defaultBaseUrl || "",
+            maxConcurrency: parseConcurrency(settings.orcarouter_max_concurrency),
           }
         }
         return null

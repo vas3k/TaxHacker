@@ -4,7 +4,7 @@ import { ChatMistralAI } from "@langchain/mistralai"
 import { BaseMessage, HumanMessage } from "@langchain/core/messages"
 import type { AnalyzeAttachment } from "@/ai/attachments"
 
-export type LLMProvider = "openai" | "google" | "mistral" | "openai_compatible"
+export type LLMProvider = "openai" | "google" | "mistral" | "openai_compatible" | "orcarouter"
 
 export interface LLMConfig {
   provider: LLMProvider
@@ -82,6 +82,17 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
           baseURL: config.baseUrl?.trim(),
         },
       })
+    } else if (config.provider === "orcarouter") {
+      // OrcaRouter is an OpenAI-compatible routing gateway. The endpoint is
+      // preconfigured so users only need a key + model, but can override it.
+      model = new ChatOpenAI({
+        apiKey: config.apiKey || "not-needed",
+        model: config.model,
+        temperature: temperature,
+        configuration: {
+          baseURL: (config.baseUrl || "https://api.orcarouter.ai/v1").trim(),
+        },
+      })
     } else {
       return {
         output: {},
@@ -103,7 +114,7 @@ async function requestLLMUnified(config: LLMConfig, req: LLMRequest): Promise<LL
     const messages: BaseMessage[] = [new HumanMessage({ content: messageContent })]
 
     let response: Record<string, unknown>
-    if (config.provider === "openai_compatible") {
+    if (config.provider === "openai_compatible" || config.provider === "orcarouter") {
       const raw = await model.invoke(messages)
       const rawContent = raw as { content: string | Array<{ text?: string }> }
       const text = typeof rawContent.content === "string"
@@ -188,6 +199,13 @@ export async function testLLMProvider(config: LLMConfig): Promise<LLMTestResult>
         model: config.model,
         temperature,
         configuration: { baseURL: config.baseUrl?.trim() },
+      })
+    } else if (config.provider === "orcarouter") {
+      model = new ChatOpenAI({
+        apiKey: config.apiKey || "not-needed",
+        model: config.model,
+        temperature,
+        configuration: { baseURL: (config.baseUrl || "https://api.orcarouter.ai/v1").trim() },
       })
     } else {
       return { success: false, supportsVision: false, message: `Unknown provider: ${config.provider}` }
