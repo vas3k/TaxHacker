@@ -13,7 +13,9 @@ vi.mock("@/models/currencies", () => ({ createCurrency: vi.fn(), updateCurrency:
 vi.mock("@/models/fields", () => ({ createField: vi.fn(), updateField: vi.fn(), deleteField: vi.fn() }))
 
 import * as actions from "@/app/(app)/settings/actions"
+import { testLLMProvider } from "@/ai/providers/llmProvider"
 import { getCurrentUser } from "@/lib/auth"
+import config from "@/lib/config"
 import * as utils from "@/lib/utils"
 import * as projects from "@/models/projects"
 import * as categories from "@/models/categories"
@@ -100,5 +102,68 @@ describe.each([groups[0], groups[1]])("$name creation color", (group) => {
 
     expect(randomColor).not.toHaveBeenCalled()
     expect(group.create).toHaveBeenCalledWith("session-user", expect.objectContaining({ color: "#abcdef" }))
+  })
+})
+
+describe("testLLMProviderAction authorization", () => {
+  it("propagates authentication redirects before testing any provider", async () => {
+    const redirect = new Error("NEXT_REDIRECT")
+    vi.mocked(getCurrentUser).mockRejectedValue(redirect)
+
+    await expect(
+      actions.testLLMProviderAction("openai_compatible", "dummy", "gpt-4o-mini", "http://127.0.0.1:8080")
+    ).rejects.toBe(redirect)
+
+    expect(getCurrentUser).toHaveBeenCalledTimes(1)
+    expect(testLLMProvider).not.toHaveBeenCalled()
+  })
+
+  it("rejects custom LLM provider testing when self-hosted mode is disabled", async () => {
+    config.selfHosted.isEnabled = false
+
+    const result = await actions.testLLMProviderAction(
+      "openai_compatible",
+      "dummy",
+      "gpt-4o-mini",
+      "http://127.0.0.1:8080"
+    )
+
+    expect(result).toEqual({
+      success: false,
+      supportsVision: false,
+      message: "Custom LLM provider configuration is only available in self-hosted mode.",
+    })
+    expect(getCurrentUser).toHaveBeenCalledTimes(1)
+    expect(testLLMProvider).not.toHaveBeenCalled()
+  })
+
+  it("delegates to testLLMProvider when authenticated in self-hosted mode", async () => {
+    config.selfHosted.isEnabled = true
+    vi.mocked(testLLMProvider).mockResolvedValue({
+      success: true,
+      supportsVision: true,
+      message: 'Model responded: "ok"',
+    })
+
+    const result = await actions.testLLMProviderAction(
+      "openai_compatible",
+      "sk-test",
+      "gpt-4o-mini",
+      "http://localhost:11434/v1"
+    )
+
+    expect(result).toEqual({
+      success: true,
+      supportsVision: true,
+      message: 'Model responded: "ok"',
+    })
+    expect(getCurrentUser).toHaveBeenCalledTimes(1)
+    expect(testLLMProvider).toHaveBeenCalledWith({
+      provider: "openai_compatible",
+      apiKey: "sk-test",
+      model: "gpt-4o-mini",
+      baseUrl: "http://localhost:11434/v1",
+    })
+    config.selfHosted.isEnabled = false
   })
 })

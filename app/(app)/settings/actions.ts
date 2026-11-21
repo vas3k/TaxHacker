@@ -59,13 +59,21 @@ export async function testLLMProviderAction(
   model: string,
   baseUrl?: string
 ): Promise<{ success: boolean; supportsVision: boolean; message: string }> {
-  const config: LLMConfig = {
+  await getCurrentUser()
+  if (!config.selfHosted.isEnabled) {
+    return {
+      success: false,
+      supportsVision: false,
+      message: "Custom LLM provider configuration is only available in self-hosted mode.",
+    }
+  }
+  const llmConfig: LLMConfig = {
     provider: provider as LLMProvider,
     apiKey,
     model,
     baseUrl,
   }
-  return testLLMProvider(config)
+  return testLLMProvider(llmConfig)
 }
 
 export async function saveProfileAction(
